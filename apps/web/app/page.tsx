@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { Offer } from '@/lib/types'
 import { getOffers } from '@/lib/api'
 import { OfferCard } from '@/components/offer/OfferCard'
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 export const revalidate = 300 // revalidar a cada 5 minutos
 
 export default async function HomePage() {
-  let offers = []
+  let offers: Offer[] = []
   let error = false
 
   try {

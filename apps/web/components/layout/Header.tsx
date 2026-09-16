@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { getCategories } from '@/lib/api'
+import type { Category } from '@/lib/types'
 
 export async function Header() {
-  let categories = []
+  let categories: Category[] = []
   try {
     const res = await getCategories()
     categories = res.data
