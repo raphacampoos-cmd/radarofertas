@@ -1,7 +1,8 @@
 FROM node:22-alpine
 
-# Instalar pnpm via corepack
+# Instalar pnpm e tsx globalmente
 RUN corepack enable && corepack prepare pnpm@11.23.0 --activate
+RUN npm install -g tsx
 
 WORKDIR /app
 
@@ -13,17 +14,16 @@ COPY packages/db/package.json ./packages/db/
 COPY packages/deal-engine/package.json ./packages/deal-engine/
 COPY apps/api/package.json ./apps/api/
 
-# Instalar dependências (NODE_ENV não definido aqui para incluir devDeps necessárias)
+# Instalar dependências
 RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
 # Copiar código fonte
 COPY packages/ ./packages/
 COPY apps/api/ ./apps/api/
 
-# Definir NODE_ENV depois do install
 ENV NODE_ENV=production
 ENV PORT=3001
 
 EXPOSE 3001
 
-CMD ["node", "node_modules/.bin/tsx", "apps/api/src/index.ts"]
+CMD ["tsx", "apps/api/src/index.ts"]
