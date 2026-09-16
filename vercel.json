@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "framework": "nextjs",
   "installCommand": "pnpm install --no-frozen-lockfile --ignore-scripts",
   "buildCommand": "pnpm --filter @radarofertas/web build",
   "outputDirectory": "apps/web/.next",
+  "framework": "nextjs",
   "headers": [
     {
       "source": "/(.*)",
