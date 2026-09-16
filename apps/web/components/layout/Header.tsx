@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { getCategories } from '@/lib/api'
 import type { Category } from '@/lib/types'
 
+import { Logo } from '../ui/Logo'
+
 export async function Header() {
   let categories: Category[] = []
   try {
@@ -23,16 +25,8 @@ export async function Header() {
       <div className="container" style={{ padding: '0.75rem 1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           {/* Logo */}
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.5rem' }}>📡</span>
-            <span style={{
-              fontSize: '1.25rem',
-              fontWeight: 800,
-              color: 'var(--primary)',
-              letterSpacing: '-0.02em',
-            }}>
-              RadarOfertas
-            </span>
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }} aria-label="Página Inicial">
+            <Logo width={140} height={35} />
           </Link>
 
           {/* Pesquisa */}

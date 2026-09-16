@@ -1,44 +1,38 @@
 import type { Metadata } from 'next'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { Newsletter } from '@/components/ui/Newsletter'
 
 export const metadata: Metadata = {
   title: {
-    default: 'RadarOfertas — Melhores Ofertas e Descontos em Portugal',
     template: '%s | RadarOfertas',
+    default: 'RadarOfertas - Os Melhores Descontos em Portugal',
   },
-  description: 'Encontra as melhores ofertas, descontos e cupões em Portugal. Gaming, Casa, Suplementação. Com gráfico de histórico de preços e Deal Score.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://radarofertas.pt'),
-  openGraph: {
-    siteName: 'RadarOfertas',
-    locale: 'pt_PT',
-    type: 'website',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true },
-  },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GSC_VERIFICATION,
-  },
+  description: 'Rastreamos centenas de lojas em Portugal para encontrar os melhores descontos e promoções com histórico de preços.',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="pt-PT" suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <meta name="theme-color" content="#dc2626" />
-      </head>
-      <body>
+    <html lang="pt-PT">
+      <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <Header />
-        <main style={{ minHeight: 'calc(100vh - 140px)', paddingBottom: '2rem' }}>
-          {children}
-        </main>
+        <main style={{ flex: 1 }}>{children}</main>
+        
+        <div className="container" style={{ padding: '0 1rem' }}>
+          <Newsletter />
+        </div>
+        
         <Footer />
+        
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
       </body>
     </html>
   )

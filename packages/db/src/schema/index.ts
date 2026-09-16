@@ -138,6 +138,20 @@ export const clicks = pgTable('clicks', {
 ])
 
 // ─────────────────────────────────────────────
+// SUBSCRIBERS (Newsletter)
+// ─────────────────────────────────────────────
+export const subscribers = pgTable('subscribers', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  active: boolean('active').default(true),
+  source: varchar('source', { length: 50 }).default('web'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (t) => [
+  uniqueIndex('subscribers_email_idx').on(t.email),
+  index('subscribers_active_idx').on(t.active),
+])
+
+// ─────────────────────────────────────────────
 // RELATIONS
 // ─────────────────────────────────────────────
 export const storesRelations = relations(stores, ({ many }) => ({

@@ -1,85 +1,72 @@
 import Link from 'next/link'
+import { Logo } from '../ui/Logo'
 
 export function Footer() {
-  const year = new Date().getFullYear()
+  const currentYear = new Date().getFullYear()
+
   return (
     <footer style={{
+      background: 'var(--card)',
       borderTop: '1px solid var(--border)',
-      background: 'var(--muted)',
-      padding: '2rem 0',
-      marginTop: '3rem',
+      marginTop: '4rem',
+      padding: '3rem 0',
     }}>
       <div className="container">
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1.5rem',
-          marginBottom: '1.5rem',
+          gap: '2rem',
+          marginBottom: '3rem',
         }}>
-          {/* Marca */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '1.25rem' }}>📡</span>
-              <strong style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>RadarOfertas</strong>
-            </div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', lineHeight: 1.6 }}>
-              Encontra as melhores ofertas em Portugal com histórico de preços real e Deal Score.
+          {/* Logo e Missão */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Logo width={140} height={35} />
+            </Link>
+            <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', lineHeight: 1.6 }}>
+              O teu radar diário para os melhores descontos e promoções em Portugal. Rastreamos as principais lojas para não pagares a mais.
             </p>
           </div>
 
-          {/* Categorias */}
+          {/* Links Úteis */}
           <div>
-            <h3 style={{ fontWeight: 700, marginBottom: '0.75rem', fontSize: '0.9rem' }}>Categorias</h3>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              {[
-                { name: '🕹️ Gaming', slug: 'gaming' },
-                { name: '🏡 Casa', slug: 'casa' },
-                { name: '💪 Suplementação', slug: 'suplementacao' },
-              ].map(cat => (
-                <li key={cat.slug}>
-                  <Link href={`/categoria/${cat.slug}`} style={{
-                    textDecoration: 'none',
-                    color: 'var(--muted-foreground)',
-                    fontSize: '0.85rem',
-                  }}>{cat.name}</Link>
-                </li>
-              ))}
+            <h3 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '1rem' }}>Categorias</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <li><Link href="/categoria/gaming" style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.875rem' }}>Gaming & Consolas</Link></li>
+              <li><Link href="/categoria/casa-electrodomesticos" style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.875rem' }}>Casa & Eletrodomésticos</Link></li>
+              <li><Link href="/categoria/suplementacao" style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.875rem' }}>Suplementação</Link></li>
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Informação */}
           <div>
-            <h3 style={{ fontWeight: 700, marginBottom: '0.75rem', fontSize: '0.9rem' }}>Informação</h3>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              {[
-                { name: 'Sobre Nós', href: '/sobre' },
-                { name: 'Política de Privacidade', href: '/privacidade' },
-                { name: 'Contacto', href: '/contacto' },
-              ].map(link => (
-                <li key={link.href}>
-                  <Link href={link.href} style={{
-                    textDecoration: 'none',
-                    color: 'var(--muted-foreground)',
-                    fontSize: '0.85rem',
-                  }}>{link.name}</Link>
-                </li>
-              ))}
+            <h3 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '1rem' }}>Sobre o Site</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <li><span style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', cursor: 'pointer' }}>Como funciona</span></li>
+              <li><span style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', cursor: 'pointer' }}>Termos de Utilização</span></li>
+              <li><span style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', cursor: 'pointer' }}>Privacidade</span></li>
             </ul>
           </div>
         </div>
 
-        {/* Disclaimer afiliados */}
+        {/* Disclaimer Afiliados e Copyright */}
         <div style={{
           borderTop: '1px solid var(--border)',
-          paddingTop: '1rem',
-          fontSize: '0.75rem',
-          color: 'var(--muted-foreground)',
-          lineHeight: 1.6,
+          paddingTop: '2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+          alignItems: 'center',
+          textAlign: 'center',
         }}>
-          <p>
-            © {year} RadarOfertas. Como participante do Programa de Associados da Amazon, recebemos comissões pelas compras qualificadas. 
-            Os preços e disponibilidade podem variar após publicação. Sempre verifique o preço final na loja antes de comprar.
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', maxWidth: '800px', lineHeight: 1.6 }}>
+            <strong>Aviso de Transparência:</strong> O RadarOfertas participa em programas de afiliados (incluindo a Amazon EU Associates Programme). 
+            Isto significa que recebemos uma pequena comissão nas compras qualificadas feitas através dos nossos links, <strong>sem qualquer custo extra para ti</strong>. 
+            É isto que mantém o projeto vivo e 100% gratuito.
           </p>
+          <div style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+            &copy; {currentYear} RadarOfertas. Todos os direitos reservados.
+          </div>
         </div>
       </div>
     </footer>
