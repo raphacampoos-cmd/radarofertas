@@ -7,6 +7,7 @@ import { PriceHistory } from '@/components/offer/PriceHistory'
 import { formatPrice, formatTimeAgo } from '@/lib/utils'
 import { AffiliateButton } from '@/components/offer/AffiliateButton'
 import { CouponBox } from '@/components/offer/CouponBox'
+import { ShareButtonBig } from '@/components/offer/ShareButtonBig'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -246,6 +247,13 @@ export default async function OfferPage({ params }: PageProps) {
             offerId={offer.id}
             affiliateUrl={offer.affiliateUrl}
             storeName={offer.store.name}
+          />
+
+          {/* Botão de Partilha */}
+          <ShareButtonBig 
+            title={offer.title} 
+            slug={offer.slug} 
+            price={formatPrice(priceCurrent)} 
           />
 
           {/* Aviso */}
