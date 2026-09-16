@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import type { Offer } from '@/lib/types'
 import { DealScoreBadge } from './DealScoreBadge'
 import { formatTimeAgo, formatPrice } from '@/lib/utils'
@@ -84,12 +83,18 @@ export function OfferCard({ offer }: OfferCardProps) {
       <Link href={`/oferta/${offer.slug}`} style={{ display: 'block', background: '#f8fafc' }}>
         <div style={{ position: 'relative', width: '100%', paddingTop: '75%', background: '#f1f5f9' }}>
           {offer.imageUrl ? (
-            <Image
+            <img
               src={offer.imageUrl}
               alt={offer.title}
-              fill
-              style={{ objectFit: 'contain', padding: '0.75rem' }}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                padding: '0.75rem',
+              }}
+              loading="lazy"
             />
           ) : (
             <div style={{
