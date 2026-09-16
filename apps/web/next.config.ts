@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'cdn.pcdiga.com' },
       { protocol: 'https', hostname: '**.cloudfront.net' },
       { protocol: 'https', hostname: '**.githubusercontent.com' },
+      { protocol: 'https', hostname: 'placehold.co' },
+      { protocol: 'https', hostname: '**.placehold.co' },
     ],
   },
 
