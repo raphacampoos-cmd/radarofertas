@@ -1,6 +1,5 @@
 {
   "framework": "nextjs",
   "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile --ignore-scripts",
-  "buildCommand": "cd ../.. && pnpm --filter @radarofertas/web build",
-  "outputDirectory": ".next"
+  "buildCommand": "cd ../.. && pnpm --filter @radarofertas/web build"
 }
