@@ -44,6 +44,27 @@ app.route('/api/clicks', clicksRouter)
 // ── Rotas admin (protegidas) ──────────────────────────────────
 app.route('/api/admin', adminRouter)
 
+// ── Newsletter ────────────────────────────────────────────────
+import { db } from '@radarofertas/db/src/client.js'
+import { subscribers } from '@radarofertas/db/src/schema/index.js'
+app.post('/api/newsletter', async (c) => {
+  try {
+    const { email } = await c.req.json()
+    if (!email || !email.includes('@')) {
+      return c.json({ error: 'Email inválido' }, 400)
+    }
+
+    await db.insert(subscribers)
+      .values({ email })
+      .onConflictDoNothing({ target: subscribers.email })
+
+    return c.json({ success: true, message: 'Subscrito com sucesso!' })
+  } catch (error) {
+    console.error('Newsletter error:', error)
+    return c.json({ error: 'Erro ao subscrever newsletter' }, 500)
+  }
+})
+
 // ── 404 handler ───────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Not found' }, 404))
 
