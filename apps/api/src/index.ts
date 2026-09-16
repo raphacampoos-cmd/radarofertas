@@ -14,11 +14,19 @@ const app = new Hono()
 // ── Middleware ────────────────────────────────────────────────
 app.use('*', logger())
 app.use('*', cors({
-  origin: [
-    'http://localhost:3000',
-    'https://radarofertas.pt',
-    'https://www.radarofertas.pt',
-  ],
+  origin: (origin) => {
+    const allowed = [
+      'http://localhost:3000',
+      'https://radarofertas.pt',
+      'https://www.radarofertas.pt',
+      'https://radarofertas-psi.vercel.app',
+    ]
+    // Permitir qualquer subdomínio vercel.app do projeto
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+      return origin
+    }
+    return null
+  },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Admin-Key'],
 }))
