@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+out/
+.turbo/
+build/
+
+# Environment files — NUNCA commitar
+.env
+.env.local
+.env.production
+.env*.local
+apps/api/.env
+packages/db/.env
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Neon
+.neon/
+
+# Drizzle migrations (optional — remove if you want to track)
+packages/db/drizzle/
+
+# Uploads / cache
+.cache/

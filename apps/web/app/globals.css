@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+/* ── Variáveis de tema ────────────────────────────────────── */
+:root {
+  --primary: #dc2626;
+  --primary-hover: #b91c1c;
+  --foreground: #0f172a;
+  --background: #f8fafc;
+  --card: #ffffff;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --radius: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground: #f1f5f9;
+    --background: #0f172a;
+    --card: #1e293b;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --border: #334155;
+  }
+}
+
+/* ── Reset base ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; }
+a { color: inherit; }
+
+/* ── Container responsivo ─────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px)  { .container { padding: 0 1.5rem; } }
+@media (min-width: 1024px) { .container { padding: 0 2rem; } }
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--muted); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+
+/* ── Hover nos links de categoria (server component safe) ─── */
+nav a:hover {
+  background: var(--border) !important;
+  transition: background 0.15s;
+}
+
+/* ── Responsivo mobile — offer grid ──────────────────────── */
+@media (max-width: 480px) {
+  /* Cards em 2 colunas no mobile */
+  [style*="auto-fill, minmax(240px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.625rem !important;
+  }
+
+  /* Oferta detail — stack vertical */
+  [style*="1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Texto menor no hero */
+  h1[style*="1.75rem"] {
+    font-size: 1.35rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  /* 1 coluna em ecrãs muito pequenos */
+  [style*="auto-fill, minmax(240px"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Focus visível para acessibilidade ───────────────────── */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* ── Print ───────────────────────────────────────────────── */
+@media print {
+  header, footer, nav, button, .no-print { display: none !important; }
+}
