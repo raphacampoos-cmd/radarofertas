@@ -1,15 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/web && node ../../node_modules/.pnpm/next@15.5.25_@types+node@22_fa531afda611c6bbe1c3802fdc2c68ee/node_modules/next/dist/bin/next build",
-  "outputDirectory": "apps/web/.next",
-  "installCommand": "pnpm install --ignore-scripts",
   "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/api/v1/:path*",
-      "destination": "https://radarofertas-api.railway.app/api/:path*"
-    }
-  ],
+  "rootDirectory": "apps/web",
+  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile --ignore-scripts",
+  "buildCommand": "cd ../.. && pnpm --filter @radarofertas/web build",
+  "outputDirectory": ".next",
   "headers": [
     {
       "source": "/(.*)",

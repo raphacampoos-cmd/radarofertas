@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && pnpm install --ignore-scripts && pnpm --filter @radarofertas/web build",
-  "installCommand": "npm i -g pnpm@latest && pnpm install --ignore-scripts",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "installCommand": "corepack enable pnpm && pnpm install --ignore-scripts",
+  "buildCommand": "pnpm --filter @radarofertas/web... build"
 }
