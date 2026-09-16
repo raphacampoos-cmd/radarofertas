@@ -13,15 +13,14 @@ COPY packages/db/package.json ./packages/db/
 COPY packages/deal-engine/package.json ./packages/deal-engine/
 COPY apps/api/package.json ./apps/api/
 
-# Instalar dependências
+# Instalar dependências (NODE_ENV não definido aqui para incluir devDeps necessárias)
 RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
 # Copiar código fonte
 COPY packages/ ./packages/
 COPY apps/api/ ./apps/api/
 
-WORKDIR /app
-
+# Definir NODE_ENV depois do install
 ENV NODE_ENV=production
 ENV PORT=3001
 
