@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { db } from '@radarofertas/db/client'
-import { offers, offerCategories, priceHistory } from '@radarofertas/db/schema'
+import { offers, offerCategories, priceHistory, subscribers } from '@radarofertas/db/schema'
 import { eq, desc, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { calculateDealScore } from '@radarofertas/deal-engine'
@@ -103,6 +103,19 @@ adminRouter.post('/offers', async (c) => {
       source: 'manual',
     })
 
+    // Enviar alerta automático para o Canal de Telegram
+    import { sendTelegramAlert } from '../lib/telegram.js'
+    
+    // Disparar o Telegram sem bloquear a resposta HTTP
+    sendTelegramAlert({
+      title: newOffer.title,
+      priceCurrent: newOffer.priceCurrent,
+      priceOriginal: newOffer.priceOriginal,
+      affiliateUrl: newOffer.affiliateUrl,
+      imageUrl: newOffer.imageUrl,
+      couponCode: newOffer.couponCode
+    }).catch(console.error)
+
     return c.json({ data: newOffer }, 201)
   } catch (err: any) {
     if (err.code === '23505') {
@@ -133,12 +146,20 @@ adminRouter.get('/stats', async (c) => {
   const [totalOffers] = await db.select({ count: sql<number>`count(*)` }).from(offers)
   const [activeOffers] = await db.select({ count: sql<number>`count(*)` }).from(offers).where(eq(offers.status, 'active'))
   const [totalClicks] = await db.select({ clicks: sql<number>`sum(click_count)` }).from(offers)
+  const [totalSubscribers] = await db.select({ count: sql<number>`count(*)` }).from(subscribers)
 
   return c.json({
     data: {
       totalOffers: Number(totalOffers.count),
       activeOffers: Number(activeOffers.count),
       totalClicks: Number(totalClicks.clicks) || 0,
+      totalSubscribers: Number(totalSubscribers.count),
     }
   })
+})
+
+// GET /api/admin/subscribers — lista de subscritores
+adminRouter.get('/subscribers', async (c) => {
+  const data = await db.select().from(subscribers).orderBy(desc(subscribers.createdAt))
+  return c.json({ data })
 })

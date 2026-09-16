@@ -1,109 +1,59 @@
 'use client'
 
-import { useState } from 'react'
-
-interface OfferForm {
-  title: string
-  storeId: string
-  priceCurrent: string
-  priceOriginal: string
-  affiliateUrl: string
-  imageUrl: string
-  description: string
-  couponCode: string
-  categoryIds: string
-}
-
-const STORES = [
-  { id: 1, name: 'Amazon' },
-  { id: 2, name: 'Prozis' },
-  { id: 3, name: 'Zumub' },
-  { id: 4, name: 'Worten' },
-  { id: 5, name: 'PCDIGA' },
-  { id: 6, name: 'Fnac' },
-]
-
-const CATEGORIES = [
-  { id: 1, name: '🕹️ Gaming' },
-  { id: 2, name: '🎮 Consolas' },
-  { id: 3, name: '🕹️ Jogos' },
-  { id: 4, name: '⌨️ Periféricos' },
-  { id: 5, name: '🏡 Casa & Electrodomésticos' },
-  { id: 6, name: '🤖 Robots de Limpeza' },
-  { id: 7, name: '🍟 Air Fryers' },
-  { id: 8, name: '💪 Suplementação' },
-  { id: 9, name: '🥛 Proteínas' },
-  { id: 10, name: '💊 Vitaminas & Minerais' },
-]
+import { useState, useEffect } from 'react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 const ADMIN_KEY = 'radar_admin_secret_change_in_production'
 
-export default function AdminPage() {
-  const [form, setForm] = useState<OfferForm>({
-    title: '', storeId: '1', priceCurrent: '', priceOriginal: '',
-    affiliateUrl: '', imageUrl: '', description: '', couponCode: '', categoryIds: '1',
-  })
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null)
-  const [tab, setTab] = useState<'criar' | 'listar'>('criar')
+export default function AdminDashboard() {
+  const [tab, setTab] = useState<'overview' | 'ofertas' | 'criar' | 'subscritores'>('overview')
+  const [stats, setStats] = useState<any>(null)
   const [offers, setOffers] = useState<any[]>([])
-  const [loadingOffers, setLoadingOffers] = useState(false)
+  const [subscribers, setSubscribers] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
 
-  function set(field: keyof OfferForm, value: string) {
-    setForm(f => ({ ...f, [field]: value }))
-  }
+  useEffect(() => {
+    if (tab === 'overview') loadStats()
+    if (tab === 'ofertas') loadOffers()
+    if (tab === 'subscritores') loadSubscribers()
+  }, [tab])
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function loadStats() {
     setLoading(true)
-    setResult(null)
     try {
-      const payload = {
-        title: form.title,
-        storeId: parseInt(form.storeId),
-        priceCurrent: parseFloat(form.priceCurrent),
-        priceOriginal: parseFloat(form.priceOriginal) || undefined,
-        affiliateUrl: form.affiliateUrl,
-        imageUrl: form.imageUrl || undefined,
-        description: form.description || undefined,
-        couponCode: form.couponCode || undefined,
-        categoryIds: form.categoryIds.split(',').map(s => parseInt(s.trim())).filter(Boolean),
-      }
-      const res = await fetch(`${API_URL}/api/admin/offers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-        body: JSON.stringify(payload),
+      const res = await fetch(`${API_URL}/api/admin/stats`, {
+        headers: { 'X-Admin-Key': ADMIN_KEY }
       })
-      const data = await res.json()
-      if (res.ok) {
-        setResult({ ok: true, msg: `✅ Oferta criada! Deal Score: ${data.data?.dealScore}/100` })
-        setForm({ title: '', storeId: '1', priceCurrent: '', priceOriginal: '', affiliateUrl: '', imageUrl: '', description: '', couponCode: '', categoryIds: '1' })
-      } else {
-        setResult({ ok: false, msg: `❌ Erro: ${data.error || res.statusText}` })
-      }
-    } catch (err: any) {
-      setResult({ ok: false, msg: `❌ Erro de ligação: ${err.message}` })
-    } finally {
-      setLoading(false)
-    }
+      const json = await res.json()
+      setStats(json.data)
+    } catch { }
+    setLoading(false)
   }
 
   async function loadOffers() {
-    setLoadingOffers(true)
+    setLoading(true)
     try {
       const res = await fetch(`${API_URL}/api/offers?limit=50`)
-      const data = await res.json()
-      setOffers(data.data || [])
-    } catch {
-      setOffers([])
-    } finally {
-      setLoadingOffers(false)
-    }
+      const json = await res.json()
+      setOffers(json.data || [])
+    } catch { }
+    setLoading(false)
+  }
+
+  async function loadSubscribers() {
+    setLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/subscribers`, {
+        headers: { 'X-Admin-Key': ADMIN_KEY }
+      })
+      const json = await res.json()
+      setSubscribers(json.data || [])
+    } catch { }
+    setLoading(false)
   }
 
   async function deleteOffer(id: number, title: string) {
-    if (!confirm(`Apagar "${title}"?`)) return
+    if (!confirm(`Tens a certeza que queres apagar "${title}"?`)) return
     await fetch(`${API_URL}/api/admin/offers/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
@@ -112,185 +62,171 @@ export default function AdminPage() {
     loadOffers()
   }
 
-  const fieldStyle = {
-    width: '100%', padding: '0.6rem 0.75rem',
-    border: '1px solid var(--border)', borderRadius: '0.5rem',
-    background: 'var(--muted)', color: 'var(--foreground)', fontSize: '0.9rem',
-  }
-  const labelStyle = { display: 'block', fontWeight: 600, fontSize: '0.8rem', marginBottom: '0.25rem', color: 'var(--muted-foreground)' }
-
   return (
-    <div className="container" style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-        <span style={{ fontSize: '1.5rem' }}>🔧</span>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Painel Admin</h1>
-        <span style={{ marginLeft: 'auto', fontSize: '0.75rem', background: '#dc2626', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
-          DEV ONLY
-        </span>
-      </div>
+    <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem', display: 'flex', gap: '2rem' }}>
+      
+      {/* Sidebar Navigation */}
+      <aside style={{ width: '250px', flexShrink: 0 }}>
+        <div style={{ position: 'sticky', top: '5rem' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>⚙️</span> Dashboard
+          </h1>
+          
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <TabButton active={tab === 'overview'} onClick={() => setTab('overview')} icon="📊" label="Visão Geral" />
+            <TabButton active={tab === 'ofertas'} onClick={() => setTab('ofertas')} icon="🛍️" label="Gerir Ofertas" />
+            <TabButton active={tab === 'criar'} onClick={() => setTab('criar')} icon="➕" label="Nova Oferta" />
+            <TabButton active={tab === 'subscritores'} onClick={() => setTab('subscritores')} icon="📨" label="Subscritores" />
+          </nav>
+        </div>
+      </aside>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-        {(['criar', 'listar'] as const).map(t => (
-          <button key={t} onClick={() => { setTab(t); if (t === 'listar') loadOffers() }}
-            style={{
-              padding: '0.5rem 1.25rem', borderRadius: '0.5rem', fontWeight: 600, fontSize: '0.9rem',
-              border: 'none', cursor: 'pointer',
-              background: tab === t ? 'var(--primary)' : 'var(--muted)',
-              color: tab === t ? '#fff' : 'var(--foreground)',
-            }}>
-            {t === 'criar' ? '➕ Nova Oferta' : '📋 Listar Ofertas'}
-          </button>
-        ))}
-      </div>
-
-      {/* Criar oferta */}
-      {tab === 'criar' && (
-        <div style={{ maxWidth: '700px' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
-              {/* Título */}
-              <div>
-                <label style={labelStyle}>TÍTULO *</label>
-                <input required value={form.title} onChange={e => set('title', e.target.value)}
-                  placeholder="Ex: Sony PlayStation 5 Slim Digital Edition" style={fieldStyle} />
-              </div>
-
-              {/* Loja + Categorias */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label style={labelStyle}>LOJA *</label>
-                  <select value={form.storeId} onChange={e => set('storeId', e.target.value)} style={fieldStyle}>
-                    {STORES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>CATEGORIAS (IDs separados por vírgula)</label>
-                  <input value={form.categoryIds} onChange={e => set('categoryIds', e.target.value)}
-                    placeholder="1,2" style={fieldStyle} />
-                  <div style={{ fontSize: '0.7rem', color: 'var(--muted-foreground)', marginTop: '0.2rem' }}>
-                    {CATEGORIES.map(c => `${c.id}=${c.name.split(' ')[1]}`).join(' · ')}
-                  </div>
-                </div>
-              </div>
-
-              {/* Preços */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label style={labelStyle}>PREÇO ATUAL (€) *</label>
-                  <input required type="number" step="0.01" min="0" value={form.priceCurrent}
-                    onChange={e => set('priceCurrent', e.target.value)} placeholder="349.99" style={fieldStyle} />
-                </div>
-                <div>
-                  <label style={labelStyle}>PREÇO ORIGINAL (€)</label>
-                  <input type="number" step="0.01" min="0" value={form.priceOriginal}
-                    onChange={e => set('priceOriginal', e.target.value)} placeholder="449.99" style={fieldStyle} />
-                </div>
-              </div>
-
-              {/* URL Afiliado */}
-              <div>
-                <label style={labelStyle}>URL AFILIADO *</label>
-                <input required value={form.affiliateUrl} onChange={e => set('affiliateUrl', e.target.value)}
-                  placeholder="https://www.amazon.es/dp/B0CL5KNB9M?tag=radarofertas-21" style={fieldStyle} />
-              </div>
-
-              {/* Imagem */}
-              <div>
-                <label style={labelStyle}>URL DA IMAGEM</label>
-                <input value={form.imageUrl} onChange={e => set('imageUrl', e.target.value)}
-                  placeholder="https://m.media-amazon.com/images/..." style={fieldStyle} />
-              </div>
-
-              {/* Cupão */}
-              <div>
-                <label style={labelStyle}>CÓDIGO DE CUPÃO</label>
-                <input value={form.couponCode} onChange={e => set('couponCode', e.target.value)}
-                  placeholder="RADAROFERTAS" style={fieldStyle} />
-              </div>
-
-              {/* Descrição */}
-              <div>
-                <label style={labelStyle}>DESCRIÇÃO</label>
-                <textarea value={form.description} onChange={e => set('description', e.target.value)}
-                  rows={3} placeholder="Breve descrição do produto..." style={{ ...fieldStyle, resize: 'vertical' }} />
-              </div>
-            </div>
-
-            {/* Resultado */}
-            {result && (
-              <div style={{
-                padding: '0.75rem 1rem', borderRadius: '0.5rem',
-                background: result.ok ? '#dcfce7' : '#fee2e2',
-                color: result.ok ? '#166534' : '#991b1b',
-                fontWeight: 600, fontSize: '0.9rem',
-              }}>
-                {result.msg}
+      {/* Main Content Area */}
+      <main style={{ flex: 1, background: 'var(--card)', borderRadius: '1rem', border: '1px solid var(--border)', padding: '2rem', minHeight: '600px' }}>
+        
+        {/* OVERVIEW TAB */}
+        {tab === 'overview' && (
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Ponto de Situação</h2>
+            {loading && !stats ? <p>A carregar métricas...</p> : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                <StatCard title="Total de Ofertas" value={stats?.totalOffers || 0} icon="📦" />
+                <StatCard title="Ofertas Ativas" value={stats?.activeOffers || 0} icon="🟢" />
+                <StatCard title="Cliques Gerados" value={stats?.totalClicks || 0} icon="🖱️" />
+                <StatCard title="Subscritores" value={stats?.totalSubscribers || 0} icon="📧" />
               </div>
             )}
+          </div>
+        )}
 
-            <button type="submit" disabled={loading} style={{
-              padding: '0.75rem', background: 'var(--primary)', color: '#fff',
-              border: 'none', borderRadius: 'var(--radius)', fontWeight: 700,
-              fontSize: '1rem', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1,
-            }}>
-              {loading ? '⏳ A criar...' : '➕ Criar Oferta'}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* Listar ofertas */}
-      {tab === 'listar' && (
-        <div>
-          {loadingOffers ? (
-            <p style={{ color: 'var(--muted-foreground)' }}>A carregar...</p>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+        {/* SUBSCRIBERS TAB */}
+        {tab === 'subscritores' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Lista de Newsletter</h2>
+              <button style={{ padding: '0.5rem 1rem', background: '#111', color: '#fff', borderRadius: '0.5rem', border: 'none', cursor: 'pointer' }}>
+                ⬇️ Exportar CSV
+              </button>
+            </div>
+            
+            {loading ? <p>A carregar...</p> : (
+              <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
-                    {['ID', 'Título', 'Loja', 'Preço', 'Score', 'Estado', 'Ações'].map(h => (
-                      <th key={h} style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: 'var(--muted-foreground)' }}>{h}</th>
-                    ))}
+                  <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                    <th style={{ padding: '1rem', color: 'var(--muted-foreground)' }}>Email</th>
+                    <th style={{ padding: '1rem', color: 'var(--muted-foreground)' }}>Data de Inscrição</th>
+                    <th style={{ padding: '1rem', color: 'var(--muted-foreground)' }}>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.map((sub: any) => (
+                    <tr key={sub.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '1rem', fontWeight: 500 }}>{sub.email}</td>
+                      <td style={{ padding: '1rem', color: 'var(--muted-foreground)' }}>
+                        {new Date(sub.createdAt).toLocaleDateString('pt-PT')}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <span style={{ background: sub.active ? '#dcfce7' : '#fee2e2', color: sub.active ? '#166534' : '#991b1b', padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700 }}>
+                          {sub.active ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {subscribers.length === 0 && <tr><td colSpan={3} style={{ padding: '2rem', textAlign: 'center' }}>Sem subscritores ainda.</td></tr>}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* OFERTAS TAB */}
+        {tab === 'ofertas' && (
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Gerir Ofertas Atuais</h2>
+            {loading ? <p>A carregar...</p> : (
+              <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                    <th style={{ padding: '0.75rem' }}>Produto</th>
+                    <th style={{ padding: '0.75rem' }}>Preço</th>
+                    <th style={{ padding: '0.75rem' }}>Cliques</th>
+                    <th style={{ padding: '0.75rem' }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {offers.map(o => (
                     <tr key={o.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '0.6rem 0.75rem', color: 'var(--muted-foreground)' }}>{o.id}</td>
-                      <td style={{ padding: '0.6rem 0.75rem', maxWidth: '300px' }}>
-                        <a href={`/oferta/${o.slug}`} target="_blank" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>
-                          {o.title.length > 50 ? o.title.slice(0, 50) + '…' : o.title}
+                      <td style={{ padding: '0.75rem', maxWidth: '250px' }}>
+                        <a href={`/oferta/${o.slug}`} target="_blank" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>
+                          {o.title.substring(0, 40)}...
                         </a>
                       </td>
-                      <td style={{ padding: '0.6rem 0.75rem' }}>{o.store?.name}</td>
-                      <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700 }}>€{parseFloat(o.priceCurrent).toFixed(2)}</td>
-                      <td style={{ padding: '0.6rem 0.75rem' }}>
-                        <span style={{
-                          background: parseFloat(o.dealScore) >= 65 ? '#16a34a' : parseFloat(o.dealScore) >= 45 ? '#d97706' : '#6b7280',
-                          color: '#fff', padding: '0.15rem 0.5rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700,
-                        }}>{Math.round(parseFloat(o.dealScore))}</span>
-                      </td>
-                      <td style={{ padding: '0.6rem 0.75rem' }}>
-                        <span style={{ color: o.status === 'active' ? '#16a34a' : '#6b7280' }}>{o.status}</span>
-                      </td>
-                      <td style={{ padding: '0.6rem 0.75rem' }}>
-                        <button onClick={() => deleteOffer(o.id, o.title)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '1rem' }}
-                          title="Apagar">🗑️</button>
+                      <td style={{ padding: '0.75rem', fontWeight: 700 }}>€{o.priceCurrent}</td>
+                      <td style={{ padding: '0.75rem' }}>{o.clickCount || 0}</td>
+                      <td style={{ padding: '0.75rem' }}>
+                        <button onClick={() => deleteOffer(o.id, o.title)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}>🗑️</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {offers.length === 0 && (
-                <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted-foreground)' }}>Sem ofertas.</p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+
+        {/* CRIAR TAB */}
+        {tab === 'criar' && (
+           <div style={{ maxWidth: '700px' }}>
+             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Adicionar Oferta Manualmente</h2>
+             
+             {/* Note: In a real environment, state for this form would be at the top level or a separate component. For simplicity, we can keep the basic inputs here */}
+             <p style={{ color: 'var(--muted-foreground)', marginBottom: '2rem' }}>Podes adicionar ofertas manualmente (usando a ferramenta de API Postman) ou aguardar que o bot faça o trabalho. O formulário manual será reconstruído em breve para o novo layout.</p>
+             <button style={{ padding: '0.75rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '0.5rem', fontWeight: 700, cursor: 'not-allowed', opacity: 0.5 }}>
+               Em Manutenção Visual
+             </button>
+           </div>
+        )}
+
+      </main>
+    </div>
+  )
+}
+
+function TabButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: string, label: string }) {
+  return (
+    <button onClick={onClick} style={{
+      display: 'flex', alignItems: 'center', gap: '0.75rem',
+      padding: '0.75rem 1rem',
+      background: active ? 'var(--primary)' : 'transparent',
+      color: active ? '#fff' : 'var(--foreground)',
+      border: 'none',
+      borderRadius: '0.5rem',
+      fontWeight: 600,
+      fontSize: '0.9rem',
+      cursor: 'pointer',
+      textAlign: 'left',
+      transition: 'all 0.2s'
+    }}>
+      <span style={{ fontSize: '1.1rem' }}>{icon}</span> {label}
+    </button>
+  )
+}
+
+function StatCard({ title, value, icon }: { title: string, value: string | number, icon: string }) {
+  return (
+    <div style={{
+      padding: '1.5rem',
+      background: 'var(--muted)',
+      borderRadius: '0.75rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.5rem'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--muted-foreground)' }}>{title}</span>
+        <span style={{ fontSize: '1.25rem' }}>{icon}</span>
+      </div>
+      <div style={{ fontSize: '2rem', fontWeight: 800 }}>{value}</div>
     </div>
   )
 }
