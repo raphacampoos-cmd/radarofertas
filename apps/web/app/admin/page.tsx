@@ -176,14 +176,9 @@ export default function AdminDashboard() {
 
         {/* CRIAR TAB */}
         {tab === 'criar' && (
-           <div style={{ maxWidth: '700px' }}>
+           <div style={{ maxWidth: '800px' }}>
              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Adicionar Oferta Manualmente</h2>
-             
-             {/* Note: In a real environment, state for this form would be at the top level or a separate component. For simplicity, we can keep the basic inputs here */}
-             <p style={{ color: 'var(--muted-foreground)', marginBottom: '2rem' }}>Podes adicionar ofertas manualmente (usando a ferramenta de API Postman) ou aguardar que o bot faça o trabalho. O formulário manual será reconstruído em breve para o novo layout.</p>
-             <button style={{ padding: '0.75rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '0.5rem', fontWeight: 700, cursor: 'not-allowed', opacity: 0.5 }}>
-               Em Manutenção Visual
-             </button>
+             <CreateOfferForm onSuccess={() => { setTab('ofertas'); loadOffers(); }} />
            </div>
         )}
 
@@ -228,5 +223,106 @@ function StatCard({ title, value, icon }: { title: string, value: string | numbe
       </div>
       <div style={{ fontSize: '2rem', fontWeight: 800 }}>{value}</div>
     </div>
+  )
+}
+
+function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    const fd = new FormData(e.currentTarget)
+    
+    // Processar Categorias
+    const cats = []
+    if (fd.get('cat_gaming')) cats.push(1, 2)
+    if (fd.get('cat_casa')) cats.push(5)
+    if (fd.get('cat_suple')) cats.push(8)
+    if (cats.length === 0) cats.push(1) // Fallback para Gaming
+
+    const payload = {
+      title: fd.get('title'),
+      storeId: 1, // Por defeito: Amazon
+      priceCurrent: parseFloat(fd.get('priceCurrent') as string),
+      priceOriginal: fd.get('priceOriginal') ? parseFloat(fd.get('priceOriginal') as string) : undefined,
+      affiliateUrl: fd.get('affiliateUrl'),
+      imageUrl: fd.get('imageUrl') || undefined,
+      couponCode: fd.get('couponCode') || undefined,
+      description: fd.get('description') || '',
+      categoryIds: cats,
+      source: 'manual'
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/offers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+        body: JSON.stringify(payload)
+      })
+      if (res.ok) {
+        setMsg('✅ Oferta criada com sucesso!')
+        ;(e.target as HTMLFormElement).reset()
+        setTimeout(() => { setMsg(''); onSuccess(); }, 1500)
+      } else {
+        const error = await res.json()
+        setMsg(`❌ Erro: ${error.error || 'Falha ao guardar'}`)
+      }
+    } catch {
+      setMsg('❌ Erro na comunicação com a API')
+    }
+    setLoading(false)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--background)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+      {msg && <div style={{ padding: '1rem', background: msg.includes('✅') ? '#dcfce7' : '#fee2e2', color: msg.includes('✅') ? '#166534' : '#991b1b', borderRadius: '0.5rem', fontWeight: 600 }}>{msg}</div>}
+      
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', gridColumn: 'span 2' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Título do Produto *</label>
+          <input name="title" required placeholder="Ex: Consola PlayStation 5" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Preço Atual (€) *</label>
+          <input name="priceCurrent" type="number" step="0.01" required placeholder="399.99" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Preço Anterior (€) (Opcional)</label>
+          <input name="priceOriginal" type="number" step="0.01" placeholder="499.99" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', gridColumn: 'span 2' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Link de Afiliado *</label>
+          <input name="affiliateUrl" type="url" required placeholder="https://www.amazon.es/dp/B0CL5KNB9M?tag=radaroferta0c-21" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>URL da Imagem * (Clica c/ direito na imagem da Amazon e copia)</label>
+          <input name="imageUrl" type="url" required placeholder="https://m.media-amazon.com/images/I/51FjXk0L+rL._AC_SL1500_.jpg" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Cupão de Desconto (Opcional)</label>
+          <input name="couponCode" placeholder="Ex: AMAZON20" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', gridColumn: 'span 2' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Categorias</label>
+          <div style={{ display: 'flex', gap: '1.5rem', background: 'var(--card)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}><input type="checkbox" name="cat_gaming" /> 🎮 Gaming</label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}><input type="checkbox" name="cat_casa" /> 🏠 Casa</label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}><input type="checkbox" name="cat_suple" /> 💪 Suplementação</label>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" disabled={loading} style={{ padding: '1rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '0.5rem', fontWeight: 800, fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '1rem', transition: 'opacity 0.2s' }}>
+        {loading ? 'A Gravar...' : '💾 Gravar Oferta e Publicar no Telegram'}
+      </button>
+    </form>
   )
 }
