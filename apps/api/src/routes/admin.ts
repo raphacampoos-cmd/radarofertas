@@ -4,6 +4,8 @@ import { offers, offerCategories, priceHistory, subscribers } from '@radaroferta
 import { eq, desc, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { calculateDealScore } from '@radarofertas/deal-engine'
+import { sendTelegramAlert } from '../lib/telegram.js'
+import { sendWhatsAppMessage } from '../lib/whatsapp.js'
 
 export const adminRouter = new Hono()
 
@@ -104,19 +106,19 @@ adminRouter.post('/offers', async (c) => {
     })
 
     // Enviar alerta automático para o Canal de Telegram e WhatsApp
-    import { sendTelegramAlert } from '../lib/telegram.js'
-    import { sendWhatsAppMessage } from '../lib/whatsapp.js'
+    const priceOriginalNum = Number(newOffer.priceOriginal) || 0;
+    const priceCurrentNum = Number(newOffer.priceCurrent) || 0;
     
-    const wppMsg = `🔥 *${newOffer.title}*\n\n💰 Preço: €${newOffer.priceCurrent}${newOffer.priceOriginal > newOffer.priceCurrent ? ` (antes €${newOffer.priceOriginal})` : ''}\n${newOffer.couponCode ? `🏷️ Cupão: ${newOffer.couponCode}\n` : ''}\n👉 Compra aqui: ${newOffer.affiliateUrl}`;
+    const wppMsg = `🔥 *${newOffer.title}*\n\n💰 Preço: €${newOffer.priceCurrent}${priceOriginalNum > priceCurrentNum ? ` (antes €${newOffer.priceOriginal})` : ''}\n${newOffer.couponCode ? `🏷️ Cupão: ${newOffer.couponCode}\n` : ''}\n👉 Compra aqui: ${newOffer.affiliateUrl}`;
 
     // Disparar o Telegram sem bloquear a resposta HTTP
     sendTelegramAlert({
       title: newOffer.title,
-      priceCurrent: newOffer.priceCurrent,
-      priceOriginal: newOffer.priceOriginal,
+      priceCurrent: priceCurrentNum,
+      priceOriginal: priceOriginalNum,
       affiliateUrl: newOffer.affiliateUrl,
-      imageUrl: newOffer.imageUrl,
-      couponCode: newOffer.couponCode
+      imageUrl: newOffer.imageUrl || undefined,
+      couponCode: newOffer.couponCode || undefined
     }).catch(console.error)
     
     // Disparar o WhatsApp se existir número configurado (Ex: Grupo ou Contacto)

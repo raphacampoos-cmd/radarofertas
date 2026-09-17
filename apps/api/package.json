@@ -11,6 +11,7 @@
     "db:seed": "cd ../../packages/db && pnpm db:seed"
   },
   "dependencies": {
+    "@hapi/boom": "^10.0.1",
     "@hono/node-server": "^1.13.0",
     "@radarofertas/db": "workspace:*",
     "@radarofertas/deal-engine": "workspace:*",

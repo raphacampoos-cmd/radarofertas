@@ -45,8 +45,8 @@ app.route('/api/clicks', clicksRouter)
 app.route('/api/admin', adminRouter)
 
 // ── Newsletter ────────────────────────────────────────────────
-import { db } from '@radarofertas/db/src/client.js'
-import { subscribers } from '@radarofertas/db/src/schema/index.js'
+import { db } from '@radarofertas/db/client'
+import { subscribers } from '@radarofertas/db/schema'
 app.post('/api/newsletter', async (c) => {
   try {
     const { email } = await c.req.json()

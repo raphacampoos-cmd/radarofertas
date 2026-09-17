@@ -58,17 +58,17 @@ export async function runPriceBot() {
     for (const offer of allOffers) {
       if (!offer.affiliateUrl || !offer.affiliateUrl.includes('amazon')) continue;
 
-      const oldPrice = parseFloat(offer.priceCurrent);
+      const oldPrice = parseFloat(offer.priceCurrent || '0');
       const newPrice = await checkPrice(offer);
 
       if (newPrice && newPrice > 0 && newPrice < oldPrice) {
         console.log(`📉 Bot detetou queda! ${offer.title.slice(0,30)}: ${oldPrice}€ -> ${newPrice}€`);
         
         // 1. Atualizar preço atual e preço mínimo na tabela de ofertas
-        const isMin = newPrice < parseFloat(offer.priceMinimum);
+        const isMin = newPrice < parseFloat(offer.priceMinimum || '0');
         await db.update(offers).set({ 
           priceCurrent: newPrice.toFixed(2),
-          priceMinimum: isMin ? newPrice.toFixed(2) : offer.priceMinimum,
+          priceMinimum: isMin ? newPrice.toFixed(2) : (offer.priceMinimum || newPrice.toFixed(2)),
           isMinHistoric: isMin,
           updatedAt: new Date()
         }).where(eq(offers.id, offer.id));
