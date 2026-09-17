@@ -339,6 +339,8 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
 function WhatsAppPanel() {
   const [waData, setWaData] = useState<{ status: string, qr: string | null }>({ status: 'disconnected', qr: null })
   const [loading, setLoading] = useState(false)
+  const [groups, setGroups] = useState<{id: string, subject: string}[]>([])
+  const [targetId, setTargetId] = useState<string>('')
 
   // Poll status every 3 seconds
   useEffect(() => {
@@ -367,6 +369,16 @@ function WhatsAppPanel() {
       checkStatus()
     } catch {}
     setLoading(false)
+  }
+
+  async function loadGroups() {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/whatsapp/groups`, {
+        headers: { 'X-Admin-Key': ADMIN_KEY }
+      })
+      const json = await res.json()
+      if (json.data) setGroups(json.data)
+    } catch {}
   }
 
   return (
@@ -401,8 +413,27 @@ function WhatsAppPanel() {
         )}
 
         {waData.status === 'connected' && (
-          <div style={{ background: '#dcfce7', color: '#166534', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', fontWeight: 600, width: '100%' }}>
-            🎉 O robô está ligado com sucesso à tua conta do WhatsApp! Todas as ofertas criadas a partir de agora vão ser enviadas para lá! (Lembrate de adicionar o ID do Grupo nas variáveis de ambiente do Railway como WHATSAPP_GROUP_ID).
+          <div style={{ background: '#dcfce7', color: '#166534', padding: '1.5rem', borderRadius: '0.5rem', textAlign: 'left', fontWeight: 600, width: '100%' }}>
+            <p>🎉 O robô está ligado com sucesso à tua conta do WhatsApp!</p>
+            <hr style={{ margin: '1rem 0', borderColor: '#bbf7d0' }} />
+            <p style={{ marginBottom: '1rem' }}>Para que as ofertas vão para o grupo certo, precisamos de saber o ID do teu grupo. Coloca o teu telemóvel com o bot dentro do grupo e clica abaixo:</p>
+            
+            <button onClick={loadGroups} style={{ padding: '0.5rem 1rem', background: '#166534', color: '#fff', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', marginBottom: '1rem' }}>
+              Listar os Meus Grupos de WhatsApp
+            </button>
+
+            {groups.length > 0 && (
+              <ul style={{ background: '#fff', padding: '1rem', borderRadius: '0.5rem', listStyle: 'none' }}>
+                {groups.map(g => (
+                  <li key={g.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{g.subject}</span>
+                    <code style={{ fontSize: '0.8rem', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '0.2rem' }}>{g.id}</code>
+                  </li>
+                ))}
+              </ul>
+            )}
+            
+            <p style={{ marginTop: '1rem', fontSize: '0.85rem' }}>Copia o código do grupo (termina em @g.us) e adiciona-o nas variáveis de ambiente do Railway com o nome <strong>WHATSAPP_GROUP_ID</strong>. (Se não tiveres acesso ao Railway agora, manda-me o código aqui pelo chat que eu adiciono!)</p>
           </div>
         )}
       </div>

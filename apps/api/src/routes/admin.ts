@@ -173,7 +173,7 @@ adminRouter.get('/subscribers', async (c) => {
 })
 
 // ── WhatsApp ────────────────────────────────────────────────
-import { waStatus, waQrCode, initWhatsApp } from '../lib/whatsapp.js'
+import { waStatus, waQrCode, initWhatsApp, waSocket } from '../lib/whatsapp.js'
 
 adminRouter.get('/whatsapp/status', async (c) => {
   return c.json({ status: waStatus, qr: waQrCode })
@@ -184,5 +184,18 @@ adminRouter.post('/whatsapp/connect', async (c) => {
     initWhatsApp().catch(console.error)
   }
   return c.json({ status: 'connecting' })
+})
+
+adminRouter.get('/whatsapp/groups', async (c) => {
+  if (waStatus !== 'connected' || !waSocket) {
+    return c.json({ error: 'WhatsApp não está conectado' }, 400)
+  }
+  try {
+    const groups = await waSocket.groupFetchAllParticipating()
+    const list = Object.values(groups).map(g => ({ id: g.id, subject: g.subject }))
+    return c.json({ data: list })
+  } catch (err) {
+    return c.json({ error: 'Erro ao obter grupos' }, 500)
+  }
 })
 
