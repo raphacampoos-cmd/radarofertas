@@ -12,17 +12,21 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
-    "hono": "^4.6.0",
     "@radarofertas/db": "workspace:*",
     "@radarofertas/deal-engine": "workspace:*",
-    "drizzle-orm": "^0.36.0",
-    "ioredis": "^5.4.1",
-    "zod": "^3.23.8",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
     "crypto": "*",
-    "tsx": "^4.19.0"
+    "drizzle-orm": "^0.36.0",
+    "hono": "^4.6.0",
+    "ioredis": "^5.4.1",
+    "pino": "^10.3.1",
+    "qrcode": "^1.5.4",
+    "tsx": "^4.19.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "@types/qrcode": "^1.5.6",
+    "typescript": "^5.7.0"
   }
 }

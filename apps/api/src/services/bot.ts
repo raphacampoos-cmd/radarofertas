@@ -81,7 +81,8 @@ export async function runPriceBot() {
           source: 'auto'
         });
 
-        // 3. Disparar notificação para o Telegram
+        // 3. Disparar notificações
+        // Telegram
         sendTelegramAlert({
           title: `📉 BAIXOU O PREÇO! ${offer.title}`,
           priceCurrent: newPrice.toFixed(2),
@@ -90,6 +91,13 @@ export async function runPriceBot() {
           imageUrl: offer.imageUrl || undefined,
           couponCode: offer.couponCode || undefined
         }).catch(console.error);
+        
+        // WhatsApp
+        const { sendWhatsAppMessage } = await import('../lib/whatsapp.js');
+        if (process.env.WHATSAPP_GROUP_ID) {
+           const wppMsg = `📉 *BAIXOU O PREÇO!*\n\n🔥 *${offer.title}*\n\n💰 Agora: €${newPrice.toFixed(2)} (antes €${oldPrice.toFixed(2)})\n👉 Compra aqui: ${offer.affiliateUrl}`;
+           sendWhatsAppMessage(process.env.WHATSAPP_GROUP_ID, wppMsg, offer.imageUrl || undefined).catch(console.error);
+        }
 
         updatedCount++;
       } else if (newPrice && newPrice > oldPrice) {

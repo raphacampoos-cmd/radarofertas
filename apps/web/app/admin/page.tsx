@@ -6,7 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 const ADMIN_KEY = 'radar_admin_secret_change_in_production'
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<'overview' | 'ofertas' | 'criar' | 'subscritores'>('overview')
+  const [tab, setTab] = useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp'>('overview')
   const [stats, setStats] = useState<any>(null)
   const [offers, setOffers] = useState<any[]>([])
   const [subscribers, setSubscribers] = useState<any[]>([])
@@ -77,6 +77,7 @@ export default function AdminDashboard() {
             <TabButton active={tab === 'ofertas'} onClick={() => setTab('ofertas')} icon="🛍️" label="Gerir Ofertas" />
             <TabButton active={tab === 'criar'} onClick={() => setTab('criar')} icon="➕" label="Nova Oferta" />
             <TabButton active={tab === 'subscritores'} onClick={() => setTab('subscritores')} icon="📨" label="Subscritores" />
+            <TabButton active={tab === 'whatsapp'} onClick={() => setTab('whatsapp')} icon="📱" label="WhatsApp Bot" />
           </nav>
         </div>
       </aside>
@@ -179,6 +180,14 @@ export default function AdminDashboard() {
            <div style={{ maxWidth: '800px' }}>
              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Adicionar Oferta Manualmente</h2>
              <CreateOfferForm onSuccess={() => { setTab('ofertas'); loadOffers(); }} />
+           </div>
+        )}
+
+        {/* WHATSAPP TAB */}
+        {tab === 'whatsapp' && (
+           <div style={{ maxWidth: '800px' }}>
+             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Ligar WhatsApp Bot (Servidor Railway)</h2>
+             <WhatsAppPanel />
            </div>
         )}
 
@@ -324,5 +333,79 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
         {loading ? 'A Gravar...' : '💾 Gravar Oferta e Publicar no Telegram'}
       </button>
     </form>
+  )
+}
+
+function WhatsAppPanel() {
+  const [waData, setWaData] = useState<{ status: string, qr: string | null }>({ status: 'disconnected', qr: null })
+  const [loading, setLoading] = useState(false)
+
+  // Poll status every 3 seconds
+  useEffect(() => {
+    let interval = setInterval(checkStatus, 3000)
+    checkStatus()
+    return () => clearInterval(interval)
+  }, [])
+
+  async function checkStatus() {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/whatsapp/status`, {
+        headers: { 'X-Admin-Key': ADMIN_KEY }
+      })
+      const data = await res.json()
+      setWaData(data)
+    } catch {}
+  }
+
+  async function startConnection() {
+    setLoading(true)
+    try {
+      await fetch(`${API_URL}/api/admin/whatsapp/connect`, {
+        method: 'POST',
+        headers: { 'X-Admin-Key': ADMIN_KEY }
+      })
+      checkStatus()
+    } catch {}
+    setLoading(false)
+  }
+
+  return (
+    <div style={{ background: 'var(--card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+      <p style={{ color: 'var(--muted-foreground)', marginBottom: '2rem' }}>
+        O teu servidor tem um robô de WhatsApp integrado. Precisas de usar o telemóvel secundário (aquele que é só para o robô), abrir o WhatsApp &gt; Dispositivos Ligados &gt; Ligar Dispositivo, e ler o QR Code abaixo.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }}>
+          Estado: 
+          {waData.status === 'connected' && <span style={{ color: '#16a34a' }}>🟢 Conectado e Pronto</span>}
+          {waData.status === 'qr_ready' && <span style={{ color: '#eab308' }}>🟡 A Aguardar Leitura do QR</span>}
+          {waData.status === 'connecting' && <span style={{ color: '#3b82f6' }}>🔵 A Iniciar Motor WhatsApp...</span>}
+          {waData.status === 'disconnected' && <span style={{ color: '#dc2626' }}>🔴 Desligado</span>}
+        </div>
+
+        {waData.status === 'disconnected' && (
+          <button 
+            onClick={startConnection} 
+            disabled={loading}
+            style={{ padding: '1rem 2rem', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '0.5rem', fontWeight: 800, fontSize: '1rem', cursor: loading ? 'wait' : 'pointer' }}
+          >
+            {loading ? 'A Pedir Código...' : 'GERAR QR CODE AGORA'}
+          </button>
+        )}
+
+        {waData.status === 'qr_ready' && waData.qr && (
+          <div style={{ padding: '1rem', background: '#fff', borderRadius: '1rem', border: '2px dashed var(--border)' }}>
+            <img src={waData.qr} alt="WhatsApp QR Code" style={{ width: '250px', height: '250px' }} />
+          </div>
+        )}
+
+        {waData.status === 'connected' && (
+          <div style={{ background: '#dcfce7', color: '#166534', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', fontWeight: 600, width: '100%' }}>
+            🎉 O robô está ligado com sucesso à tua conta do WhatsApp! Todas as ofertas criadas a partir de agora vão ser enviadas para lá! (Lembrate de adicionar o ID do Grupo nas variáveis de ambiente do Railway como WHATSAPP_GROUP_ID).
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

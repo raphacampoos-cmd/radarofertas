@@ -103,9 +103,12 @@ adminRouter.post('/offers', async (c) => {
       source: 'manual',
     })
 
-    // Enviar alerta automático para o Canal de Telegram
+    // Enviar alerta automático para o Canal de Telegram e WhatsApp
     import { sendTelegramAlert } from '../lib/telegram.js'
+    import { sendWhatsAppMessage } from '../lib/whatsapp.js'
     
+    const wppMsg = `🔥 *${newOffer.title}*\n\n💰 Preço: €${newOffer.priceCurrent}${newOffer.priceOriginal > newOffer.priceCurrent ? ` (antes €${newOffer.priceOriginal})` : ''}\n${newOffer.couponCode ? `🏷️ Cupão: ${newOffer.couponCode}\n` : ''}\n👉 Compra aqui: ${newOffer.affiliateUrl}`;
+
     // Disparar o Telegram sem bloquear a resposta HTTP
     sendTelegramAlert({
       title: newOffer.title,
@@ -115,6 +118,11 @@ adminRouter.post('/offers', async (c) => {
       imageUrl: newOffer.imageUrl,
       couponCode: newOffer.couponCode
     }).catch(console.error)
+    
+    // Disparar o WhatsApp se existir número configurado (Ex: Grupo ou Contacto)
+    if (process.env.WHATSAPP_GROUP_ID) {
+       sendWhatsAppMessage(process.env.WHATSAPP_GROUP_ID, wppMsg, newOffer.imageUrl || undefined).catch(console.error)
+    }
 
     return c.json({ data: newOffer }, 201)
   } catch (err: any) {
@@ -163,3 +171,18 @@ adminRouter.get('/subscribers', async (c) => {
   const data = await db.select().from(subscribers).orderBy(desc(subscribers.createdAt))
   return c.json({ data })
 })
+
+// ── WhatsApp ────────────────────────────────────────────────
+import { waStatus, waQrCode, initWhatsApp } from '../lib/whatsapp.js'
+
+adminRouter.get('/whatsapp/status', async (c) => {
+  return c.json({ status: waStatus, qr: waQrCode })
+})
+
+adminRouter.post('/whatsapp/connect', async (c) => {
+  if (waStatus === 'disconnected') {
+    initWhatsApp().catch(console.error)
+  }
+  return c.json({ status: 'connecting' })
+})
+
