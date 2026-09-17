@@ -75,8 +75,13 @@ app.onError((err, c) => {
 })
 
 // ── Start server ──────────────────────────────────────────────
+import { startBotScheduler } from './services/bot.js'
+
 const port = parseInt(process.env.PORT || '3001')
 console.log(`🚀 RadarOfertas API a correr em http://localhost:${port}`)
+
+// Iniciar o robô autónomo de preços em background
+startBotScheduler()
 
 serve({ fetch: app.fetch, port })
 

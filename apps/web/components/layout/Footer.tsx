@@ -43,8 +43,8 @@ export function Footer() {
             <h3 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '1rem' }}>Sobre o Site</h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <li><span style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', cursor: 'pointer' }}>Como funciona</span></li>
-              <li><span style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', cursor: 'pointer' }}>Termos de Utilização</span></li>
-              <li><span style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', cursor: 'pointer' }}>Privacidade</span></li>
+              <li><Link href="/termos" style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.875rem' }}>Termos de Utilização</Link></li>
+              <li><Link href="/privacidade" style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.875rem' }}>Política de Privacidade</Link></li>
             </ul>
           </div>
         </div>
