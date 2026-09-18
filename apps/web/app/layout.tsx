@@ -4,7 +4,7 @@ import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Newsletter } from '@/components/ui/Newsletter'
-import { CookieBanner } from '@/components/layout/CookieBanner'
+import { CookieBanner } from '@/components/ui/CookieBanner'
 import { WhatsAppWidget } from '@/components/ui/WhatsAppWidget'
 
 export const metadata: Metadata = {
