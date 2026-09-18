@@ -8,8 +8,10 @@ export async function Header() {
   let stores: Store[] = []
   try {
     const res = await getCategories()
-    categories = res.data.categories
-    stores = res.data.stores
+    if (res?.data) {
+      categories = res.data.categories || []
+      stores = res.data.stores || []
+    }
   } catch {}
 
   return (
