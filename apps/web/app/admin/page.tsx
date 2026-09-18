@@ -662,6 +662,7 @@ function AwinApprovalsPanel() {
     </div>
   )
 }
+
 function BotsPanel() {
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
