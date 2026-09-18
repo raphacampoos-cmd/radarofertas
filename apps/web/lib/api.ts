@@ -43,7 +43,7 @@ export async function getPriceHistory(offerId: number, days = 90): Promise<{ dat
 }
 
 // ── Categorias ────────────────────────────────────────────────
-export async function getCategories(): Promise<{ data: Category[] }> {
+export async function getCategories(): Promise<{ data: { categories: (Category & {count: number})[], stores: (Store & {count: number})[] } }> {
   return apiFetch('/api/categories')
 }
 

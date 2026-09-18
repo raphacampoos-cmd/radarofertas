@@ -46,6 +46,8 @@ export interface Offer {
   clickCount: number
   publishedAt: string
   updatedAt: string
+  upvotes?: number
+  downvotes?: number
   store: Pick<Store, 'id' | 'name' | 'slug' | 'logoUrl'>
   categories?: Category[]
 }

@@ -100,8 +100,12 @@ export async function runPriceBot() {
         }
 
         updatedCount++;
-      } else if (newPrice && newPrice > oldPrice) {
-        console.log(`📈 Subida ignorada: ${offer.title.slice(0,30)} subiu para ${newPrice}€`);
+      } else if (newPrice && newPrice > 0) {
+        // Preço subiu ou manteve-se. Apenas marcamos que foi verificado recentemente.
+        if (newPrice > oldPrice) {
+          console.log(`📈 Subida: ${offer.title.slice(0,30)} subiu para ${newPrice}€`);
+        }
+        await db.update(offers).set({ updatedAt: new Date() }).where(eq(offers.id, offer.id));
       }
 
       // Esperar 4 segundos entre consultas para não irritar a Amazon

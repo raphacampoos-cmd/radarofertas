@@ -77,7 +77,9 @@ export const offers = pgTable('offers', {
   dealScore: decimal('deal_score', { precision: 5, scale: 2 }).default('0'), // 0-100
   isMinHistoric: boolean('is_min_historic').default(false),
   availability: varchar('availability', { length: 20 }).default('InStock'),
-  status: varchar('status', { length: 20 }).default('active'), // active|expired|out_of_stock|deleted
+  status: varchar('status', { length: 20 }).default('active'), // active|expired|out_of_stock|deleted|draft
+  upvotes: integer('upvotes').default(0),
+  downvotes: integer('downvotes').default(0),
   expiresAt: timestamp('expires_at', { withTimezone: true }),
   clickCount: integer('click_count').default(0),
   source: varchar('source', { length: 50 }).default('editorial'), // editorial|community|auto

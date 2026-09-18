@@ -5,23 +5,49 @@ import { eq, desc, and, isNull } from 'drizzle-orm'
 
 export const categoriesRouter = new Hono()
 
-// GET /api/categories — todas as categorias com contagem
+// GET /api/categories — agrupamento de categorias e lojas com ofertas ativas
 categoriesRouter.get('/', async (c) => {
+  // 1. Ir buscar contagem de ofertas ATIVAS por categoria
+  const catCountsRaw = await db.execute(sql`
+    SELECT c.id, COUNT(oc.offer_id) as count
+    FROM categories c
+    LEFT JOIN offer_categories oc ON c.id = oc.category_id
+    LEFT JOIN offers o ON oc.offer_id = o.id AND o.status = 'active'
+    WHERE c.active = true
+    GROUP BY c.id
+  `)
+  const catCounts = Object.fromEntries(catCountsRaw.map((r: any) => [r.id, parseInt(r.count)]))
+
+  // 2. Ir buscar as categorias base
   const allCats = await db.query.categories.findMany({
     where: eq(categories.active, true),
     orderBy: [categories.sortOrder, categories.name],
-    with: {
-      children: {
-        where: eq(categories.active, true),
-        orderBy: [categories.sortOrder],
-      }
-    }
   })
 
-  // Apenas raiz (sem parentId)
-  const roots = allCats.filter(c => c.parentId === null)
+  const roots = allCats.filter(c => c.parentId === null).map(cat => ({
+    ...cat,
+    count: catCounts[cat.id] || 0
+  }))
 
-  return c.json({ data: roots })
+  // 3. Obter as Lojas Dinâmicas (apenas as que têm >= 1 oferta ativa)
+  const storeCountsRaw = await db.execute(sql`
+    SELECT s.id, s.name, s.slug, s.logo_url, COUNT(o.id) as count
+    FROM stores s
+    INNER JOIN offers o ON s.id = o.store_id
+    WHERE o.status = 'active'
+    GROUP BY s.id, s.name, s.slug, s.logo_url
+    HAVING COUNT(o.id) > 0
+    ORDER BY COUNT(o.id) DESC
+  `)
+  const dynamicStores = storeCountsRaw.map((r: any) => ({
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+    logoUrl: r.logo_url,
+    count: parseInt(r.count)
+  }))
+
+  return c.json({ data: { categories: roots, stores: dynamicStores } })
 })
 
 // GET /api/categories/:slug — ofertas de uma categoria

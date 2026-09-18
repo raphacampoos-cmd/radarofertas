@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import type { Offer } from '@/lib/types'
 import { DealScoreBadge } from './DealScoreBadge'
+import { VoteButtons } from './VoteButtons'
 import { formatTimeAgo, formatPrice } from '@/lib/utils'
 
 interface OfferCardProps {
@@ -106,7 +107,7 @@ export function OfferCard({ offer }: OfferCardProps) {
         <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
           <span style={{ color: '#f97316' }}>{offer.store.name}</span>
           <span>·</span>
-          <span style={{ color: '#22c55e' }}>✅ {new Date(offer.updatedAt || offer.publishedAt).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' })} às {new Date(offer.updatedAt || offer.publishedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
+          <span style={{ color: '#22c55e' }}>atualizado em {new Date(offer.updatedAt || offer.publishedAt).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })}, {new Date(offer.updatedAt || offer.publishedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
 
         {/* Título */}
@@ -193,6 +194,12 @@ export function OfferCard({ offer }: OfferCardProps) {
             Ver Oferta →
           </a>
         </div>
+        
+        <VoteButtons 
+          offerId={offer.id} 
+          initialUpvotes={offer.upvotes} 
+          initialDownvotes={offer.downvotes} 
+        />
       </div>
     </article>
   )

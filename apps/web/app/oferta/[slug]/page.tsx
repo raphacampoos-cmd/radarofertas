@@ -8,6 +8,7 @@ import { formatPrice, formatTimeAgo } from '@/lib/utils'
 import { AffiliateButton } from '@/components/offer/AffiliateButton'
 import { CouponBox } from '@/components/offer/CouponBox'
 import { ShareButtonBig } from '@/components/offer/ShareButtonBig'
+import { VoteButtons } from '@/components/offer/VoteButtons'
 import { CommentsSection } from '@/components/offer/CommentsSection'
 
 interface PageProps {
@@ -261,6 +262,13 @@ export default async function OfferPage({ params }: PageProps) {
             title={offer.title} 
             slug={offer.slug} 
             price={formatPrice(priceCurrent)} 
+          />
+
+          {/* Votos Fixe / Terminado */}
+          <VoteButtons 
+            offerId={offer.id} 
+            initialUpvotes={offer.upvotes} 
+            initialDownvotes={offer.downvotes} 
           />
 
           {/* Aviso */}

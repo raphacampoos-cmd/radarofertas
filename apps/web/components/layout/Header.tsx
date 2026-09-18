@@ -1,12 +1,15 @@
 import Link from 'next/link'
 import { getCategories } from '@/lib/api'
-import type { Category } from '@/lib/types'
+import type { Category, Store } from '@/lib/types'
+import { CategoryDropdown } from './CategoryDropdown'
 
 export async function Header() {
   let categories: Category[] = []
+  let stores: Store[] = []
   try {
     const res = await getCategories()
-    categories = res.data
+    categories = res.data.categories
+    stores = res.data.stores
   } catch {}
 
   return (
@@ -60,19 +63,22 @@ export async function Header() {
       </div>
 
       {/* Barra de categorias */}
-      {categories.length > 0 && (
+      {(categories.length > 0 || stores.length > 0) && (
         <nav style={{
           borderTop: '1px solid #2a2a3a',
           background: '#1a1a2a',
-          overflowX: 'auto',
         }}>
           <div className="container">
             <div style={{
               display: 'flex',
-              gap: '0.25rem',
-              padding: '0.5rem 0',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '0.5rem 1rem',
+              overflowX: 'auto',
               whiteSpace: 'nowrap',
             }}>
+              <CategoryDropdown categories={categories as any} stores={stores as any} />
+              
               <Link href="/" style={{
                 padding: '0.35rem 0.75rem',
                 borderRadius: '9999px',
@@ -82,9 +88,11 @@ export async function Header() {
                 background: '#f97316',
                 color: '#fff',
               }}>
-                🏠 Todas
+                🏠 Feed Principal
               </Link>
-              {categories.map((cat: any) => (
+              
+              {/* Mostrar algumas das top categorias como atalhos diretos */}
+              {categories.slice(0, 5).map((cat: any) => (
                 <Link
                   key={cat.id}
                   href={`/categoria/${cat.slug}`}

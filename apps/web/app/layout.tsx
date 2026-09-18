@@ -4,8 +4,8 @@ import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Newsletter } from '@/components/ui/Newsletter'
-import { CookieBanner } from '@/components/ui/CookieBanner'
-import { TelegramPopup } from '@/components/layout/TelegramPopup'
+import { CookieBanner } from '@/components/layout/CookieBanner'
+import { WhatsAppWidget } from '@/components/ui/WhatsAppWidget'
 
 export const metadata: Metadata = {
   title: {
@@ -44,7 +44,8 @@ export default function RootLayout({
         <Footer />
         
         <CookieBanner />
-        <TelegramPopup />
+        <WhatsAppWidget />
+        
         
         <GoogleAnalytics gaId="G-ZD0R2S1021" />
       </body>

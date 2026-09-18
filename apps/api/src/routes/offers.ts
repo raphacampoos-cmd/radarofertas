@@ -57,6 +57,9 @@ offersRouter.get('/', async (c) => {
     expiresAt: offers.expiresAt,
     clickCount: offers.clickCount,
     publishedAt: offers.publishedAt,
+    updatedAt: offers.updatedAt,
+    upvotes: offers.upvotes,
+    downvotes: offers.downvotes,
     store: {
       id: stores.id,
       name: stores.name,
@@ -100,6 +103,9 @@ offersRouter.get('/', async (c) => {
       expiresAt: offers.expiresAt,
       clickCount: offers.clickCount,
       publishedAt: offers.publishedAt,
+      updatedAt: offers.updatedAt,
+      upvotes: offers.upvotes,
+      downvotes: offers.downvotes,
       store: {
         id: stores.id,
         name: stores.name,
@@ -259,4 +265,53 @@ offersRouter.post('/:id/comments', async (c) => {
   }).returning()
 
   return c.json({ success: true, message: 'Comentário enviado e aguarda moderação.' })
+})
+
+// ── Sistema de Votos ("Fixe" / "Terminado") ────────────────
+// PUT /api/offers/:id/vote
+offersRouter.put('/:id/vote', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  if (isNaN(id)) return c.json({ error: 'ID inválido' }, 400)
+
+  const body = await c.req.json().catch(() => ({}))
+  const { type } = body // 'up' (Fixe) ou 'down' (Terminado)
+
+  if (type !== 'up' && type !== 'down') {
+    return c.json({ error: 'Tipo de voto inválido' }, 400)
+  }
+
+  const offer = await db.query.offers.findFirst({
+    where: eq(offers.id, id)
+  })
+
+  if (!offer) {
+    return c.json({ error: 'Oferta não encontrada' }, 404)
+  }
+
+  // Atualizar a contagem de votos
+  const newUpvotes = type === 'up' ? (offer.upvotes || 0) + 1 : (offer.upvotes || 0)
+  const newDownvotes = type === 'down' ? (offer.downvotes || 0) + 1 : (offer.downvotes || 0)
+
+  // Avaliar a condição automática de "Terminado" (downvotes >= 5 E downvotes > upvotes * 2)
+  let newStatus = offer.status
+  if (newStatus === 'active' && newDownvotes >= 5 && newDownvotes > newUpvotes * 2) {
+    newStatus = 'draft'
+  }
+
+  await db.update(offers)
+    .set({
+      upvotes: newUpvotes,
+      downvotes: newDownvotes,
+      status: newStatus,
+    })
+    .where(eq(offers.id, id))
+
+  return c.json({
+    success: true,
+    data: {
+      upvotes: newUpvotes,
+      downvotes: newDownvotes,
+      status: newStatus
+    }
+  })
 })

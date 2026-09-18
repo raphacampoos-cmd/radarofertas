@@ -104,6 +104,10 @@ cron.schedule('0 3 * * *', () => {
 // Iniciar o robô autónomo de preços em background
 startBotScheduler()
 
+// Iniciar Agente 1: Sniper de Tendências do Telegram
+import { startTelegramSniper } from './services/telegram-sniper.js'
+startTelegramSniper().catch(console.error)
+
 serve({ fetch: app.fetch, port })
 
 export default app
