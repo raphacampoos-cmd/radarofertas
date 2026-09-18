@@ -247,6 +247,19 @@ function StatCard({ title, value, icon }: { title: string, value: string | numbe
 function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
+  const [affiliateUrl, setAffiliateUrl] = useState('')
+  const [showAwinHelper, setShowAwinHelper] = useState(false)
+  const [awinUrl, setAwinUrl] = useState('')
+  const [awinMid, setAwinMid] = useState('12149') // PC Componentes default
+  
+  const AWIN_PUBLISHER_ID = '3099259' // O ID real do Publisher Awin
+
+  function generateAwinLink() {
+    if (!awinUrl) return
+    const deepLink = `https://www.awin1.com/cread.php?awinmid=${awinMid}&awinaffid=${AWIN_PUBLISHER_ID}&ued=${encodeURIComponent(awinUrl)}`
+    setAffiliateUrl(deepLink)
+    setShowAwinHelper(false)
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -282,6 +295,7 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
       if (res.ok) {
         setMsg('✅ Oferta criada com sucesso!')
         ;(e.target as HTMLFormElement).reset()
+        setAffiliateUrl('')
         setTimeout(() => { setMsg(''); onSuccess(); }, 1500)
       } else {
         const error = await res.json()
@@ -314,8 +328,46 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', gridColumn: 'span 2' }}>
-          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Link de Afiliado *</label>
-          <input name="affiliateUrl" type="url" required placeholder="https://www.amazon.es/dp/B0CL5KNB9M?tag=radaroferta0c-21" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Link de Afiliado (URL Final) *</label>
+            <button type="button" onClick={() => setShowAwinHelper(!showAwinHelper)} style={{ background: 'none', border: 'none', color: '#f97316', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>
+              ✨ Gerar Deep Link Awin
+            </button>
+          </div>
+          
+          {showAwinHelper && (
+            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '0.5rem', border: '1px dashed #cbd5e1', display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted-foreground)' }}>Loja / Advertiser (ID)</label>
+                  <select value={awinMid} onChange={(e) => setAwinMid(e.target.value)} style={{ width: '100%', marginTop: '0.25rem', padding: '0.5rem', borderRadius: '0.35rem', border: '1px solid var(--border)' }}>
+                    <option value="12149">PC Componentes ES (12149)</option>
+                    <option value="20084">AliExpress Global (20084)</option>
+                    <option value="18491">Worten PT (18491)</option>
+                    <option value="10521">El Corte Inglés (10521)</option>
+                    <option value="15003">FNAC PT (15003)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted-foreground)' }}>URL Original do Produto</label>
+                  <input type="url" value={awinUrl} onChange={(e) => setAwinUrl(e.target.value)} placeholder="https://www.worten.pt/..." style={{ width: '100%', marginTop: '0.25rem', padding: '0.5rem', borderRadius: '0.35rem', border: '1px solid var(--border)' }} />
+                </div>
+              </div>
+              <button type="button" onClick={generateAwinLink} style={{ background: '#0f172a', color: '#fff', padding: '0.5rem', borderRadius: '0.35rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+                Converter & Colar 🚀
+              </button>
+            </div>
+          )}
+
+          <input 
+            name="affiliateUrl" 
+            type="url" 
+            required 
+            value={affiliateUrl || undefined}
+            onChange={(e) => setAffiliateUrl(e.target.value)}
+            placeholder="https://www.amazon.es/dp/B0CL5KNB9M?tag=radaroferta0c-21" 
+            style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} 
+          />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
