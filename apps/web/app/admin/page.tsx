@@ -103,7 +103,7 @@ export default function AdminDashboard() {
         )}
 
         {/* SUBSCRIBERS TAB */}
-        {tab ===useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>&& (
+        {tab === 'subscritores' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Lista de Newsletter</h2>
