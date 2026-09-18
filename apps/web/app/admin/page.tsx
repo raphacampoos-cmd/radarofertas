@@ -6,7 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 const ADMIN_KEY = 'radar_admin_secret_change_in_production'
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp'>('overview')
+  const [tab, setTab] = useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>|useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>|useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>|useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>|useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>('overview')
   const [stats, setStats] = useState<any>(null)
   const [offers, setOffers] = useState<any[]>([])
   const [subscribers, setSubscribers] = useState<any[]>([])
@@ -78,6 +78,7 @@ export default function AdminDashboard() {
             <TabButton active={tab === 'criar'} onClick={() => setTab('criar')} icon="âž•" label="Nova Oferta" />
             <TabButton active={tab === 'subscritores'} onClick={() => setTab('subscritores')} icon="ðŸ“¨" label="Subscritores" />
             <TabButton active={tab === 'whatsapp'} onClick={() => setTab('whatsapp')} icon="ðŸ“±" label="WhatsApp Bot" />
+            <TabButton active={tab === 'robos'} onClick={() => setTab('robos')} icon="ðŸ¤–" label="RobÃ´s & AutomaÃ§Ãµes" />
           </nav>
         </div>
       </aside>
@@ -101,7 +102,7 @@ export default function AdminDashboard() {
         )}
 
         {/* SUBSCRIBERS TAB */}
-        {tab === 'subscritores' && (
+        {tab ===useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>&& (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Lista de Newsletter</h2>
@@ -141,7 +142,7 @@ export default function AdminDashboard() {
         )}
 
         {/* OFERTAS TAB */}
-        {tab === 'ofertas' && (
+        {tab ===useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>&& (
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Gerir Ofertas Atuais</h2>
             {loading ? <p>A carregar...</p> : (
@@ -176,7 +177,7 @@ export default function AdminDashboard() {
         )}
 
         {/* CRIAR TAB */}
-        {tab === 'criar' && (
+        {tab ===useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>&& (
            <div style={{ maxWidth: '800px' }}>
              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Adicionar Oferta Manualmente</h2>
              <CreateOfferForm onSuccess={() => { setTab('ofertas'); loadOffers(); }} />
@@ -186,8 +187,16 @@ export default function AdminDashboard() {
         {/* WHATSAPP TAB */}
         {tab === 'whatsapp' && (
            <div style={{ maxWidth: '800px' }}>
-             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Ligar WhatsApp Bot (Servidor Railway)</h2>
+             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>WhatsApp Bot</h2>
              <WhatsAppPanel />
+           </div>
+        )}
+
+        {/* ROBOS TAB */}
+        {tab === 'robos' && (
+           <div style={{ maxWidth: '800px' }}>
+             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>ðŸ¤– Painel de Controlo dos RobÃ´s</h2>
+             <BotsPanel />
            </div>
         )}
 
@@ -437,6 +446,87 @@ function WhatsAppPanel() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+function BotsPanel() {
+  const [msg, setMsg] = useState('')
+  const [loading, setLoading] = useState(false)
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+
+  async function triggerDiscovery() {
+    setLoading(true)
+    setMsg('A acordar o Robô Descobridor... Vai demorar uns minutos na Amazon.')
+    try {
+      const res = await fetch(\\/api/admin/trigger-discovery\, {
+        method: 'POST',
+        headers: { 'X-Admin-Key': 'radar_admin_secret_change_in_production' }
+      })
+      const data = await res.json()
+      setMsg(data.message || 'Comando enviado!')
+    } catch {
+      setMsg('Erro ao contactar a API.')
+    }
+    setLoading(false)
+  }
+
+  async function triggerNewsletter() {
+    setLoading(true)
+    setMsg('A compilar Newsletter de teste...')
+    try {
+      const res = await fetch(\\/api/admin/trigger-newsletter\, {
+        method: 'POST',
+        headers: { 'X-Admin-Key': 'radar_admin_secret_change_in_production' }
+      })
+      const data = await res.json()
+      setMsg(data.success ? 'Email enviado com sucesso (verifica a tua caixa de correio!)' : (data.error || 'Erro ao enviar.'))
+    } catch {
+      setMsg('Erro ao contactar a API.')
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '2rem' }}>
+      <p style={{ color: 'var(--muted-foreground)', marginBottom: '2rem' }}>
+        Força a execução de tarefas que normalmente correm de forma agendada no servidor (Railway).
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', background: '#f8fafc' }}>
+          <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1.1rem' }}>?????? Robô Descobridor</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', marginBottom: '1.5rem', lineHeight: 1.4 }}>
+            Procura novos produtos "BestSellers" na Amazon (Gaming, Casa, Tech) e insere na base de dados (Corre diariamente às 03:00).
+          </p>
+          <button 
+            onClick={triggerDiscovery} 
+            disabled={loading}
+            style={{ width: '100%', padding: '0.75rem', background: 'var(--foreground)', color: 'var(--background)', border: 'none', borderRadius: 'var(--radius)', fontWeight: 600, cursor: loading ? 'wait' : 'pointer' }}
+          >
+            Executar Patrulha Agora
+          </button>
+        </div>
+
+        <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', background: '#f8fafc' }}>
+          <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1.1rem' }}>?? Newsletter Semanal</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', marginBottom: '1.5rem', lineHeight: 1.4 }}>
+            Vai buscar o Top 5 melhores ofertas ativas e envia um Email via Resend.com (Corre à sexta-feira às 10:00).
+          </p>
+          <button 
+            onClick={triggerNewsletter} 
+            disabled={loading}
+            style={{ width: '100%', padding: '0.75rem', background: '#f97316', color: '#fff', border: 'none', borderRadius: 'var(--radius)', fontWeight: 600, cursor: loading ? 'wait' : 'pointer' }}
+          >
+            Enviar Teste Manual
+          </button>
+        </div>
+      </div>
+
+      {msg && (
+        <div style={{ padding: '1rem', background: '#fef2f2', color: '#ef4444', borderRadius: 'var(--radius)', fontWeight: 500, textAlign: 'center' }}>
+          {msg}
+        </div>
+      )}
     </div>
   )
 }
