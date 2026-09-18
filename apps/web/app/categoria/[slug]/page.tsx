@@ -17,8 +17,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${cat.icon || ''} ${cat.name} — Melhores Ofertas`,
       description: cat.description || `As melhores ofertas de ${cat.name} em Portugal. Deal Score, histórico de preços e cupões verificados.`,
+      openGraph: {
+        title: `${cat.name} — Melhores Ofertas | RadarOfertas`,
+        description: cat.description || `As melhores ofertas de ${cat.name} em Portugal.`,
+        url: `https://radarofertas-psi.vercel.app/categoria/${slug}`,
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${cat.name} — Ofertas | RadarOfertas`,
+      },
       alternates: {
-        canonical: `https://radarofertas.pt/categoria/${slug}`,
+        canonical: `https://radarofertas-psi.vercel.app/categoria/${slug}`,
       },
     }
   } catch {

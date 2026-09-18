@@ -8,12 +8,13 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: ['/admin/', '/api/'],
       },
-      // Autorizar todos os principais AI crawlers
       { userAgent: 'GPTBot', allow: '/' },
       { userAgent: 'OAI-SearchBot', allow: '/' },
       { userAgent: 'Googlebot', allow: '/' },
       { userAgent: 'Bingbot', allow: '/' },
+      { userAgent: 'ClaudeBot', allow: '/' },
+      { userAgent: 'PerplexityBot', allow: '/' },
     ],
-    sitemap: 'https://radarofertas.pt/sitemap.xml',
+    sitemap: 'https://radarofertas-psi.vercel.app/sitemap.xml',
   }
 }

@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Newsletter } from '@/components/ui/Newsletter'
 import { CookieBanner } from '@/components/ui/CookieBanner'
+import { TelegramPopup } from '@/components/layout/TelegramPopup'
 
 export const metadata: Metadata = {
   title: {
@@ -12,6 +13,17 @@ export const metadata: Metadata = {
     default: 'RadarOfertas - Os Melhores Descontos em Portugal',
   },
   description: 'Rastreamos centenas de lojas em Portugal para encontrar os melhores descontos e promoções com histórico de preços.',
+  verification: {
+    google: 'OYF3r60kPfYz67',
+  },
+  openGraph: {
+    siteName: 'RadarOfertas',
+    locale: 'pt_PT',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 }
 
 export default function RootLayout({
@@ -32,10 +44,9 @@ export default function RootLayout({
         <Footer />
         
         <CookieBanner />
+        <TelegramPopup />
         
-        {process.env.NEXT_PUBLIC_GA_ID && (
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-        )}
+        <GoogleAnalytics gaId="G-ZD0R2S1021" />
       </body>
     </html>
   )

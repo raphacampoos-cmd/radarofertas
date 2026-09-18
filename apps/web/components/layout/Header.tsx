@@ -2,21 +2,17 @@ import Link from 'next/link'
 import { getCategories } from '@/lib/api'
 import type { Category } from '@/lib/types'
 
-import { Logo } from '../ui/Logo'
-
 export async function Header() {
   let categories: Category[] = []
   try {
     const res = await getCategories()
     categories = res.data
-  } catch {
-    // se a API não está online, mostra header vazio
-  }
+  } catch {}
 
   return (
     <header style={{
-      background: 'var(--card)',
-      borderBottom: '1px solid var(--border)',
+      background: 'linear-gradient(180deg, #161622 0%, #0d0d14 100%)',
+      borderBottom: '1px solid #2a2a3a',
       position: 'sticky',
       top: 0,
       zIndex: 50,
@@ -24,9 +20,10 @@ export async function Header() {
       {/* Barra principal */}
       <div className="container" style={{ padding: '0.75rem 1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          {/* Logo */}
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }} aria-label="Página Inicial">
-            <Logo width={140} height={35} />
+          {/* Logo text */}
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }} aria-label="Página Inicial">
+            <span style={{ fontSize: '1.5rem' }}>🎯</span>
+            <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f97316', letterSpacing: '-0.02em' }}>RADAR<span style={{ color: '#fff' }}>OFERTAS</span></span>
           </Link>
 
           {/* Pesquisa */}
@@ -39,10 +36,10 @@ export async function Header() {
                 style={{
                   width: '100%',
                   padding: '0.5rem 2.5rem 0.5rem 1rem',
-                  border: '1px solid var(--border)',
+                  border: '1px solid #2a2a3a',
                   borderRadius: '0.5rem',
-                  background: 'var(--muted)',
-                  color: 'var(--foreground)',
+                  background: '#1a1a2a',
+                  color: '#f1f5f9',
                   fontSize: '0.9rem',
                   outline: 'none',
                 }}
@@ -65,8 +62,8 @@ export async function Header() {
       {/* Barra de categorias */}
       {categories.length > 0 && (
         <nav style={{
-          borderTop: '1px solid var(--border)',
-          background: 'var(--muted)',
+          borderTop: '1px solid #2a2a3a',
+          background: '#1a1a2a',
           overflowX: 'auto',
         }}>
           <div className="container">
@@ -82,7 +79,7 @@ export async function Header() {
                 textDecoration: 'none',
                 fontSize: '0.85rem',
                 fontWeight: 600,
-                background: 'var(--primary)',
+                background: '#f97316',
                 color: '#fff',
               }}>
                 🏠 Todas
@@ -97,7 +94,7 @@ export async function Header() {
                     textDecoration: 'none',
                     fontSize: '0.85rem',
                     fontWeight: 500,
-                    color: 'var(--foreground)',
+                    color: '#94a3b8',
                   }}
                 >
                   {cat.icon} {cat.name}

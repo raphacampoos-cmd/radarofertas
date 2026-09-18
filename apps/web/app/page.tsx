@@ -1,11 +1,25 @@
 import type { Metadata } from 'next'
 import type { Offer } from '@/lib/types'
 import { getOffers } from '@/lib/api'
-import { OfferCard } from '@/components/offer/OfferCard'
+import { OfferGrid } from '@/components/offer/OfferGrid'
 
 export const metadata: Metadata = {
   title: 'RadarOfertas — Melhores Ofertas e Descontos em Portugal',
   description: 'Encontra as melhores ofertas em Portugal com histórico de preços real, Deal Score e cupões verificados. Gaming, Casa, Suplementação.',
+  openGraph: {
+    title: 'RadarOfertas — Melhores Ofertas e Descontos em Portugal',
+    description: 'Histórico de preços real · Deal Score algorítmico · Cupões verificados. Gaming · Casa · Suplementação.',
+    url: 'https://radarofertas-psi.vercel.app',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'RadarOfertas — Melhores Ofertas em Portugal',
+    description: 'Histórico de preços · Deal Score · Cupões verificados.',
+  },
+  alternates: {
+    canonical: 'https://radarofertas-psi.vercel.app',
+  },
 }
 
 export const revalidate = 300 // revalidar a cada 5 minutos
@@ -15,7 +29,7 @@ export default async function HomePage() {
   let error = false
 
   try {
-    const res = await getOffers({ limit: 20, sort: 'published_at' })
+    const res = await getOffers({ limit: 100, sort: 'published_at' })
     offers = res.data
   } catch {
     error = true
@@ -24,34 +38,22 @@ export default async function HomePage() {
   return (
     <div className="container" style={{ paddingTop: '1.5rem' }}>
 
-      {/* Hero */}
+      {/* Hero Banner */}
       <section style={{
-        background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
         borderRadius: 'var(--radius)',
-        padding: '2rem',
-        color: '#fff',
         marginBottom: '2rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        flexWrap: 'wrap',
+        overflow: 'hidden',
+        border: '1px solid #2a2a3a',
       }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 900, marginBottom: '0.5rem', lineHeight: 1.2 }}>
-            📡 Radar de Ofertas Portugal
-          </h1>
-          <p style={{ opacity: 0.9, maxWidth: '500px', lineHeight: 1.6 }}>
-            Histórico de preços real · Deal Score algorítmico · Cupões verificados
-            <br />
-            <strong>Gaming · Casa · Suplementação</strong>
-          </p>
-        </div>
-        <div style={{ marginLeft: 'auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem' }}>🎯</div>
-          <div style={{ fontSize: '0.8rem', opacity: 0.85, marginTop: '0.25rem' }}>
-            Esta oferta vale a pena?
-          </div>
-        </div>
+        <img
+          src="/banner-hero.jpg"
+          alt="RadarOfertas PT — Cupões Amazon verificados todos os dias. Tecnologia, Casa, Gaming, Beleza. Até 70% OFF na Amazon.es"
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+          }}
+        />
       </section>
 
       {/* Título da secção */}
@@ -91,15 +93,7 @@ export default async function HomePage() {
           <p>Ainda não há ofertas. Adiciona a primeira via o admin.</p>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: '1rem',
-        }}>
-          {offers.map(offer => (
-            <OfferCard key={offer.id} offer={offer} />
-          ))}
-        </div>
+        <OfferGrid initialOffers={offers} />
       )}
 
       {/* Schema.org WebSite + SearchAction */}

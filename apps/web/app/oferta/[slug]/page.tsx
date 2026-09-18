@@ -8,6 +8,7 @@ import { formatPrice, formatTimeAgo } from '@/lib/utils'
 import { AffiliateButton } from '@/components/offer/AffiliateButton'
 import { CouponBox } from '@/components/offer/CouponBox'
 import { ShareButtonBig } from '@/components/offer/ShareButtonBig'
+import { CommentsSection } from '@/components/offer/CommentsSection'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -31,10 +32,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         images: offer.imageUrl ? [{ url: offer.imageUrl, width: 800, height: 600 }] : [],
         type: 'article',
       },
+      twitter: {
+        card: 'summary_large_image',
+        title: offer.title,
+        description: `${formatPrice(price)} na ${offer.store.name}`,
+        images: offer.imageUrl ? [offer.imageUrl] : [],
+      },
       // INDEXADO! Diferencial vs Cupões Tá Fixe que usa noindex
       robots: { index: true, follow: true },
       alternates: {
-        canonical: `https://radarofertas.pt/oferta/${slug}`,
+        canonical: `https://radarofertas-psi.vercel.app/oferta/${slug}`,
       },
     }
   } catch {
@@ -279,6 +286,8 @@ export default async function OfferPage({ params }: PageProps) {
         </div>
       </div>
 
+      <CommentsSection offerId={offer.id} />
+
       {/* Schema.org JSON-LD */}
       <script
         type="application/ld+json"
@@ -291,12 +300,12 @@ export default async function OfferPage({ params }: PageProps) {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Início', item: 'https://radarofertas.pt' },
+              { '@type': 'ListItem', position: 1, name: 'Início', item: 'https://radarofertas-psi.vercel.app' },
               ...(offer.categories?.[0] ? [{
                 '@type': 'ListItem',
                 position: 2,
                 name: offer.categories[0].name,
-                item: `https://radarofertas.pt/categoria/${offer.categories[0].slug}`,
+                item: `https://radarofertas-psi.vercel.app/categoria/${offer.categories[0].slug}`,
               }] : []),
               { '@type': 'ListItem', position: 3, name: offer.title },
             ],
