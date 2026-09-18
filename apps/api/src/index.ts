@@ -76,9 +76,30 @@ app.onError((err, c) => {
 
 // ── Start server ──────────────────────────────────────────────
 import { startBotScheduler } from './services/bot.js'
+import { initDiscordBot, registerDiscordCommands } from './services/discord-bot.js'
+import cron from 'node-cron'
+import { sendWeeklyNewsletter } from './services/newsletter.js'
+import { runDiscoveryBot } from './services/discovery-bot.js'
 
 const port = parseInt(process.env.PORT || '3001')
 console.log(`🚀 RadarOfertas API a correr em http://localhost:${port}`)
+
+// Ligar o Agente Discord em Background
+initDiscordBot().catch(console.error)
+// Registar comandos de barra /procurar
+registerDiscordCommands().catch(console.error)
+
+// Agendar Newsletter para enviar todas as sextas-feiras às 10:00 da manhã
+cron.schedule('0 10 * * 5', () => {
+  console.log('📧 A enviar a Newsletter Semanal (Sexta-feira 10h)...')
+  sendWeeklyNewsletter().catch(console.error)
+}, { timezone: 'Europe/Lisbon' })
+
+// Agendar o Robô Descobridor (Crawler) para correr todas as noites às 03:00 da manhã
+cron.schedule('0 3 * * *', () => {
+  console.log('🕵️‍♂️ A acordar o Robô Descobridor para caçar novos BestSellers...')
+  runDiscoveryBot().catch(console.error)
+}, { timezone: 'Europe/Lisbon' })
 
 // Iniciar o robô autónomo de preços em background
 startBotScheduler()

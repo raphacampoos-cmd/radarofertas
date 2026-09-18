@@ -1,11 +1,12 @@
 import { Hono } from 'hono'
 import { db } from '@radarofertas/db/client'
-import { offers, offerCategories, priceHistory, subscribers } from '@radarofertas/db/schema'
+import { offers, offerCategories, priceHistory, subscribers, categories } from '@radarofertas/db/schema'
 import { eq, desc, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { calculateDealScore } from '@radarofertas/deal-engine'
 import { sendTelegramAlert } from '../lib/telegram.js'
 import { sendWhatsAppMessage } from '../lib/whatsapp.js'
+import { runDiscoveryBot } from '../services/discovery-bot.js'
 
 export const adminRouter = new Hono()
 
@@ -84,7 +85,7 @@ adminRouter.post('/offers', async (c) => {
       dealScore: scoreResult.score.toFixed(2),
       isMinHistoric: false,
       availability: 'InStock',
-      status: 'active',
+      status: (!data.imageUrl || !data.affiliateUrl) ? 'draft' : 'active',
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       source: data.source,
     }).returning()
@@ -151,6 +152,59 @@ adminRouter.put('/offers/:id', async (c) => {
   return c.json({ success: true })
 })
 
+// GET /api/admin/offers/pending — listar ofertas por aprovar (Awin)
+adminRouter.get('/offers/pending', async (c) => {
+  const pending = await db.select({
+    id: offers.id,
+    title: offers.title,
+    priceCurrent: offers.priceCurrent,
+    priceOriginal: offers.priceOriginal,
+    affiliateUrl: offers.affiliateUrl,
+    imageUrl: offers.imageUrl,
+    createdAt: offers.createdAt
+  }).from(offers).where(eq(offers.status, 'pending')).orderBy(desc(offers.createdAt))
+
+  return c.json({ data: pending })
+})
+
+// PUT /api/admin/offers/:id/approve — aprovar oferta pendente da Awin
+adminRouter.put('/offers/:id/approve', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  if (isNaN(id)) return c.json({ error: 'ID inválido' }, 400)
+
+  // Atualizar para ativo e forçar ser o mais recente
+  await db.update(offers).set({
+    status: 'active',
+    publishedAt: new Date(),
+    updatedAt: new Date(),
+  }).where(eq(offers.id, id))
+
+  // Buscar oferta para disparar os canais
+  const offer = await db.select().from(offers).where(eq(offers.id, id)).limit(1)
+  
+  if (offer.length > 0) {
+    const o = offer[0]
+    
+    // Telegram
+    sendTelegramAlert({
+      title: `🔥 APROVADA: ${o.title}`,
+      priceCurrent: o.priceCurrent?.toString() || '',
+      priceOriginal: o.priceOriginal?.toString() || '',
+      affiliateUrl: o.affiliateUrl,
+      imageUrl: o.imageUrl || undefined,
+      couponCode: o.couponCode || undefined
+    }).catch(console.error)
+
+    // WhatsApp
+    if (process.env.WHATSAPP_GROUP_ID) {
+       const wppMsg = `🚨 *NOVA OFERTA AWIN*\n\n🔥 *${o.title}*\n\n💰 Apenas: €${o.priceCurrent}\n\n👉 Compra aqui: ${o.affiliateUrl}`
+       sendWhatsAppMessage(process.env.WHATSAPP_GROUP_ID, wppMsg, o.imageUrl || undefined).catch(console.error)
+    }
+  }
+
+  return c.json({ success: true })
+})
+
 // GET /api/admin/stats — métricas básicas
 adminRouter.get('/stats', async (c) => {
   const [totalOffers] = await db.select({ count: sql<number>`count(*)` }).from(offers)
@@ -201,3 +255,41 @@ adminRouter.get('/whatsapp/groups', async (c) => {
   }
 })
 
+// ── Bot Promotor (Twitter / Discord) ───────────────────────
+import { runSocialBot } from '../services/social-bot.js'
+
+adminRouter.post('/trigger-bot', async (c) => {
+  try {
+    // Corre o bot em background (não bloqueia a resposta)
+    runSocialBot().catch(console.error)
+    return c.json({ success: true, message: 'Bot ativado! Verifica o Twitter e o Discord em alguns segundos.' })
+  } catch (error) {
+    return c.json({ error: 'Erro ao ativar o bot' }, 500)
+  }
+})
+
+// POST /api/admin/awin/test-agent � injeta uma oferta teste na fila de aprova��o
+adminRouter.post('/awin/test-agent', async (c) => {
+  const [cat] = await db.select().from(categories).limit(1)
+  
+  const inserted = await db.insert(offers).values({
+    title: 'Monitor Gaming AOC 24G2U 144Hz (Descoberta pela Awin!)',
+    slug: 'monitor-gaming-aoc-24g2u-awin-test-' + Date.now(),
+    storeId: 1, 
+    priceCurrent: '149.99',
+    priceOriginal: '199.99',
+    priceMinimum: '149.99',
+    affiliateUrl: 'https://www.awin1.com/cread.php?awinmid=12149&awinaffid=3099259&ued=https%3A%2F%2Fwww.pccomponentes.pt%2Faoc-24g2u',
+    imageUrl: 'https://thumb.pccomponentes.com/w-530-530/articles/23/235303/aoc-24g2u-bk-23-8-led-ips-fullhd-144hz-freesync.jpg',
+    status: 'pending',
+    source: 'awin_api',
+    publishedAt: new Date(),
+    updatedAt: new Date()
+  }).returning()
+
+  if (inserted.length > 0 && cat) {
+    await db.insert(offerCategories).values({ offerId: inserted[0].id, categoryId: cat.id })
+  }
+
+  return c.json({ success: true })
+})

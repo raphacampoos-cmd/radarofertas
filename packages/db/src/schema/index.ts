@@ -207,3 +207,23 @@ export const clicksRelations = relations(clicks, ({ one }) => ({
     references: [offers.id],
   }),
 }))
+
+export const comments = pgTable('comments', {
+  id: serial('id').primaryKey(),
+  offerId: integer('offer_id').notNull().references(() => offers.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  status: varchar('status', { length: 50 }).notNull().default('pending'), // pending, approved, spam
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (t) => [
+  index('comments_offer_idx').on(t.offerId),
+  index('comments_status_idx').on(t.status),
+])
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  offer: one(offers, {
+    fields: [comments.offerId],
+    references: [offers.id],
+  }),
+}))

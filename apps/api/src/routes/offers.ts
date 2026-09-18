@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { db } from '@radarofertas/db/client'
-import { offers, offerCategories, categories, stores, priceHistory } from '@radarofertas/db/schema'
+import { offers, offerCategories, categories, stores, priceHistory, comments } from '@radarofertas/db/schema'
 import { eq, desc, and, sql, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 
@@ -200,10 +200,63 @@ offersRouter.get('/:id/history', async (c) => {
     .where(
       and(
         eq(priceHistory.offerId, id),
-        sql`${priceHistory.recordedAt} >= ${since}`
+        sql`${priceHistory.recordedAt} >= ${since.toISOString()}`
       )
     )
     .orderBy(priceHistory.recordedAt)
 
   return c.json({ data: history })
+})
+
+// ── Comentários de uma oferta ────────────────────────────────
+// GET /api/offers/:id/comments
+offersRouter.get('/:id/comments', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  if (isNaN(id)) return c.json({ error: 'ID inválido' }, 400)
+
+  const data = await db
+    .select({
+      id: comments.id,
+      name: comments.name,
+      content: comments.content,
+      createdAt: comments.createdAt,
+    })
+    .from(comments)
+    .where(
+      and(
+        eq(comments.offerId, id),
+        eq(comments.status, 'approved') // Apenas aprovados
+      )
+    )
+    .orderBy(desc(comments.createdAt))
+
+  return c.json({ data })
+})
+
+// POST /api/offers/:id/comments
+offersRouter.post('/:id/comments', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  if (isNaN(id)) return c.json({ error: 'ID inválido' }, 400)
+
+  const body = await c.req.json()
+  const { name, email, content } = body
+
+  if (!name || !email || !content) {
+    return c.json({ error: 'Nome, email e conteúdo são obrigatórios' }, 400)
+  }
+
+  // Prevenir spam / comentários muito grandes
+  if (content.length > 1000) {
+    return c.json({ error: 'Comentário muito longo' }, 400)
+  }
+
+  const [newComment] = await db.insert(comments).values({
+    offerId: id,
+    name: name.slice(0, 100),
+    email: email.slice(0, 150),
+    content: content.trim(),
+    status: 'pending', // Fica pendente de moderação
+  }).returning()
+
+  return c.json({ success: true, message: 'Comentário enviado e aguarda moderação.' })
 })
