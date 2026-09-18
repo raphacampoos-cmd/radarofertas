@@ -143,7 +143,7 @@ export default function AdminDashboard() {
         )}
 
         {/* OFERTAS TAB */}
-        {tab ===useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>&& (
+        {tab === 'ofertas' && (
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Gerir Ofertas Atuais</h2>
             {loading ? <p>A carregar...</p> : (
@@ -177,9 +177,9 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* CRIAR TAB */}
-        {tab ===useState<'overview' | 'ofertas' | 'criar' | 'subscritores' | 'whatsapp' | 'robos'>&& (
-           <div style={{ maxWidth: '800px' }}>
+        {/* CRIAR OFERTA TAB */}
+        {tab === 'criar' && (
+          <div style={{ maxWidth: '800px' }}>
              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Adicionar Oferta Manualmente</h2>
              <CreateOfferForm onSuccess={() => { setTab('ofertas'); loadOffers(); }} />
            </div>
