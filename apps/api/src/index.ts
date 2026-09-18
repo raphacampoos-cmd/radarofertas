@@ -100,6 +100,12 @@ cron.schedule('0 3 * * *', () => {
   console.log('🕵️‍♂️ A acordar o Robô Descobridor para caçar novos BestSellers...')
   runDiscoveryBot().catch(console.error)
 }, { timezone: 'Europe/Lisbon' })
+// Agendar o Agente 2 (Awin) para correr todas as noites às 04:00 da manhã
+import { runAwinApiBot } from './services/awin-api-bot.js'
+cron.schedule('0 4 * * *', () => {
+  console.log('🌐 A acordar o Agente Awin para ler os feeds oficiais...')
+  runAwinApiBot().catch(console.error)
+}, { timezone: 'Europe/Lisbon' })
 
 // Iniciar o robô autónomo de preços em background
 startBotScheduler()
