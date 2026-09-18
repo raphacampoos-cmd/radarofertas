@@ -265,7 +265,7 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
       storeId: 1, // Por defeito: Amazon
       priceCurrent: parseFloat(fd.get('priceCurrent') as string),
       priceOriginal: fd.get('priceOriginal') ? parseFloat(fd.get('priceOriginal') as string) : undefined,
-      affiliateUrl: fd.get('affiliateUrl'),
+      affiliateUrl: affiliateUrl || fd.get('affiliateUrl'),
       imageUrl: fd.get('imageUrl') || undefined,
       couponCode: fd.get('couponCode') || undefined,
       description: fd.get('description') || '',
@@ -456,7 +456,7 @@ function BotsPanel() {
 
   async function triggerDiscovery() {
     setLoading(true)
-    setMsg('A acordar o Robô Descobridor... Vai demorar uns minutos na Amazon.')
+    setMsg('A acordar o Robï¿½ Descobridor... Vai demorar uns minutos na Amazon.')
     try {
       const res = await fetch(\\/api/admin/trigger-discovery\, {
         method: 'POST',
@@ -489,14 +489,14 @@ function BotsPanel() {
   return (
     <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '2rem' }}>
       <p style={{ color: 'var(--muted-foreground)', marginBottom: '2rem' }}>
-        Força a execução de tarefas que normalmente correm de forma agendada no servidor (Railway).
+        Forï¿½a a execuï¿½ï¿½o de tarefas que normalmente correm de forma agendada no servidor (Railway).
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
         <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', background: '#f8fafc' }}>
-          <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1.1rem' }}>?????? Robô Descobridor</h3>
+          <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1.1rem' }}>?????? Robï¿½ Descobridor</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', marginBottom: '1.5rem', lineHeight: 1.4 }}>
-            Procura novos produtos "BestSellers" na Amazon (Gaming, Casa, Tech) e insere na base de dados (Corre diariamente às 03:00).
+            Procura novos produtos "BestSellers" na Amazon (Gaming, Casa, Tech) e insere na base de dados (Corre diariamente ï¿½s 03:00).
           </p>
           <button 
             onClick={triggerDiscovery} 
@@ -510,7 +510,7 @@ function BotsPanel() {
         <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', background: '#f8fafc' }}>
           <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1.1rem' }}>?? Newsletter Semanal</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', marginBottom: '1.5rem', lineHeight: 1.4 }}>
-            Vai buscar o Top 5 melhores ofertas ativas e envia um Email via Resend.com (Corre à sexta-feira às 10:00).
+            Vai buscar o Top 5 melhores ofertas ativas e envia um Email via Resend.com (Corre ï¿½ sexta-feira ï¿½s 10:00).
           </p>
           <button 
             onClick={triggerNewsletter} 
