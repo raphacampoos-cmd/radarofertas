@@ -134,8 +134,8 @@ function PesquisaInner() {
             flexDirection: 'column',
             gap: '0.85rem',
           }}>
-            {results.map(offer => (
-              <OfferCard key={offer.id} offer={offer} />
+            {results.map((offer, index) => (
+              <OfferCard key={offer.id} offer={offer} eager={index < 4} />
             ))}
           </div>
         </>

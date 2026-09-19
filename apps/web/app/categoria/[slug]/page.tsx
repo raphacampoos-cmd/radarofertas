@@ -101,8 +101,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             gap: '0.85rem',
             marginBottom: '2rem',
           }}>
-            {offers.map(offer => (
-              <OfferCard key={offer.id} offer={offer} />
+            {offers.map((offer, index) => (
+              <OfferCard key={offer.id} offer={offer} eager={index < 4} />
             ))}
           </div>
 
