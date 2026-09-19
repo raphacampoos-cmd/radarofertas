@@ -66,39 +66,27 @@ export function OfferCard({ offer }: OfferCardProps) {
         </div>
       )}
 
-      {/* Imagem com skeleton */}
-      <Link href={`/oferta/${offer.slug}`} style={{ display: 'block', background: '#1a1a2a' }}>
-        <div style={{ position: 'relative', width: '100%', paddingTop: '75%', background: '#1a1a2a' }}>
-          {offer.imageUrl ? (
-            <>
-              {!imgLoaded && (
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(90deg, #1a1a2a 25%, #252535 50%, #1a1a2a 75%)',
-                  backgroundSize: '200% 100%',
-                  animation: 'shimmer 1.5s infinite',
-                }} />
-              )}
-              <img
-                src={offer.imageUrl}
-                alt={`Oferta: ${offer.title}`}
-                style={{
-                  position: 'absolute', inset: 0, width: '100%', height: '100%',
-                  objectFit: 'contain', padding: '0.75rem',
-                  opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.3s ease',
-                }}
-                loading="lazy"
-                onLoad={() => setImgLoaded(true)}
-              />
-            </>
-          ) : (
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '3rem', color: '#64748b',
-            }}>📦</div>
-          )}
-        </div>
+      {/* Imagem */}
+      <Link href={`/oferta/${offer.slug}`} style={{ display: 'block', background: '#1a1a2a', position: 'relative', width: '100%', paddingTop: '75%' }}>
+        {offer.imageUrl ? (
+          <img
+            src={offer.imageUrl}
+            alt={`Oferta: ${offer.title}`}
+            style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'contain', padding: '0.75rem',
+            }}
+            loading="lazy"
+          />
+        ) : (
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '3rem', color: '#cbd5e1'
+          }}>
+            📦
+          </div>
+        )}
       </Link>
 
       {/* Conteúdo */}
