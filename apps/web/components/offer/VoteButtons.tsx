@@ -49,44 +49,42 @@ export function VoteButtons({ offerId, initialUpvotes = 0, initialDownvotes = 0 
     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', width: '100%' }}>
       <button
         onClick={() => handleVote('up')}
-        disabled={hasVoted !== null || isLoading}
+        disabled={isLoading || hasVoted !== null}
         style={{
-          flex: 1,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
           padding: '0.6rem',
-          border: hasVoted === 'up' ? '2px solid #22c55e' : '1px solid var(--border)',
-          borderRadius: '0.5rem',
-          background: hasVoted === 'up' ? '#f0fdf4' : '#fff',
-          color: hasVoted === 'up' ? '#16a34a' : 'var(--foreground)',
-          fontSize: '0.85rem', fontWeight: 600,
-          cursor: hasVoted ? 'default' : 'pointer',
-          transition: 'all 0.2s',
+          background: hasVoted === 'up' ? '#1e3a8a' : '#1e293b',
+          color: hasVoted === 'up' ? '#60a5fa' : '#94a3b8',
+          border: `1px solid ${hasVoted === 'up' ? '#2563eb' : '#334155'}`,
+          borderRadius: 'var(--radius)',
+          fontSize: '0.85rem',
+          fontWeight: 600, cursor: (isLoading || hasVoted !== null) ? 'default' : 'pointer', transition: 'all 0.2s ease',
           opacity: (hasVoted && hasVoted !== 'up') ? 0.6 : 1
         }}
-        title="Oferta Fixe!"
+        onMouseOver={(e) => { if (!hasVoted) e.currentTarget.style.background = '#334155' }}
+        onMouseOut={(e) => { if (!hasVoted) e.currentTarget.style.background = '#1e293b' }}
       >
-        👍 Fixe <span style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '1rem', fontSize: '0.75rem' }}>{upvotes}</span>
+        <span>👍</span> Fixe <span style={{ background: hasVoted === 'up' ? '#3b82f6' : '#334155', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '12px', fontSize: '0.7rem', marginLeft: '0.2rem' }}>{upvotes}</span>
       </button>
 
       <button
         onClick={() => handleVote('down')}
-        disabled={hasVoted !== null || isLoading}
+        disabled={isLoading || hasVoted !== null}
         style={{
-          flex: 1,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
           padding: '0.6rem',
-          border: hasVoted === 'down' ? '2px solid #ef4444' : '1px solid var(--border)',
-          borderRadius: '0.5rem',
-          background: hasVoted === 'down' ? '#fef2f2' : '#fff',
-          color: hasVoted === 'down' ? '#dc2626' : 'var(--foreground)',
-          fontSize: '0.85rem', fontWeight: 600,
-          cursor: hasVoted ? 'default' : 'pointer',
-          transition: 'all 0.2s',
+          background: hasVoted === 'down' ? '#7f1d1d' : '#1e293b',
+          color: hasVoted === 'down' ? '#f87171' : '#94a3b8',
+          border: `1px solid ${hasVoted === 'down' ? '#dc2626' : '#334155'}`,
+          borderRadius: 'var(--radius)',
+          fontSize: '0.85rem',
+          fontWeight: 600, cursor: (isLoading || hasVoted !== null) ? 'default' : 'pointer', transition: 'all 0.2s ease',
           opacity: (hasVoted && hasVoted !== 'down') ? 0.6 : 1
         }}
-        title="Oferta Terminada / Erro de Preço Expirado"
+        onMouseOver={(e) => { if (!hasVoted) e.currentTarget.style.background = '#334155' }}
+        onMouseOut={(e) => { if (!hasVoted) e.currentTarget.style.background = '#1e293b' }}
       >
-        🔕 Terminado <span style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '1rem', fontSize: '0.75rem' }}>{downvotes}</span>
+        <span>🔕</span> Terminado <span style={{ background: hasVoted === 'down' ? '#ef4444' : '#334155', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '12px', fontSize: '0.7rem', marginLeft: '0.2rem' }}>{downvotes}</span>
       </button>
     </div>
   )
