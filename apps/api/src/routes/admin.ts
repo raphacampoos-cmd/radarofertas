@@ -7,6 +7,7 @@ import { calculateDealScore } from '@radarofertas/deal-engine'
 import { sendTelegramAlert } from '../lib/telegram.js'
 import { sendWhatsAppMessage } from '../lib/whatsapp.js'
 import { runDiscoveryBot } from '../services/discovery-bot.js'
+import { sendWeeklyNewsletter } from '../services/newsletter.js'
 
 export const adminRouter = new Hono()
 
@@ -266,6 +267,23 @@ adminRouter.post('/trigger-bot', async (c) => {
   } catch (error) {
     return c.json({ error: 'Erro ao ativar o bot' }, 500)
   }
+})
+
+// POST /api/admin/trigger-discovery — corre o Robô Descobridor (Amazon bestsellers) em background
+adminRouter.post('/trigger-discovery', async (c) => {
+  runDiscoveryBot().catch(console.error)
+  return c.json({ success: true, message: 'Robô Descobridor iniciado em segundo plano. Os novos produtos aparecem daqui a alguns minutos.' })
+})
+
+// POST /api/admin/trigger-newsletter { email } — envia a newsletter SÓ para o e-mail de teste indicado
+adminRouter.post('/trigger-newsletter', async (c) => {
+  const body = await c.req.json().catch(() => ({}))
+  const email = typeof body.email === 'string' ? body.email.trim() : ''
+  if (!email || !email.includes('@')) {
+    return c.json({ success: false, error: 'Indica um e-mail de teste válido.' }, 400)
+  }
+  const result = await sendWeeklyNewsletter(true, email)
+  return c.json(result.success ? { success: true } : { success: false, error: typeof result.error === 'string' ? result.error : 'Erro ao enviar.' }, result.success ? 200 : 500)
 })
 
 // POST /api/admin/awin/test-agent � injeta uma oferta teste na fila de aprova��o

@@ -8,6 +8,9 @@ import { storesRouter } from './routes/stores.js'
 import { searchRouter } from './routes/search.js'
 import { clicksRouter } from './routes/clicks.js'
 import { adminRouter } from './routes/admin.js'
+import { commentsRouter } from './routes/comments.js'
+import { presenceRouter } from './routes/presence.js'
+import { BACKGROUND_JOBS_ENABLED } from './lib/jobs.js'
 
 const app = new Hono()
 
@@ -40,6 +43,8 @@ app.route('/api/categories', categoriesRouter)
 app.route('/api/stores', storesRouter)
 app.route('/api/search', searchRouter)
 app.route('/api/clicks', clicksRouter)
+app.route('/api/comments', commentsRouter)
+app.route('/api/presence', presenceRouter)
 
 // ── Rotas admin (protegidas) ──────────────────────────────────
 app.route('/api/admin', adminRouter)
@@ -80,39 +85,44 @@ import { initDiscordBot, registerDiscordCommands } from './services/discord-bot.
 import cron from 'node-cron'
 import { sendWeeklyNewsletter } from './services/newsletter.js'
 import { runDiscoveryBot } from './services/discovery-bot.js'
+import { runAwinApiBot } from './services/awin-api-bot.js'
+import { startTelegramSniper } from './services/telegram-sniper.js'
 
 const port = parseInt(process.env.PORT || '3001')
 console.log(`🚀 RadarOfertas API a correr em http://localhost:${port}`)
 
-// Ligar o Agente Discord em Background
-initDiscordBot().catch(console.error)
-// Registar comandos de barra /procurar
-registerDiscordCommands().catch(console.error)
+if (BACKGROUND_JOBS_ENABLED) {
+  // Ligar o Agente Discord em Background
+  initDiscordBot().catch(console.error)
+  // Registar comandos de barra /procurar
+  registerDiscordCommands().catch(console.error)
 
-// Agendar Newsletter para enviar todas as sextas-feiras às 10:00 da manhã
-cron.schedule('0 10 * * 5', () => {
-  console.log('📧 A enviar a Newsletter Semanal (Sexta-feira 10h)...')
-  sendWeeklyNewsletter().catch(console.error)
-}, { timezone: 'Europe/Lisbon' })
+  // Agendar Newsletter para enviar todas as sextas-feiras às 10:00 da manhã
+  cron.schedule('0 10 * * 5', () => {
+    console.log('📧 A enviar a Newsletter Semanal (Sexta-feira 10h)...')
+    sendWeeklyNewsletter().catch(console.error)
+  }, { timezone: 'Europe/Lisbon' })
 
-// Agendar o Robô Descobridor (Crawler) para correr todas as noites às 03:00 da manhã
-cron.schedule('0 3 * * *', () => {
-  console.log('🕵️‍♂️ A acordar o Robô Descobridor para caçar novos BestSellers...')
-  runDiscoveryBot().catch(console.error)
-}, { timezone: 'Europe/Lisbon' })
-// Agendar o Agente 2 (Awin) para correr todas as noites às 04:00 da manhã
-import { runAwinApiBot } from './services/awin-api-bot.js'
-cron.schedule('0 4 * * *', () => {
-  console.log('🌐 A acordar o Agente Awin para ler os feeds oficiais...')
-  runAwinApiBot().catch(console.error)
-}, { timezone: 'Europe/Lisbon' })
+  // Agendar o Robô Descobridor (Crawler) para correr todas as noites às 03:00 da manhã
+  cron.schedule('0 3 * * *', () => {
+    console.log('🕵️‍♂️ A acordar o Robô Descobridor para caçar novos BestSellers...')
+    runDiscoveryBot().catch(console.error)
+  }, { timezone: 'Europe/Lisbon' })
+  // Agendar o Agente 2 (Awin) para correr todas as noites às 04:00 da manhã
+  cron.schedule('0 4 * * *', () => {
+    console.log('🌐 A acordar o Agente Awin para ler os feeds oficiais...')
+    runAwinApiBot().catch(console.error)
+  }, { timezone: 'Europe/Lisbon' })
 
-// Iniciar o robô autónomo de preços em background
-startBotScheduler()
+  // Iniciar o robô autónomo de preços em background
+  startBotScheduler()
 
-// Iniciar Agente 1: Sniper de Tendências do Telegram
-import { startTelegramSniper } from './services/telegram-sniper.js'
-startTelegramSniper().catch(console.error)
+  // Iniciar Agente 1: Sniper de Tendências do Telegram
+  startTelegramSniper().catch(console.error)
+
+} else {
+  console.log('⏸️ DISABLE_BACKGROUND_JOBS=true: crons, bots e integrações desativados (só API HTTP).')
+}
 
 serve({ fetch: app.fetch, port })
 

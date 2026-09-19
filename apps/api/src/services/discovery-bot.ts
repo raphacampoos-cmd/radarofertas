@@ -1,28 +1,18 @@
 import { db } from '@radarofertas/db/client'
 import { offers, categories, offerCategories } from '@radarofertas/db/schema'
 import { eq, sql, like } from 'drizzle-orm'
-import { JSDOM } from 'jsdom'
+import { JSDOM, VirtualConsole } from 'jsdom'
+import { extractAmazonPrice } from '../lib/amazon-price.js'
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const AFFILIATE_ID = "radaroferta0c-21"; // O teu código de afiliado
 
 // URLs das categorias que queremos descobrir
 const DISCOVERY_URLS = [
-  { url: 'https://www.amazon.es/gp/bestsellers/electronics/?language=pt_PT', categorySlug: 'smartphones-e-tech' },
+  { url: 'https://www.amazon.es/gp/bestsellers/electronics/?language=pt_PT', categorySlug: 'smartphones-e-acessorios' },
   { url: 'https://www.amazon.es/gp/bestsellers/videogames/?language=pt_PT', categorySlug: 'gaming' },
-  { url: 'https://www.amazon.es/gp/bestsellers/kitchen/?language=pt_PT', categorySlug: 'casa-e-cozinha' }
+  { url: 'https://www.amazon.es/gp/bestsellers/kitchen/?language=pt_PT', categorySlug: 'casa' }
 ];
-
-async function extractPrice(html: string): Promise<number | null> {
-  const priceWholeMatch = html.match(/<span class="a-price-whole">([0-9.,]+)<\/span>/);
-  const priceFractionMatch = html.match(/<span class="a-price-fraction">([0-9]+)<\/span>/);
-  if (priceWholeMatch) {
-    let whole = priceWholeMatch[1].replace(/[^0-9]/g, '');
-    let fraction = priceFractionMatch ? priceFractionMatch[1] : '00';
-    return parseFloat(`${whole}.${fraction}`);
-  }
-  return null;
-}
 
 function generateSlug(title: string): string {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(Math.random() * 10000);
@@ -41,10 +31,12 @@ export async function runDiscoveryBot() {
       if (!res.ok) continue;
 
       const html = await res.text();
-      const dom = new JSDOM(html);
+      const dom = new JSDOM(html, { virtualConsole: new VirtualConsole() });
       const document = dom.window.document;
       
-      const items = Array.from(document.querySelectorAll('.zg-grid-general-faceout, .p13n-sc-uncoverable-faceout')).slice(0, 10) as Element[];
+      // O wrapper (.zg-grid-general-faceout) e o bloco interno (.p13n-sc-uncoverable-faceout) casam
+      // ambos com o seletor: ficar só com o interno evita contar cada produto duas vezes.
+      const items = Array.from(document.querySelectorAll('.p13n-sc-uncoverable-faceout')).slice(0, 10) as Element[];
       
       for (const item of items) {
         const linkEl = item.querySelector('a.a-link-normal') as HTMLAnchorElement | null;
@@ -66,9 +58,9 @@ export async function runDiscoveryBot() {
           continue; // Já conhecemos este produto
         }
 
-        // Tentar extrair o Título (normalmente o texto mais longo no div do produto)
-        const textElements = Array.from(item.querySelectorAll('div, span')).map(e => (e as Element).textContent?.trim() || '');
-        const title = textElements.reduce((longest, current) => current.length > longest.length ? current : longest, '');
+        // O atributo alt da imagem do produto contém o título limpo, sem rating/preço colado.
+        // (a heurística antiga de "maior texto do bloco" pegava título+estrelas+preço concatenados)
+        const title = imgEl?.alt?.trim() || '';
         if (title.length < 15) continue; // Muito curto para ser o título
 
         // Extrair Preço e Imagem
@@ -81,7 +73,7 @@ export async function runDiscoveryBot() {
 
         if (prodRes.ok) {
            const prodHtml = await prodRes.text();
-           const cp = await extractPrice(prodHtml);
+           const cp = extractAmazonPrice(prodHtml);
            if (cp) currentPrice = cp;
            // Tentar prever preço original (se não tiver, pomos +20% para a IA do DealScore calcular)
            originalPrice = currentPrice * 1.2; 

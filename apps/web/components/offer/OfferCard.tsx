@@ -1,11 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import type { Offer } from '@/lib/types'
-import { DealScoreBadge } from './DealScoreBadge'
 import { VoteButtons } from './VoteButtons'
-import { formatTimeAgo, formatPrice } from '@/lib/utils'
+import { TimeAgo } from '../ui/TimeAgo'
+import { formatPrice, truncate } from '@/lib/utils'
 
 interface OfferCardProps {
   offer: Offer
@@ -16,153 +15,160 @@ export function OfferCard({ offer }: OfferCardProps) {
   const priceOriginal = parseFloat(offer.priceOriginal || '0')
   const discountPct = parseFloat(offer.discountPct || '0')
   const dealScore = parseFloat(offer.dealScore || '0')
-  const [imgLoaded, setImgLoaded] = useState(false)
 
   return (
-    <article style={{
-      background: '#161622',
-      border: '1px solid #2a2a3a',
-      borderRadius: '0.75rem',
+    <article className="offer-card" style={{
+      background: 'var(--card)',
+      border: '1px solid var(--border)',
+      borderRadius: 'var(--radius)',
       overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column',
-      transition: 'box-shadow 0.2s, transform 0.2s, border-color 0.2s',
-      position: 'relative',
+      transition: 'box-shadow 0.2s, border-color 0.2s',
     }}
     onMouseOver={(e) => {
-      e.currentTarget.style.boxShadow = '0 4px 25px rgba(249, 115, 22, 0.15)'
-      e.currentTarget.style.transform = 'translateY(-2px)'
-      e.currentTarget.style.borderColor = '#f97316'
+      e.currentTarget.style.boxShadow = '0 4px 25px rgba(249, 115, 22, 0.12)'
+      e.currentTarget.style.borderColor = 'var(--primary)'
     }}
     onMouseOut={(e) => {
       e.currentTarget.style.boxShadow = 'none'
-      e.currentTarget.style.transform = 'translateY(0)'
-      e.currentTarget.style.borderColor = '#2a2a3a'
+      e.currentTarget.style.borderColor = 'var(--border)'
     }}
     >
-      {/* Badges superiores */}
-      <div style={{
-        position: 'absolute', top: '0.5rem', left: '0.5rem',
-        display: 'flex', flexDirection: 'column', gap: '0.25rem', zIndex: 10,
-      }}>
+      {/* Imagem */}
+      <Link
+        href={`/oferta/${offer.slug}`}
+        style={{
+          display: 'block', flexShrink: 0, position: 'relative',
+          width: '160px', background: 'var(--muted)',
+        }}
+      >
         {offer.isMinHistoric && (
           <span style={{
-            background: '#ef4444', color: '#fff', fontSize: '0.7rem',
-            fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '9999px',
-          }}>🔥 MÍNIMO HISTÓRICO</span>
+            position: 'absolute', top: '0.4rem', left: '0.4rem', zIndex: 2,
+            background: '#ef4444', color: '#fff', fontSize: '0.6rem',
+            fontWeight: 800, padding: '0.2rem 0.4rem', borderRadius: '0.3rem',
+            lineHeight: 1.2, textAlign: 'center',
+          }}>
+            🔥 MÍNIMO<br />HISTÓRICO
+          </span>
         )}
+
         {discountPct > 0 && (
           <span style={{
+            position: 'absolute', top: '0.4rem', right: '0.4rem', zIndex: 2,
             background: '#f97316', color: '#fff', fontSize: '0.75rem',
-            fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '9999px',
-          }}>-{Math.round(discountPct)}%</span>
+            fontWeight: 800, padding: '0.25rem 0.45rem', borderRadius: '0.35rem',
+          }}>
+            -{Math.round(discountPct)}%
+          </span>
         )}
-      </div>
 
-      {/* Deal Score */}
-      {dealScore > 0 && (
-        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', zIndex: 10 }}>
-          <DealScoreBadge score={dealScore} compact />
-        </div>
-      )}
-
-      {/* Imagem */}
-      <Link href={`/oferta/${offer.slug}`} style={{ display: 'block', background: '#1a1a2a', position: 'relative', width: '100%', paddingTop: '75%' }}>
         {offer.imageUrl ? (
           <img
             src={offer.imageUrl}
             alt={`Oferta: ${offer.title}`}
-            style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'contain', padding: '0.75rem',
-            }}
+            style={{ width: '160px', height: '160px', objectFit: 'contain', padding: '0.75rem' }}
             loading="lazy"
           />
         ) : (
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '3rem', color: '#cbd5e1'
-          }}>
+          <div style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>
             📦
           </div>
         )}
+
+        {/* Etiqueta de preço sobreposta */}
+        <span style={{
+          position: 'absolute', bottom: '0.4rem', right: '0.4rem',
+          background: '#facc15', color: '#1a1a1a', fontWeight: 800,
+          fontSize: '0.9rem', padding: '0.2rem 0.5rem', borderRadius: '0.3rem',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+        }}>
+          {formatPrice(priceCurrent)}
+        </span>
       </Link>
 
       {/* Conteúdo */}
-      <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
-        {/* Loja + verificado */}
-        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-          <span style={{ color: '#f97316' }}>{offer.store.name}</span>
-          <span>·</span>
-          <span style={{ color: '#22c55e' }}>atualizado em {new Date(offer.updatedAt || offer.publishedAt).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })}, {new Date(offer.updatedAt || offer.publishedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
+      <div style={{ flex: 1, minWidth: 0, padding: '0.85rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+        {/* Topo: votos + score + data */}
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', fontSize: '0.72rem', color: 'var(--muted-foreground)' }}>
+          <VoteButtons
+            offerId={offer.id}
+            initialUpvotes={offer.upvotes}
+            initialDownvotes={offer.downvotes}
+            compact
+          />
+          {dealScore > 0 && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#f97316', fontWeight: 700 }}>
+              🎯 {Math.round(dealScore)}
+            </span>
+          )}
+          <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
+            <TimeAgo date={offer.updatedAt || offer.publishedAt} />
+          </span>
         </div>
 
         {/* Título */}
         <Link href={`/oferta/${offer.slug}`} style={{
-          textDecoration: 'none', color: '#f1f5f9', fontSize: '0.875rem',
-          fontWeight: 600, lineHeight: 1.4,
-          display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          textDecoration: 'none', color: 'var(--foreground)', fontSize: '1rem',
+          fontWeight: 700, lineHeight: 1.3,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
         }}>
           {offer.title}
         </Link>
 
         {/* Preços */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f97316' }}>
+          <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f97316' }}>
             {formatPrice(priceCurrent)}
           </span>
           {priceOriginal > priceCurrent && (
-            <span style={{ fontSize: '0.85rem', color: '#64748b', textDecoration: 'line-through' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', textDecoration: 'line-through' }}>
               {formatPrice(priceOriginal)}
+            </span>
+          )}
+          {offer.couponCode && (
+            <span style={{
+              background: 'rgba(34, 197, 94, 0.1)', border: '1px dashed #22c55e',
+              borderRadius: '0.375rem', padding: '0.1rem 0.4rem',
+              fontSize: '0.72rem', fontWeight: 700, color: '#22c55e',
+            }}>
+              🏷️ {offer.couponCode}
             </span>
           )}
         </div>
 
-        {/* Economiza badge */}
-        {priceOriginal > priceCurrent && (
-          <div style={{
-            background: 'rgba(249, 115, 22, 0.1)', border: '1px solid rgba(249, 115, 22, 0.3)',
-            borderRadius: '0.375rem', padding: '0.2rem 0.5rem',
-            fontSize: '0.72rem', fontWeight: 700, color: '#f97316', display: 'inline-block', alignSelf: 'flex-start',
+        {/* Loja */}
+        <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>
+          Disponível na <strong style={{ color: 'var(--foreground)' }}>{offer.store.name}</strong>
+        </div>
+
+        {/* Descrição */}
+        {offer.description && (
+          <p style={{
+            fontSize: '0.82rem', color: 'var(--muted-foreground)', lineHeight: 1.4,
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
           }}>
-            Economize {formatPrice(priceOriginal - priceCurrent)}
-          </div>
+            {truncate(offer.description, 140)}
+          </p>
         )}
 
-        {/* Cupão */}
-        {offer.couponCode && (
-          <div style={{
-            background: 'rgba(34, 197, 94, 0.1)', border: '1px dashed #22c55e',
-            borderRadius: '0.375rem', padding: '0.25rem 0.5rem',
-            fontSize: '0.75rem', fontWeight: 700, color: '#22c55e',
-          }}>
-            🏷️ Cupão: {offer.couponCode}
-          </div>
-        )}
-
-        {/* Botões: WA + TG + Comprar */}
-        <div style={{ display: 'grid', gridTemplateColumns: '32px 32px 1fr', gap: '0.35rem', marginTop: 'auto' }}>
+        {/* Rodapé: comentários + partilha + CTA */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: 'auto', paddingTop: '0.3rem' }}>
+          <Link
+            href={`/oferta/${offer.slug}#comentarios`}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.8rem' }}
+            title="Comentários"
+          >
+            💬 {offer.commentCount ?? 0}
+          </Link>
           <a
             href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🔥 ${offer.title} por ${formatPrice(priceCurrent)}!\n\nhttps://radarofertas-psi.vercel.app/oferta/${offer.slug}`)}`}
             target="_blank" rel="noopener noreferrer"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: '#25D366', borderRadius: '0.5rem',
-              color: '#fff', fontSize: '0.9rem', textDecoration: 'none', padding: '0.4rem',
-            }}
-            aria-label="Partilhar no WhatsApp" title="Partilhar no WhatsApp"
-          >💬</a>
-          <a
-            href={`https://t.me/share/url?url=${encodeURIComponent(`https://radarofertas-psi.vercel.app/oferta/${offer.slug}`)}&text=${encodeURIComponent(`🔥 ${offer.title} por ${formatPrice(priceCurrent)}!`)}`}
-            target="_blank" rel="noopener noreferrer"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: '#0088cc', borderRadius: '0.5rem',
-              color: '#fff', fontSize: '0.9rem', textDecoration: 'none', padding: '0.4rem',
-            }}
-            aria-label="Partilhar no Telegram" title="Partilhar no Telegram"
-          >✈️</a>
+            style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.95rem' }}
+            aria-label="Partilhar" title="Partilhar"
+          >
+            📤
+          </a>
 
           <a
             href={offer.affiliateUrl}
@@ -171,23 +177,17 @@ export function OfferCard({ offer }: OfferCardProps) {
               fetch('/api/track', { method: 'POST', body: JSON.stringify({ offerId: offer.id }) }).catch(() => {})
             }}
             style={{
-              display: 'block', background: '#f97316', color: '#fff',
-              textAlign: 'center', padding: '0.6rem', borderRadius: '0.5rem',
-              textDecoration: 'none', fontWeight: 700, fontSize: '0.875rem',
-              transition: 'opacity 0.15s',
+              marginLeft: 'auto', background: '#f97316', color: '#fff',
+              padding: '0.5rem 1rem', borderRadius: '9999px',
+              textDecoration: 'none', fontWeight: 700, fontSize: '0.8rem',
+              transition: 'opacity 0.15s', whiteSpace: 'nowrap',
             }}
             onMouseOver={(e) => (e.currentTarget.style.opacity = '0.88')}
             onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
           >
-            Ver Oferta →
+            Abrir desconto →
           </a>
         </div>
-        
-        <VoteButtons 
-          offerId={offer.id} 
-          initialUpvotes={offer.upvotes} 
-          initialDownvotes={offer.downvotes} 
-        />
       </div>
     </article>
   )

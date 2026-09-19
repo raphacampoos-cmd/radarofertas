@@ -8,7 +8,7 @@ interface OfferGridProps {
   initialOffers: Offer[]
 }
 
-type SortOption = 'recent' | 'discount' | 'score' | 'price-low' | 'price-high'
+type SortOption = 'recent' | 'discount' | 'score' | 'votes' | 'comments'
 
 export function OfferGrid({ initialOffers }: OfferGridProps) {
   const [sortBy, setSortBy] = useState<SortOption>('recent')
@@ -20,10 +20,10 @@ export function OfferGrid({ initialOffers }: OfferGridProps) {
         return parseFloat(b.discountPct || '0') - parseFloat(a.discountPct || '0')
       case 'score':
         return parseFloat(b.dealScore || '0') - parseFloat(a.dealScore || '0')
-      case 'price-low':
-        return parseFloat(a.priceCurrent || '0') - parseFloat(b.priceCurrent || '0')
-      case 'price-high':
-        return parseFloat(b.priceCurrent || '0') - parseFloat(a.priceCurrent || '0')
+      case 'votes':
+        return (b.upvotes ?? 0) - (a.upvotes ?? 0)
+      case 'comments':
+        return (b.commentCount ?? 0) - (a.commentCount ?? 0)
       case 'recent':
       default:
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
@@ -33,52 +33,48 @@ export function OfferGrid({ initialOffers }: OfferGridProps) {
   const visible = sorted.slice(0, visibleCount)
   const hasMore = visibleCount < sorted.length
 
-  const sortOptions: { key: SortOption; label: string; icon: string }[] = [
-    { key: 'recent', label: 'Recentes', icon: '🕐' },
-    { key: 'discount', label: 'Maior Desconto', icon: '🔥' },
+  const tabs: { key: SortOption; label: string; icon: string }[] = [
+    { key: 'recent', label: 'Novos', icon: '⚡' },
+    { key: 'discount', label: 'Destaques', icon: '🔥' },
+    { key: 'votes', label: 'Mais Votados', icon: '👍' },
+    { key: 'comments', label: 'Comentados', icon: '💬' },
     { key: 'score', label: 'Melhor Score', icon: '🎯' },
-    { key: 'price-low', label: 'Mais Baratos', icon: '💰' },
-    { key: 'price-high', label: 'Mais Caros', icon: '💎' },
   ]
 
   return (
     <>
-      {/* Sort controls */}
+      {/* Tabs de ordenação */}
       <div style={{
         display: 'flex',
-        gap: '0.4rem',
+        gap: '0.25rem',
         marginBottom: '1rem',
         overflowX: 'auto',
-        paddingBottom: '0.25rem',
+        borderBottom: '1px solid var(--border)',
         whiteSpace: 'nowrap',
       }}>
-        {sortOptions.map(opt => (
+        {tabs.map(tab => (
           <button
-            key={opt.key}
-            onClick={() => { setSortBy(opt.key); setVisibleCount(20) }}
+            key={tab.key}
+            onClick={() => { setSortBy(tab.key); setVisibleCount(20) }}
             style={{
-              padding: '0.4rem 0.75rem',
-              borderRadius: '9999px',
-              border: sortBy === opt.key ? '1px solid #f97316' : '1px solid #2a2a3a',
-              background: sortBy === opt.key ? 'rgba(249, 115, 22, 0.15)' : '#1a1a2a',
-              color: sortBy === opt.key ? '#f97316' : '#94a3b8',
-              fontSize: '0.8rem',
-              fontWeight: sortBy === opt.key ? 700 : 500,
+              padding: '0.6rem 1rem',
+              border: 'none',
+              borderBottom: sortBy === tab.key ? '2px solid var(--primary)' : '2px solid transparent',
+              background: 'transparent',
+              color: sortBy === tab.key ? 'var(--primary)' : 'var(--muted-foreground)',
+              fontSize: '0.85rem',
+              fontWeight: sortBy === tab.key ? 700 : 500,
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
           >
-            {opt.icon} {opt.label}
+            {tab.icon} {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-        gap: '1rem',
-      }}>
+      {/* Lista de ofertas (cards horizontais) */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {visible.map(offer => (
           <OfferCard key={offer.id} offer={offer} />
         ))}

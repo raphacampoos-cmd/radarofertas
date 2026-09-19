@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { db } from '@radarofertas/db/client'
 import { categories, offerCategories, offers, stores } from '@radarofertas/db/schema'
-import { eq, desc, and, isNull } from 'drizzle-orm'
+import { eq, desc, and, isNull, sql } from 'drizzle-orm'
 
 export const categoriesRouter = new Hono()
 

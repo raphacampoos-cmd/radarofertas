@@ -25,30 +25,31 @@ export function CategoryDropdown({ categories, stores }: CategoryDropdownProps) 
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          background: isOpen ? '#f97316' : '#1a1a2a',
-          color: isOpen ? '#fff' : '#f1f5f9',
-          border: '1px solid #2a2a3a',
-          padding: '0.6rem 1rem',
-          borderRadius: '0.5rem',
-          fontSize: '0.9rem',
+          background: isOpen ? '#f97316' : 'transparent',
+          color: isOpen ? '#fff' : '#94a3b8',
+          border: 'none',
+          padding: '0.35rem 0.75rem',
+          borderRadius: '9999px',
+          fontSize: '0.85rem',
           fontWeight: 600,
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
-          transition: 'all 0.2s'
+          gap: '0.4rem',
+          transition: 'all 0.2s',
+          whiteSpace: 'nowrap',
         }}
       >
-        <span>Todas as Categorias</span>
-        <svg 
-          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" 
-          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-        >
-          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
         </svg>
+        <span>Todas</span>
       </button>
 
       {isOpen && (

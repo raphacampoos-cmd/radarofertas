@@ -48,8 +48,28 @@ export interface Offer {
   updatedAt: string
   upvotes?: number
   downvotes?: number
+  commentCount?: number
   store: Pick<Store, 'id' | 'name' | 'slug' | 'logoUrl'>
   categories?: Category[]
+}
+
+export interface RecentComment {
+  id: number
+  name: string
+  content: string
+  createdAt: string
+  offer: {
+    slug: string
+    title: string
+    imageUrl: string | null
+  }
+}
+
+export interface RecentActivity {
+  title: string
+  slug: string
+  voteType: 'up' | 'down' | null
+  votedAt: string
 }
 
 export interface PricePoint {

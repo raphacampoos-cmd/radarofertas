@@ -17,6 +17,7 @@
     "@radarofertas/deal-engine": "workspace:*",
     "@whiskeysockets/baileys": "7.0.0-rc14",
     "crypto": "*",
+    "csv-parser": "^3.2.1",
     "discord.js": "^14.27.0",
     "drizzle-orm": "^0.36.0",
     "hono": "^4.6.0",

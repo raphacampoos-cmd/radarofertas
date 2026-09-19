@@ -80,6 +80,8 @@ export const offers = pgTable('offers', {
   status: varchar('status', { length: 20 }).default('active'), // active|expired|out_of_stock|deleted|draft
   upvotes: integer('upvotes').default(0),
   downvotes: integer('downvotes').default(0),
+  lastVotedAt: timestamp('last_voted_at', { withTimezone: true }),
+  lastVoteType: varchar('last_vote_type', { length: 4 }), // 'up'|'down'
   expiresAt: timestamp('expires_at', { withTimezone: true }),
   clickCount: integer('click_count').default(0),
   source: varchar('source', { length: 50 }).default('editorial'), // editorial|community|auto
@@ -229,3 +231,16 @@ export const commentsRelations = relations(comments, ({ one }) => ({
     references: [offers.id],
   }),
 }))
+
+// ─────────────────────────────────────────────
+// DISCORD_ALERTS (inscrições do comando /alertas)
+// ─────────────────────────────────────────────
+export const discordAlerts = pgTable('discord_alerts', {
+  id: serial('id').primaryKey(),
+  discordUserId: varchar('discord_user_id', { length: 32 }).notNull(),
+  categoryKey: varchar('category_key', { length: 20 }).notNull(), // 'top'|'tech'|'gaming'|'casa'
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (t) => [
+  uniqueIndex('discord_alerts_user_category_idx').on(t.discordUserId, t.categoryKey),
+  index('discord_alerts_category_idx').on(t.categoryKey),
+])

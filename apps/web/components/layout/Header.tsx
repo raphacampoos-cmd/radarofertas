@@ -9,7 +9,7 @@ export async function Header() {
   try {
     const res = await getCategories()
     if (res?.data) {
-      categories = res.data.categories || []
+      categories = (res.data.categories || []).filter((c: any) => c.count > 0)
       stores = res.data.stores || []
     }
   } catch {}
@@ -26,7 +26,7 @@ export async function Header() {
       <div className="container" style={{ padding: '0.75rem 1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           {/* Logo text */}
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }} aria-label="Página Inicial">
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }} aria-label="Página Inicial">
             <span style={{ fontSize: '1.5rem' }}>🎯</span>
             <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f97316', letterSpacing: '-0.02em' }}>RADAR<span style={{ color: '#fff' }}>OFERTAS</span></span>
           </Link>
@@ -61,6 +61,39 @@ export async function Header() {
               }}>🔍</button>
             </div>
           </form>
+
+          {/* Ações rápidas */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0, marginLeft: 'auto' }}>
+            <a
+              href="https://t.me/radarofertaspt"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.5rem 0.9rem', borderRadius: '9999px',
+                background: '#f97316', color: '#fff', textDecoration: 'none',
+                fontSize: '0.85rem', fontWeight: 700,
+              }}
+              title="Sugerir uma oferta no nosso Telegram"
+            >
+              💡 Sugerir
+            </a>
+            <a
+              href="https://t.me/radarofertaspt"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Notificações (canal do Telegram)"
+              title="Segue as novidades no nosso canal"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '2.25rem', height: '2.25rem', borderRadius: '9999px',
+                background: '#1a1a2a', border: '1px solid #2a2a3a',
+                color: '#f1f5f9', textDecoration: 'none', fontSize: '1rem',
+              }}
+            >
+              🔔
+            </a>
+          </div>
         </div>
       </div>
 
@@ -71,30 +104,29 @@ export async function Header() {
           background: '#1a1a2a',
         }}>
           <div className="container">
-            <div style={{
+            <div className="category-bar" style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '1rem',
+              flexWrap: 'wrap',
+              rowGap: '0.15rem',
+              columnGap: '0.15rem',
               padding: '0.5rem 1rem',
-              overflowX: 'auto',
-              whiteSpace: 'nowrap',
             }}>
-              <CategoryDropdown categories={categories as any} stores={stores as any} />
-              
               <Link href="/" style={{
                 padding: '0.35rem 0.75rem',
                 borderRadius: '9999px',
                 textDecoration: 'none',
                 fontSize: '0.85rem',
-                fontWeight: 600,
+                fontWeight: 700,
                 background: '#f97316',
                 color: '#fff',
+                whiteSpace: 'nowrap',
               }}>
-                🏠 Feed Principal
+                ⭐ Home
               </Link>
-              
-              {/* Mostrar algumas das top categorias como atalhos diretos */}
-              {categories.slice(0, 5).map((cat: any) => (
+
+              {/* Todas as categorias reais do catálogo */}
+              {categories.map((cat: any) => (
                 <Link
                   key={cat.id}
                   href={`/categoria/${cat.slug}`}
@@ -105,11 +137,14 @@ export async function Header() {
                     fontSize: '0.85rem',
                     fontWeight: 500,
                     color: '#94a3b8',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {cat.icon} {cat.name}
                 </Link>
               ))}
+
+              <CategoryDropdown categories={categories as any} stores={stores as any} />
             </div>
           </div>
         </nav>

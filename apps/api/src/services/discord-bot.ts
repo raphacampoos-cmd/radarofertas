@@ -1,13 +1,12 @@
 import { Client, GatewayIntentBits, REST, Routes, EmbedBuilder } from 'discord.js'
 import { db } from '@radarofertas/db/client'
-import { offers } from '@radarofertas/db/schema'
-import { ilike, eq, desc, and } from 'drizzle-orm'
+import { offers, offerCategories, categories, discordAlerts } from '@radarofertas/db/schema'
+import { ilike, eq, desc, and, inArray } from 'drizzle-orm'
 
 let client: Client | null = null
 
 export async function initDiscordBot() {
   const token = process.env.DISCORD_BOT_TOKEN
-  const clientId = process.env.DISCORD_CLIENT_ID
 
   if (!token) {
     console.log('⚠️ DISCORD_BOT_TOKEN não encontrado. Agente Discord inativo.')
@@ -24,25 +23,9 @@ export async function initDiscordBot() {
   client.on('ready', async () => {
     console.log(`🤖 Agente Discord Bot online como ${client?.user?.tag}!`)
     client?.user?.setActivity('/procurar promoções')
-
-    // Registar comandos instantaneamente em todos os servidores (Guilds) que o bot estiver
-    const rest = new REST({ version: '10' }).setToken(token)
-    const commands = [
-      {
-        name: 'procurar',
-        description: 'Procura por uma oferta ativa na base de dados do RadarOfertas',
-        options: [{ name: 'produto', description: 'O que queres procurar? (Ex: ps5, airfryer)', type: 3, required: true }]
-      }
-    ]
-
-    for (const [guildId, guild] of client!.guilds.cache) {
-      try {
-        await rest.put(Routes.applicationGuildCommands(clientId!, guildId), { body: commands })
-        console.log(`✅ Comandos registados no servidor: ${guild.name}`)
-      } catch (err) {
-        console.error(`Erro ao registar comandos no servidor ${guild.name}:`, err)
-      }
-    }
+    // Os comandos slash (/procurar, /alertas) são registados globalmente por
+    // registerDiscordCommands() (chamado uma vez no arranque do servidor, em index.ts).
+    // Não repetir o registo aqui por-servidor para evitar comandos duplicados no Discord.
   })
 
   // Lidar com mensagens normais
@@ -108,8 +91,27 @@ export async function initDiscordBot() {
 
     if (interaction.commandName === 'alertas') {
       const categoria = interaction.options.getString('categoria')
-      // Para já vamos simular o registo (numa fase 2 ligamos a uma tabela real de subscritores)
-      await interaction.reply({ content: `✅ Boa! A partir de agora vou enviar-te uma mensagem privada sempre que houver uma oferta brutal na categoria **${categoria}**.`, ephemeral: true })
+      if (!categoria) return
+
+      const userId = interaction.user.id
+
+      try {
+        const existing = await db.select().from(discordAlerts).where(
+          and(eq(discordAlerts.discordUserId, userId), eq(discordAlerts.categoryKey, categoria))
+        )
+
+        if (existing.length > 0) {
+          // Já estava inscrito: alternar para desativar
+          await db.delete(discordAlerts).where(eq(discordAlerts.id, existing[0].id))
+          await interaction.reply({ content: `🔕 Alertas desativados para **${categoria}**. Usa \`/alertas\` outra vez para reativar.`, ephemeral: true })
+        } else {
+          await db.insert(discordAlerts).values({ discordUserId: userId, categoryKey: categoria })
+          await interaction.reply({ content: `✅ Ativado! Vou enviar-te uma mensagem privada sempre que houver uma oferta brutal na categoria **${categoria}**. Usa \`/alertas\` outra vez com a mesma categoria para desativar.`, ephemeral: true })
+        }
+      } catch (error) {
+        console.error('Erro ao gravar inscrição de alertas:', error)
+        await interaction.reply({ content: '❌ Não consegui gravar a tua inscrição agora. Tenta outra vez daqui a pouco.', ephemeral: true })
+      }
     }
   })
 
@@ -128,32 +130,63 @@ const CANAIS = {
 export async function sendOfferToDiscord(oferta: any) {
   if (!client || !client.isReady()) return
 
+  // Ir buscar os slugs de categoria reais da oferta (M:N via offerCategories)
+  const offerCats = await db
+    .select({ slug: categories.slug })
+    .from(offerCategories)
+    .innerJoin(categories, eq(offerCategories.categoryId, categories.id))
+    .where(eq(offerCategories.offerId, oferta.id))
+  const categorySlugs = offerCats.map(c => c.slug)
+
+  const isTop = oferta.discountPct >= 40 || oferta.dealScore >= 90
+  const isGaming = categorySlugs.includes('gaming') || oferta.title.toLowerCase().includes('ps5')
+  const isCasa = categorySlugs.includes('casa')
+  const isTech = categorySlugs.includes('tecnologia-e-informatica') || categorySlugs.includes('smartphones-e-acessorios')
+
   // Escolher o canal com base no desconto ou categoria
   let canalId = CANAIS.TECH // default
-  
-  if (oferta.discountPct >= 40 || oferta.dealScore >= 90) {
-    canalId = CANAIS.TOP_OFERTAS
-  } else if (oferta.categoryId === 2) {
-    canalId = CANAIS.CASA
-  } else if (oferta.title.toLowerCase().includes('ps5') || oferta.title.toLowerCase().includes('gaming')) {
-    canalId = CANAIS.GAMING
-  }
+  if (isTop) canalId = CANAIS.TOP_OFERTAS
+  else if (isCasa) canalId = CANAIS.CASA
+  else if (isGaming) canalId = CANAIS.GAMING
+
+  const embed = new EmbedBuilder()
+    .setColor('#ef4444')
+    .setTitle(`🔥 NOVO DESCONTO: ${oferta.title}`)
+    .setURL(`https://radarofertas-psi.vercel.app/oferta/${oferta.slug}`)
+    .setImage(oferta.imageUrl)
+    .setDescription(`💰 **€${oferta.priceCurrent}** (antes €${oferta.priceOriginal})\n📉 Caiu ${oferta.discountPct}%!`)
+    .setFooter({ text: 'RadarOfertas PT', iconURL: 'https://radarofertas-psi.vercel.app/favicon.ico' })
 
   try {
     const channel = await client.channels.fetch(canalId)
     if (channel && 'send' in channel) {
-      const embed = new EmbedBuilder()
-        .setColor('#ef4444')
-        .setTitle(`🔥 NOVO DESCONTO: ${oferta.title}`)
-        .setURL(`https://radarofertas-psi.vercel.app/oferta/${oferta.slug}`)
-        .setImage(oferta.imageUrl)
-        .setDescription(`💰 **€${oferta.priceCurrent}** (antes €${oferta.priceOriginal})\n📉 Caiu ${oferta.discountPct}%!`)
-        .setFooter({ text: 'RadarOfertas PT', iconURL: 'https://radarofertas-psi.vercel.app/favicon.ico' })
-      
       await (channel as any).send({ embeds: [embed] })
     }
   } catch (err) {
     console.error('Erro ao enviar para canal Discord:', err)
+  }
+
+  // Notificar por DM quem se inscreveu via /alertas nas categorias correspondentes
+  const alertKeys: string[] = []
+  if (isTop) alertKeys.push('top')
+  if (isTech) alertKeys.push('tech')
+  if (isGaming) alertKeys.push('gaming')
+  if (isCasa) alertKeys.push('casa')
+
+  if (alertKeys.length > 0) {
+    try {
+      const subscribers = await db.select().from(discordAlerts).where(inArray(discordAlerts.categoryKey, alertKeys))
+      for (const sub of subscribers) {
+        try {
+          const user = await client.users.fetch(sub.discordUserId)
+          await user.send({ embeds: [embed] })
+        } catch (err) {
+          console.error(`Erro ao enviar DM de alerta para ${sub.discordUserId}:`, err)
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao consultar inscritos de alertas:', err)
+    }
   }
 }
 

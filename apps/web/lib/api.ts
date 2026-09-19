@@ -1,4 +1,4 @@
-import type { Offer, Category, Store, ApiResponse, PaginationMeta, PricePoint } from './types'
+import type { Offer, Category, Store, ApiResponse, PaginationMeta, PricePoint, RecentComment, RecentActivity } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -69,4 +69,22 @@ export async function trackClick(offerId: number, channel = 'web'): Promise<void
     method: 'POST',
     body: JSON.stringify({ offerId, channel }),
   }).catch(() => {}) // silencioso — não bloquear o clique
+}
+
+// ── Comentários recentes (sidebar) ───────────────────────────
+export async function getRecentComments(limit = 5): Promise<{ data: RecentComment[] }> {
+  return apiFetch(`/api/comments/recent?limit=${limit}`)
+}
+
+// ── Atividade recente (ticker: voto mais recente) ────────────
+export async function getRecentActivity(): Promise<{ data: RecentActivity | null }> {
+  return apiFetch('/api/offers/activity/recent')
+}
+
+// ── Presença ("X pessoas no site agora") ─────────────────────
+export async function pingPresence(sessionId: string): Promise<{ data: { online: number } }> {
+  return apiFetch('/api/presence/ping', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId }),
+  })
 }

@@ -8,6 +8,7 @@ import { CookieBanner } from '@/components/ui/CookieBanner'
 import { WhatsAppWidget } from '@/components/ui/WhatsAppWidget'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://radarofertas-psi.vercel.app'),
   title: {
     template: '%s | RadarOfertas',
     default: 'RadarOfertas - Os Melhores Descontos em Portugal',

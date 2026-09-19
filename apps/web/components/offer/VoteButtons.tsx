@@ -6,9 +6,10 @@ interface VoteButtonsProps {
   offerId: number
   initialUpvotes?: number
   initialDownvotes?: number
+  compact?: boolean
 }
 
-export function VoteButtons({ offerId, initialUpvotes = 0, initialDownvotes = 0 }: VoteButtonsProps) {
+export function VoteButtons({ offerId, initialUpvotes = 0, initialDownvotes = 0, compact = false }: VoteButtonsProps) {
   const [upvotes, setUpvotes] = useState(initialUpvotes)
   const [downvotes, setDownvotes] = useState(initialDownvotes)
   const [hasVoted, setHasVoted] = useState<string | null>(null)
@@ -43,6 +44,43 @@ export function VoteButtons({ offerId, initialUpvotes = 0, initialDownvotes = 0 
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (compact) {
+    return (
+      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+        <button
+          onClick={() => handleVote('up')}
+          disabled={isLoading || hasVoted !== null}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+            padding: '0.2rem 0.6rem', borderRadius: '9999px',
+            background: hasVoted === 'up' ? 'rgba(59,130,246,0.15)' : 'var(--muted)',
+            color: hasVoted === 'up' ? '#60a5fa' : 'var(--muted-foreground)',
+            border: 'none', fontSize: '0.72rem', fontWeight: 600,
+            cursor: (isLoading || hasVoted !== null) ? 'default' : 'pointer',
+            opacity: (hasVoted && hasVoted !== 'up') ? 0.6 : 1,
+          }}
+        >
+          👍 Fixe {upvotes}
+        </button>
+        <button
+          onClick={() => handleVote('down')}
+          disabled={isLoading || hasVoted !== null}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+            padding: '0.2rem 0.6rem', borderRadius: '9999px',
+            background: hasVoted === 'down' ? 'rgba(239,68,68,0.15)' : 'var(--muted)',
+            color: hasVoted === 'down' ? '#f87171' : 'var(--muted-foreground)',
+            border: 'none', fontSize: '0.72rem', fontWeight: 600,
+            cursor: (isLoading || hasVoted !== null) ? 'default' : 'pointer',
+            opacity: (hasVoted && hasVoted !== 'down') ? 0.6 : 1,
+          }}
+        >
+          🔕 Terminado {downvotes}
+        </button>
+      </div>
+    )
   }
 
   return (

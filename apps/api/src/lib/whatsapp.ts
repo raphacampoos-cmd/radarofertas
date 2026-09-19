@@ -4,6 +4,7 @@ import pino from 'pino'
 import QRCode from 'qrcode'
 import { db } from '@radarofertas/db/client'
 import { sql } from 'drizzle-orm'
+import { BACKGROUND_JOBS_ENABLED } from './jobs.js'
 
 export let waSocket: ReturnType<typeof makeWASocket> | null = null
 export let waQrCode: string | null = null
@@ -53,23 +54,37 @@ async function useDBAuthState() {
 }
 
 export async function initWhatsApp() {
+  // Já existe um socket a ligar/ligado: abrir outro com as mesmas credenciais faz o
+  // WhatsApp substituir a sessão em loop (cada instância expulsa a outra).
+  if (waSocket) return
   waStatus = 'connecting'; waQrCode = null
   const { state, saveCreds } = await useDBAuthState()
-  waSocket = makeWASocket({ auth: state, printQRInTerminal: true, logger: pino({ level: 'silent' }) as any, browser: ['RadarOfertas','Chrome','1.0.0'] })
-  waSocket.ev.on('creds.update', saveCreds)
-  waSocket.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
+  const socket = makeWASocket({ auth: state, printQRInTerminal: true, logger: pino({ level: 'silent' }) as any, browser: ['RadarOfertas','Chrome','1.0.0'] })
+  waSocket = socket
+  socket.ev.on('creds.update', saveCreds)
+  socket.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
     if (qr) { waStatus = 'qr_ready'; waQrCode = await QRCode.toDataURL(qr); console.log('QR gerado') }
     if (connection === 'close') {
       const code = (lastDisconnect?.error as Boom)?.output?.statusCode
-      waStatus = 'disconnected'; waQrCode = null; waSocket = null
-      if (code !== DisconnectReason.loggedOut) setTimeout(initWhatsApp, 5000)
-      else { await db.execute(sql`DELETE FROM whatsapp_auth`); setTimeout(initWhatsApp, 2000) }
-    } else if (connection === 'open') { waStatus = 'connected'; waQrCode = null; console.log('WA conectado!') }
+      waStatus = 'disconnected'; waQrCode = null
+      if (waSocket === socket) waSocket = null
+
+      if (code === DisconnectReason.connectionReplaced) {
+        // Outra instância (ex.: produção) assumiu a sessão. Não reconectar, senão ficam a expulsar-se mutuamente.
+        console.warn('WhatsApp: sessão substituída por outra instância. Não vou reconectar automaticamente.')
+        return
+      }
+      if (code !== DisconnectReason.loggedOut) setTimeout(() => initWhatsApp().catch(console.error), 5000)
+      else { await db.execute(sql`DELETE FROM whatsapp_auth`); setTimeout(() => initWhatsApp().catch(console.error), 2000) }
+    } else if (connection === 'open') {
+      if (waStatus !== 'connected') console.log('WA conectado!')
+      waStatus = 'connected'; waQrCode = null
+    }
   })
 }
 
 export async function sendWhatsAppMessage(to: string, text: string, imageUrl?: string) {
-  if (waStatus !== 'connected' || !waSocket) { initWhatsApp().catch(console.error); return false }
+  if (waStatus !== 'connected' || !waSocket) { if (BACKGROUND_JOBS_ENABLED) initWhatsApp().catch(console.error); return false }
   try {
     const jid = to.includes('@') ? to : `${to}@s.whatsapp.net`
     if (imageUrl) await waSocket.sendMessage(jid, { image: { url: imageUrl }, caption: text })
@@ -78,4 +93,4 @@ export async function sendWhatsAppMessage(to: string, text: string, imageUrl?: s
   } catch (e) { console.error('WA send error:', e); return false }
 }
 
-initWhatsApp().catch(console.error)
+if (BACKGROUND_JOBS_ENABLED) initWhatsApp().catch(console.error)

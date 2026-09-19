@@ -60,6 +60,8 @@ offersRouter.get('/', async (c) => {
     updatedAt: offers.updatedAt,
     upvotes: offers.upvotes,
     downvotes: offers.downvotes,
+    commentCount: sql<number>`(SELECT COUNT(*)::int FROM comments WHERE comments.offer_id = ${offers.id} AND comments.status = 'approved')`,
+    description: offers.description,
     store: {
       id: stores.id,
       name: stores.name,
@@ -106,6 +108,8 @@ offersRouter.get('/', async (c) => {
       updatedAt: offers.updatedAt,
       upvotes: offers.upvotes,
       downvotes: offers.downvotes,
+      commentCount: sql<number>`(SELECT COUNT(*)::int FROM comments WHERE comments.offer_id = ${offers.id} AND comments.status = 'approved')`,
+      description: offers.description,
       store: {
         id: stores.id,
         name: stores.name,
@@ -136,6 +140,27 @@ offersRouter.get('/', async (c) => {
       limit,
       total: Number(count),
       totalPages: Math.ceil(Number(count) / limit),
+    }
+  })
+})
+
+// ── Atividade recente (voto mais recente) — alimenta o ticker "X deu Fixe a Y" ──
+// GET /api/offers/activity/recent
+offersRouter.get('/activity/recent', async (c) => {
+  const recent = await db.query.offers.findFirst({
+    where: and(eq(offers.status, 'active'), sql`${offers.lastVotedAt} IS NOT NULL`),
+    orderBy: [desc(offers.lastVotedAt)],
+    columns: { id: true, title: true, slug: true, lastVotedAt: true, lastVoteType: true },
+  })
+
+  if (!recent) return c.json({ data: null })
+
+  return c.json({
+    data: {
+      title: recent.title,
+      slug: recent.slug,
+      voteType: recent.lastVoteType,
+      votedAt: recent.lastVotedAt,
     }
   })
 })
@@ -303,6 +328,8 @@ offersRouter.put('/:id/vote', async (c) => {
       upvotes: newUpvotes,
       downvotes: newDownvotes,
       status: newStatus,
+      lastVotedAt: new Date(),
+      lastVoteType: type,
     })
     .where(eq(offers.id, id))
 

@@ -3,9 +3,17 @@
 import { useState, useEffect } from 'react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-const ADMIN_KEY = 'radar_admin_secret_change_in_production'
+// A chave de admin NÃO vai embutida no bundle público: é pedida ao administrador e
+// fica só em sessionStorage (apaga-se ao fechar o separador).
+const ADMIN_KEY_STORAGE = 'radar_admin_key'
+function getAdminKey(): string {
+  try { return sessionStorage.getItem(ADMIN_KEY_STORAGE) || '' } catch { return '' }
+}
 
 export default function AdminDashboard() {
+  const [authed, setAuthed] = useState(false)
+  const [keyInput, setKeyInput] = useState('')
+  const [authError, setAuthError] = useState('')
   const [tab, setTab] = useState<string>('overview')
   const [stats, setStats] = useState<any>(null)
   const [offers, setOffers] = useState<any[]>([])
@@ -13,16 +21,34 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    if (getAdminKey()) setAuthed(true)
+  }, [])
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthError('')
+    try {
+      const res = await fetch(`${API_URL}/api/admin/stats`, { headers: { 'X-Admin-Key': keyInput } })
+      if (res.status === 401) { setAuthError('Chave inválida.'); return }
+      sessionStorage.setItem(ADMIN_KEY_STORAGE, keyInput)
+      setAuthed(true)
+    } catch {
+      setAuthError('Não foi possível contactar a API.')
+    }
+  }
+
+  useEffect(() => {
+    if (!authed) return
     if (tab === 'overview') loadStats()
     if (tab === 'ofertas') loadOffers()
     if (tab === 'subscritores') loadSubscribers()
-  }, [tab])
+  }, [tab, authed])
 
   async function loadStats() {
     setLoading(true)
     try {
       const res = await fetch(`${API_URL}/api/admin/stats`, {
-        headers: { 'X-Admin-Key': ADMIN_KEY }
+        headers: { 'X-Admin-Key': getAdminKey() }
       })
       const json = await res.json()
       setStats(json.data)
@@ -44,7 +70,7 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       const res = await fetch(`${API_URL}/api/admin/subscribers`, {
-        headers: { 'X-Admin-Key': ADMIN_KEY }
+        headers: { 'X-Admin-Key': getAdminKey() }
       })
       const json = await res.json()
       setSubscribers(json.data || [])
@@ -56,10 +82,32 @@ export default function AdminDashboard() {
     if (!confirm(`Tens a certeza que queres apagar "${title}"?`)) return
     await fetch(`${API_URL}/api/admin/offers/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': getAdminKey() },
       body: JSON.stringify({ status: 'deleted' }),
     })
     loadOffers()
+  }
+
+  if (!authed) {
+    return (
+      <div className="container" style={{ paddingTop: '4rem', paddingBottom: '4rem', maxWidth: '420px' }}>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '1rem', padding: '2rem' }}>
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 800 }}>🔒 Área de administração</h1>
+          <input
+            type="password"
+            value={keyInput}
+            onChange={(e) => setKeyInput(e.target.value)}
+            placeholder="Chave de administrador"
+            autoFocus
+            style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--muted)', color: 'var(--foreground)' }}
+          />
+          {authError && <div style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 600 }}>{authError}</div>}
+          <button type="submit" style={{ padding: '0.75rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer' }}>
+            Entrar
+          </button>
+        </form>
+      </div>
+    )
   }
 
   return (
@@ -298,7 +346,7 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
     try {
       const res = await fetch(`${API_URL}/api/admin/offers`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': getAdminKey() },
         body: JSON.stringify(payload)
       })
       if (res.ok) {
@@ -422,7 +470,7 @@ function WhatsAppPanel() {
   async function checkStatus() {
     try {
       const res = await fetch(`${API_URL}/api/admin/whatsapp/status`, {
-        headers: { 'X-Admin-Key': ADMIN_KEY }
+        headers: { 'X-Admin-Key': getAdminKey() }
       })
       const data = await res.json()
       setWaData(data)
@@ -434,7 +482,7 @@ function WhatsAppPanel() {
     try {
       await fetch(`${API_URL}/api/admin/whatsapp/connect`, {
         method: 'POST',
-        headers: { 'X-Admin-Key': ADMIN_KEY }
+        headers: { 'X-Admin-Key': getAdminKey() }
       })
       checkStatus()
     } catch {}
@@ -444,7 +492,7 @@ function WhatsAppPanel() {
   async function loadGroups() {
     try {
       const res = await fetch(`${API_URL}/api/admin/whatsapp/groups`, {
-        headers: { 'X-Admin-Key': ADMIN_KEY }
+        headers: { 'X-Admin-Key': getAdminKey() }
       })
       const json = await res.json()
       if (json.data) setGroups(json.data)
@@ -523,7 +571,7 @@ function BotsPanel() {
     try {
       const res = await fetch(`${API_URL}/api/admin/trigger-discovery`, {
         method: 'POST',
-        headers: { 'X-Admin-Key': 'radar_admin_secret_change_in_production' }
+        headers: { 'X-Admin-Key': getAdminKey() }
       })
       const data = await res.json()
       setMsg(data.message || 'Comando enviado!')
@@ -534,12 +582,15 @@ function BotsPanel() {
   }
 
   async function triggerNewsletter() {
+    const email = window.prompt('Para que e-mail queres enviar o teste da newsletter?')
+    if (!email) return
     setLoading(true)
     setMsg('A compilar Newsletter de teste...')
     try {
       const res = await fetch(`${API_URL}/api/admin/trigger-newsletter`, {
         method: 'POST',
-        headers: { 'X-Admin-Key': 'radar_admin_secret_change_in_production' }
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': getAdminKey() },
+        body: JSON.stringify({ email })
       })
       const data = await res.json()
       setMsg(data.success ? 'Email enviado com sucesso (verifica a tua caixa de correio!)' : (data.error || 'Erro ao enviar.'))
@@ -608,7 +659,7 @@ function AwinApprovalsPanel() {
     setLoading(true)
     try {
       const res = await fetch(`${API_URL}/api/admin/offers/pending`, {
-        headers: { 'X-Admin-Key': 'radar_admin_secret_change_in_production' }
+        headers: { 'X-Admin-Key': getAdminKey() }
       })
       const data = await res.json()
       setPending(data.data || [])
@@ -625,7 +676,7 @@ function AwinApprovalsPanel() {
     try {
       const res = await fetch(`${API_URL}/api/admin/offers/${id}/approve`, {
         method: 'PUT',
-        headers: { 'X-Admin-Key': 'radar_admin_secret_change_in_production' }
+        headers: { 'X-Admin-Key': getAdminKey() }
       })
       if (res.ok) {
         setMsg('✅ Aprovado! Disparado para Telegram e WhatsApp com sucesso.')
@@ -645,7 +696,7 @@ function AwinApprovalsPanel() {
     try {
       await fetch(`${API_URL}/api/admin/offers/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': 'radar_admin_secret_change_in_production' },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': getAdminKey() },
         body: JSON.stringify({ status: 'deleted' })
       })
       loadPending()
@@ -657,7 +708,7 @@ function AwinApprovalsPanel() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <p style={{ color: 'var(--muted-foreground)', margin: 0 }}>O Agente Awin recolhe diariamente ofertas e coloca-as aqui para aprovação manual.</p>
-        <button onClick={async () => { await fetch(API_URL + '/api/admin/awin/test-agent', { method: 'POST', headers: { 'X-Admin-Key': 'radar_admin_secret_change_in_production' }}); loadPending() }} style={{ background: '#0f172a', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', fontWeight: 600 }}>🧪 Injetar Teste</button>
+        <button onClick={async () => { await fetch(API_URL + '/api/admin/awin/test-agent', { method: 'POST', headers: { 'X-Admin-Key': getAdminKey() }}); loadPending() }} style={{ background: '#0f172a', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', fontWeight: 600 }}>🧪 Injetar Teste</button>
       </div>
 
       {msg && <div style={{ padding: '1rem', background: msg.includes('✅') ? '#dcfce7' : '#fee2e2', color: msg.includes('✅') ? '#166534' : '#991b1b', borderRadius: '0.5rem', fontWeight: 600, marginBottom: '1.5rem' }}>{msg}</div>}

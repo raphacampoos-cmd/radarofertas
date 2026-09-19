@@ -56,23 +56,43 @@ nav a:hover {
   transition: background 0.15s;
 }
 
+/* ── Layout principal (feed + sidebar) ──────────────────── */
+@media (max-width: 900px) {
+  .home-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Barra de categorias: scroll horizontal em mobile em vez de empilhar ── */
+@media (max-width: 768px) {
+  .category-bar {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Cards horizontais de oferta ─────────────────────────── */
+@media (max-width: 480px) {
+  .offer-card {
+    flex-direction: column;
+  }
+  .offer-card > a {
+    width: 100% !important;
+  }
+  .offer-card > a img {
+    width: 100% !important;
+    height: 180px !important;
+  }
+}
+
 /* ── Responsivo mobile ────────────────────────────────── */
 @media (max-width: 480px) {
-  [style*="auto-fill, minmax(240px"] {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.625rem !important;
-  }
   [style*="1fr 1fr"] {
     grid-template-columns: 1fr !important;
   }
   h1[style*="1.75rem"] {
     font-size: 1.35rem !important;
-  }
-}
-
-@media (max-width: 360px) {
-  [style*="auto-fill, minmax(240px"] {
-    grid-template-columns: 1fr !important;
   }
 }
 

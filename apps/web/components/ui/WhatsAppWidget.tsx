@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from 'react'
 
+// Link real do grupo/canal (ex: https://chat.whatsapp.com/XXXX). Sem isto o widget fica oculto,
+// em vez de mostrar um botão que aponta para um convite inexistente.
+const INVITE_URL = process.env.NEXT_PUBLIC_WHATSAPP_INVITE_URL
+
 export function WhatsAppWidget() {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
+    if (!INVITE_URL) return
     // Show after 3 seconds, but only if not dismissed in this session
     const isDismissed = sessionStorage.getItem('radarofertas_wa_dismissed')
     if (!isDismissed) {
@@ -19,7 +24,7 @@ export function WhatsAppWidget() {
     setShow(false)
   }
 
-  if (!show) return null
+  if (!INVITE_URL || !show) return null
 
   return (
     <div style={{
@@ -72,7 +77,7 @@ export function WhatsAppWidget() {
       </p>
       
       <a 
-        href="https://chat.whatsapp.com/ID_DO_GRUPO" // Substituir pelo link real
+        href={INVITE_URL}
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => {

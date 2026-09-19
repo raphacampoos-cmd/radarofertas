@@ -5,6 +5,7 @@ import { db } from '@radarofertas/db/client';
 import { offers } from '@radarofertas/db/schema';
 import { eq, like } from 'drizzle-orm';
 import { NlpManager } from 'node-nlp';
+import { extractAmazonPrice } from '../lib/amazon-price.js';
 
 // Configurações e Variáveis de Ambiente
 const apiId = parseInt(process.env.TG_API_ID || '0', 10);
@@ -69,7 +70,7 @@ async function processTrendSignal(text: string) {
   
   // Utilização de Node-NLP para ver se menciona marcas ou "promo", "erro"
   const nlpResult = await manager.process('pt', text);
-  const lojasDetetadas = nlpResult.entities.filter(e => e.entity === 'loja').map(e => e.option);
+  const lojasDetetadas = nlpResult.entities.filter((e: any) => e.entity === 'loja').map((e: any) => e.option);
 
   // Procurar ASIN para Amazon (A estratégia mais robusta)
   let asin = null;
@@ -149,14 +150,7 @@ async function verifyAndCreateAmazonOffer(asin: string, originalText: string) {
     const title = titleMatch ? titleMatch[1].trim() : `Produto Destaque Amazon (${asin})`;
 
     // Preço
-    const priceWholeMatch = html.match(/<span class="a-price-whole">([0-9.,]+)<\/span>/);
-    const priceFractionMatch = html.match(/<span class="a-price-fraction">([0-9]+)<\/span>/);
-    let currentPrice = 0;
-    if (priceWholeMatch) {
-      let whole = priceWholeMatch[1].replace(/[^0-9]/g, '');
-      let fraction = priceFractionMatch ? priceFractionMatch[1] : '00';
-      currentPrice = parseFloat(`${whole}.${fraction}`);
-    }
+    const currentPrice = extractAmazonPrice(html) ?? 0;
 
     if (currentPrice <= 0) return; // Descartar, produto inválido ou sem preço
 

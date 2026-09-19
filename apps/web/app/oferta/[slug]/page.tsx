@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import { getOffer, getPriceHistory } from '@/lib/api'
 import { DealScoreBadge } from '@/components/offer/DealScoreBadge'
 import { PriceHistory } from '@/components/offer/PriceHistory'
@@ -146,13 +145,13 @@ export default async function OfferPage({ params }: PageProps) {
             paddingTop: '100%',
           }}>
             {offer.imageUrl ? (
-              <Image
+              <img
                 src={offer.imageUrl}
                 alt={offer.title}
-                fill
-                priority
-                style={{ objectFit: 'contain', padding: '1.5rem' }}
-                sizes="(max-width: 768px) 100vw, 50vw"
+                style={{
+                  position: 'absolute', inset: 0, width: '100%', height: '100%',
+                  objectFit: 'contain', padding: '1.5rem',
+                }}
               />
             ) : (
               <div style={{

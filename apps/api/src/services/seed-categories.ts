@@ -6,7 +6,7 @@ const REQUIRED_CATEGORIES = [
   { name: 'Gaming', slug: 'gaming', icon: '🎮' },
   { name: 'Tecnologia & Informática', slug: 'tecnologia-e-informatica', icon: '💻' },
   { name: 'Smartphones & Acessórios', slug: 'smartphones-e-acessorios', icon: '📱' },
-  { name: 'Casa & Eletrodomésticos', slug: 'casa-e-eletrodomesticos', icon: '🏠' },
+  { name: 'Casa & Electrodomésticos', slug: 'casa', icon: '🏠' },
   { name: 'Beleza & Saúde', slug: 'beleza-e-saude', icon: '🧴' },
   { name: 'Desporto & Ar Livre', slug: 'desporto-e-ar-livre', icon: '⚽' },
   { name: 'Suplementação', slug: 'suplementacao', icon: '💪' },
