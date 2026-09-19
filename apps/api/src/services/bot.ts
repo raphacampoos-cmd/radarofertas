@@ -11,9 +11,11 @@ import { calculateDealScore } from '@radarofertas/deal-engine'
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 // Variações fora desta banda em relação ao preço anterior quase sempre são leituras
-// erradas da página (variante, vendedor externo, etc.), não promoções reais.
-const MAX_PRICE_RATIO = 2.5
-const MIN_PRICE_RATIO = 0.4
+// erradas da página, não promoções reais: a Amazon mostra vendedores/preços diferentes
+// consoante a região do servidor (o Railway está nos EUA) e preços por unidade ou variante.
+// Preferimos perder uma queda real a publicar um alerta falso no canal público.
+const MAX_PRICE_RATIO = 1.4
+const MIN_PRICE_RATIO = 0.7
 
 // Câmbio flutua todos os dias: variações abaixo disto nos preços da Awin (convertidos de GBP/USD)
 // são ruído de conversão, não mudanças reais de preço.

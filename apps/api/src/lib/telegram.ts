@@ -41,29 +41,24 @@ export async function sendTelegramAlert(offer: {
     
     text += `\n🛒 *Compra aqui:* [Aceder à Loja](${offer.affiliateUrl})`;
 
-    const url = offer.imageUrl 
-      ? `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto` 
-      : `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-    
-    const payload: any = {
-      chat_id: TELEGRAM_CHAT_ID,
-      parse_mode: 'Markdown',
-    };
+    const post = (method: 'sendPhoto' | 'sendMessage', body: Record<string, unknown>) =>
+      fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/${method}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, parse_mode: 'Markdown', ...body }),
+      });
 
+    let res: Response;
     if (offer.imageUrl) {
-      payload.photo = offer.imageUrl;
-      payload.caption = text;
+      res = await post('sendPhoto', { photo: offer.imageUrl, caption: text });
+      if (!res.ok) {
+        // A imagem pode já não existir na loja (404): enviar só o texto em vez de perder o alerta
+        console.warn('Telegram: falha ao enviar a foto, a enviar só o texto:', await res.text());
+        res = await post('sendMessage', { text, disable_web_page_preview: false });
+      }
     } else {
-      payload.text = text;
-      // desativar preview de link se não houver foto para ficar mais limpo
-      payload.disable_web_page_preview = false; 
+      res = await post('sendMessage', { text, disable_web_page_preview: false });
     }
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
 
     if (!res.ok) {
       const err = await res.text();

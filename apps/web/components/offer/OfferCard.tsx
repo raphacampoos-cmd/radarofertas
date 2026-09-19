@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import type { Offer } from '@/lib/types'
 import { VoteButtons } from './VoteButtons'
@@ -17,6 +18,8 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
   const priceOriginal = parseFloat(offer.priceOriginal || '0')
   const discountPct = parseFloat(offer.discountPct || '0')
   const dealScore = parseFloat(offer.dealScore || '0')
+  // Imagens de lojas podem desaparecer (404): mostrar o ícone de reserva em vez de um quadrado vazio
+  const [imageFailed, setImageFailed] = useState(false)
 
   return (
     <article className="offer-card" style={{
@@ -65,7 +68,7 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
           </span>
         )}
 
-        {offer.imageUrl ? (
+        {offer.imageUrl && !imageFailed ? (
           <img
             src={optimizeImageUrl(offer.imageUrl, 400) ?? offer.imageUrl}
             alt={`Oferta: ${offer.title}`}
@@ -74,6 +77,7 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
             style={{ width: '160px', height: '160px', objectFit: 'contain', padding: '0.75rem' }}
             loading={eager ? 'eager' : 'lazy'}
             decoding="async"
+            onError={() => setImageFailed(true)}
           />
         ) : (
           <div style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>
