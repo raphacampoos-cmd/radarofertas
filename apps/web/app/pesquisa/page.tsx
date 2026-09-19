@@ -130,9 +130,9 @@ function PesquisaInner() {
             </h2>
           </div>
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            gap: '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.85rem',
           }}>
             {results.map(offer => (
               <OfferCard key={offer.id} offer={offer} />

@@ -75,8 +75,8 @@ export function OfferGrid({ initialOffers }: OfferGridProps) {
 
       {/* Lista de ofertas (cards horizontais) */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-        {visible.map(offer => (
-          <OfferCard key={offer.id} offer={offer} />
+        {visible.map((offer, index) => (
+          <OfferCard key={offer.id} offer={offer} eager={index < 4} />
         ))}
       </div>
 

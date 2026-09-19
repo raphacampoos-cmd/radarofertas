@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import type { Offer } from '@/lib/types'
 import { getOffers } from '@/lib/api'
 import { OfferGrid } from '@/components/offer/OfferGrid'
@@ -24,18 +25,25 @@ export const metadata: Metadata = {
   },
 }
 
-export const revalidate = 300 // revalidar a cada 5 minutos
+interface HomeProps {
+  searchParams: Promise<{ store?: string }>
+}
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: HomeProps) {
+  const { store } = await searchParams
   let offers: Offer[] = []
+  let total = 0
   let error = false
 
   try {
-    const res = await getOffers({ limit: 100, sort: 'published_at' })
+    const res = await getOffers({ limit: 200, sort: 'published_at', store })
     offers = res.data
+    total = res.pagination?.total ?? res.data.length
   } catch {
     error = true
   }
+
+  const storeName = store ? (offers[0]?.store.name ?? store) : null
 
   return (
     <div className="container" style={{ paddingTop: '1.5rem' }}>
@@ -57,10 +65,15 @@ export default async function HomePage() {
           {/* Título da secção */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
-              🔥 Últimas Ofertas
+              {storeName ? `🏪 Ofertas em ${storeName}` : '🔥 Últimas Ofertas'}
             </h2>
             <span style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)' }}>
-              {offers.length} ofertas ativas
+              {storeName && (
+                <Link href="/" style={{ color: 'var(--primary)', textDecoration: 'none', marginRight: '0.75rem', fontWeight: 600 }}>
+                  ✕ Limpar filtro
+                </Link>
+              )}
+              {total} ofertas ativas
             </span>
           </div>
 

@@ -1,7 +1,9 @@
 import { Hono } from 'hono'
 import { db } from '@radarofertas/db/client'
-import { categories, offerCategories, offers, stores } from '@radarofertas/db/schema'
-import { eq, desc, and, isNull, sql } from 'drizzle-orm'
+import { categories, offers, stores } from '@radarofertas/db/schema'
+import { eq, desc, and, sql, inArray } from 'drizzle-orm'
+import { offerListFields } from '../lib/offer-fields.js'
+import { offerIdsForCategory } from '../lib/category-offers.js'
 
 export const categoriesRouter = new Hono()
 
@@ -9,7 +11,7 @@ export const categoriesRouter = new Hono()
 categoriesRouter.get('/', async (c) => {
   // 1. Ir buscar contagem de ofertas ATIVAS por categoria
   const catCountsRaw = await db.execute(sql`
-    SELECT c.id, COUNT(oc.offer_id) as count
+    SELECT c.id, COUNT(o.id) as count
     FROM categories c
     LEFT JOIN offer_categories oc ON c.id = oc.category_id
     LEFT JOIN offers o ON oc.offer_id = o.id AND o.status = 'active'
@@ -50,11 +52,11 @@ categoriesRouter.get('/', async (c) => {
   return c.json({ data: { categories: roots, stores: dynamicStores } })
 })
 
-// GET /api/categories/:slug — ofertas de uma categoria
+// GET /api/categories/:slug — ofertas de uma categoria (e das suas subcategorias)
 categoriesRouter.get('/:slug', async (c) => {
   const slug = c.req.param('slug')
-  const page = Math.max(1, parseInt(c.req.query('page') || '1'))
-  const limit = Math.min(50, parseInt(c.req.query('limit') || '20'))
+  const page = Math.max(1, parseInt(c.req.query('page') || '1') || 1)
+  const limit = Math.min(50, Math.max(1, parseInt(c.req.query('limit') || '20') || 20))
   const offset = (page - 1) * limit
 
   const cat = await db.query.categories.findFirst({
@@ -64,19 +66,7 @@ categoriesRouter.get('/:slug', async (c) => {
 
   if (!cat) return c.json({ error: 'Categoria não encontrada' }, 404)
 
-  // IDs desta categoria + subcategorias
-  const catIds = [cat.id, ...cat.children.map(c => c.id)]
-
-  const offerIds = await db
-    .select({ offerId: offerCategories.offerId })
-    .from(offerCategories)
-    .where(
-      catIds.length > 1
-        ? eq(offerCategories.categoryId, catIds[0]) // simplificado para MVP
-        : eq(offerCategories.categoryId, cat.id)
-    )
-
-  const ids = offerIds.map(r => r.offerId)
+  const ids = await offerIdsForCategory(cat.id)
 
   if (ids.length === 0) {
     return c.json({
@@ -84,21 +74,24 @@ categoriesRouter.get('/:slug', async (c) => {
     })
   }
 
-  const results = await db.query.offers.findMany({
-    where: and(
-      eq(offers.status, 'active'),
-    ),
-    with: { store: true },
-    orderBy: [desc(offers.dealScore), desc(offers.publishedAt)],
-    limit,
-    offset,
-  })
+  const where = and(eq(offers.status, 'active'), inArray(offers.id, ids))
+
+  const results = await db.select(offerListFields)
+    .from(offers)
+    .innerJoin(stores, eq(offers.storeId, stores.id))
+    .where(where)
+    .orderBy(desc(offers.dealScore), desc(offers.publishedAt))
+    .limit(limit)
+    .offset(offset)
+
+  const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(offers).where(where)
+  const total = Number(count)
 
   return c.json({
     data: {
       category: cat,
       offers: results,
-      pagination: { page, limit, total: ids.length, totalPages: Math.ceil(ids.length / limit) }
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
     }
   })
 })

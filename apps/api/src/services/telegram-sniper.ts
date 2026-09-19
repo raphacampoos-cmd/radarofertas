@@ -5,7 +5,7 @@ import { db } from '@radarofertas/db/client';
 import { offers } from '@radarofertas/db/schema';
 import { eq, like } from 'drizzle-orm';
 import { NlpManager } from 'node-nlp';
-import { extractAmazonPrice } from '../lib/amazon-price.js';
+import { extractAmazonPriceInfo } from '../lib/amazon-price.js';
 
 // Configurações e Variáveis de Ambiente
 const apiId = parseInt(process.env.TG_API_ID || '0', 10);
@@ -150,7 +150,8 @@ async function verifyAndCreateAmazonOffer(asin: string, originalText: string) {
     const title = titleMatch ? titleMatch[1].trim() : `Produto Destaque Amazon (${asin})`;
 
     // Preço
-    const currentPrice = extractAmazonPrice(html) ?? 0;
+    const priceInfo = extractAmazonPriceInfo(html);
+    const currentPrice = priceInfo.price ?? 0;
 
     if (currentPrice <= 0) return; // Descartar, produto inválido ou sem preço
 
@@ -160,7 +161,7 @@ async function verifyAndCreateAmazonOffer(asin: string, originalText: string) {
       slug: 'amazon-' + asin + '-' + Math.floor(Math.random() * 1000),
       description: '⚠️ [MÁQUINA INTERNA] Descoberto via Sinal de Tendência. Valida o preço e escreve uma boa descrição.',
       priceCurrent: currentPrice.toFixed(2),
-      priceOriginal: (currentPrice * 1.2).toFixed(2), // Estimativa de base
+      priceOriginal: (priceInfo.listPrice ?? currentPrice).toFixed(2), // só há desconto se a Amazon mostrar preço de tabela
       priceMinimum: currentPrice.toFixed(2),
       affiliateUrl: myAffiliateUrl,
       imageUrl: '', // Fica vazio para o Admin preencher ou o sistema de Fallback resolver

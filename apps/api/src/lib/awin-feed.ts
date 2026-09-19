@@ -27,15 +27,25 @@ export interface AwinFeedRow {
   last_updated: string;
   display_price: string;
   data_feed_id: string;
+  // product_price_old (preço anterior real, só quando há desconto verdadeiro) chega pelo index signature
   [key: string]: string;
 }
 
-// Baixa e faz parse do feed CSV (GZIP) completo da Awin. Usado tanto pelo
-// agente de descoberta (awin-api-bot) como pelo rastreador de preços (bot).
-export function fetchAwinFeed(): Promise<AwinFeedRow[]> {
+// O feed do utilizador não traz o preço anterior; pedimos a coluna product_price_old à Awin
+// para conseguir mostrar apenas descontos reais.
+function feedUrlWithOldPrice(): string {
+  return AWIN_FEED_URL.includes('product_price_old')
+    ? AWIN_FEED_URL
+    : AWIN_FEED_URL.replace('/columns/', '/columns/product_price_old,');
+}
+
+// Baixa e faz parse do feed CSV (GZIP). O feed tem ~90 mil linhas, por isso aceita um filtro
+// que descarta as linhas irrelevantes durante o streaming, em vez de as guardar todas em memória.
+export function fetchAwinFeed(filter?: (row: AwinFeedRow) => boolean): Promise<AwinFeedRow[]> {
   return new Promise((resolve, reject) => {
-    https.get(AWIN_FEED_URL, (response) => {
+    https.get(feedUrlWithOldPrice(), (response) => {
       if (response.statusCode !== 200) {
+        response.resume();
         return reject(new Error(`Awin Feed Request Failed: status ${response.statusCode}`));
       }
 
@@ -44,7 +54,7 @@ export function fetchAwinFeed(): Promise<AwinFeedRow[]> {
       response
         .pipe(zlib.createGunzip())
         .pipe(csv())
-        .on('data', (row: AwinFeedRow) => rows.push(row))
+        .on('data', (row: AwinFeedRow) => { if (!filter || filter(row)) rows.push(row) })
         .on('end', () => resolve(rows))
         .on('error', reject);
     }).on('error', reject);

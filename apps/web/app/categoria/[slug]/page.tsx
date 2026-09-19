@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getCategoryOffers } from '@/lib/api'
 import { OfferCard } from '@/components/offer/OfferCard'
 
@@ -62,7 +63,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     <div className="container" style={{ paddingTop: '1.5rem' }}>
       {/* Breadcrumb */}
       <nav style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
-        <a href="/" style={{ color: 'inherit', textDecoration: 'none' }}>Início</a>
+        <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>Início</Link>
         {' › '}
         <span>{category.icon} {category.name}</span>
       </nav>
@@ -95,9 +96,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       ) : (
         <>
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            gap: '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.85rem',
             marginBottom: '2rem',
           }}>
             {offers.map(offer => (
@@ -109,25 +110,25 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           {pagination && pagination.totalPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
               {page > 1 && (
-                <a href={`/categoria/${slug}?page=${page - 1}`} style={{
+                <Link href={`/categoria/${slug}?page=${page - 1}`} style={{
                   padding: '0.5rem 1rem',
                   border: '1px solid var(--border)',
                   borderRadius: '0.5rem',
                   textDecoration: 'none',
                   color: 'var(--foreground)',
-                }}>← Anterior</a>
+                }}>← Anterior</Link>
               )}
               <span style={{ padding: '0.5rem 1rem', color: 'var(--muted-foreground)', fontSize: '0.875rem' }}>
                 {page} / {pagination.totalPages}
               </span>
               {page < pagination.totalPages && (
-                <a href={`/categoria/${slug}?page=${page + 1}`} style={{
+                <Link href={`/categoria/${slug}?page=${page + 1}`} style={{
                   padding: '0.5rem 1rem',
                   border: '1px solid var(--border)',
                   borderRadius: '0.5rem',
                   textDecoration: 'none',
                   color: 'var(--foreground)',
-                }}>Seguinte →</a>
+                }}>Seguinte →</Link>
               )}
             </div>
           )}

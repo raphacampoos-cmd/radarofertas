@@ -2,7 +2,8 @@ import { db } from '@radarofertas/db/client'
 import { offers, categories, offerCategories } from '@radarofertas/db/schema'
 import { eq, sql, like } from 'drizzle-orm'
 import { JSDOM, VirtualConsole } from 'jsdom'
-import { extractAmazonPrice } from '../lib/amazon-price.js'
+import { extractAmazonPriceInfo } from '../lib/amazon-price.js'
+import { calculateDealScore } from '@radarofertas/deal-engine'
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const AFFILIATE_ID = "radaroferta0c-21"; // O teu código de afiliado
@@ -69,17 +70,25 @@ export async function runDiscoveryBot() {
         // Fazer fetch direto à página do produto para apanhar o preço original vs desconto
         const prodRes = await fetch(affiliateUrl, { headers: { 'User-Agent': UA, 'Accept-Language': 'pt-PT,pt;q=0.9' }});
         let currentPrice = 0;
-        let originalPrice = 0;
+        let listPrice: number | null = null;
 
         if (prodRes.ok) {
-           const prodHtml = await prodRes.text();
-           const cp = extractAmazonPrice(prodHtml);
-           if (cp) currentPrice = cp;
-           // Tentar prever preço original (se não tiver, pomos +20% para a IA do DealScore calcular)
-           originalPrice = currentPrice * 1.2; 
+           const info = extractAmazonPriceInfo(await prodRes.text());
+           if (info.price) currentPrice = info.price;
+           listPrice = info.listPrice;
         }
 
         if (currentPrice <= 0) continue;
+
+        // Só há desconto se a Amazon mostrar um preço de tabela riscado; nunca inventamos um.
+        const originalPrice = listPrice ?? currentPrice;
+        const discountPct = originalPrice > currentPrice ? ((originalPrice - currentPrice) / originalPrice) * 100 : 0;
+        const dealScore = calculateDealScore({
+          priceCurrent: currentPrice,
+          priceOriginal: originalPrice,
+          priceMinHistoric: null,
+          priceAvg90Days: null,
+        }).score;
 
         // 1. Encontrar ID da Categoria no nosso sistema
         const cat = await db.select().from(categories).where(eq(categories.slug, target.categorySlug)).limit(1);
@@ -95,6 +104,8 @@ export async function runDiscoveryBot() {
           priceCurrent: currentPrice.toFixed(2),
           priceOriginal: originalPrice.toFixed(2),
           priceMinimum: currentPrice.toFixed(2),
+          discountPct: discountPct.toFixed(2),
+          dealScore: dealScore.toFixed(2),
           affiliateUrl: affiliateUrl,
           imageUrl: imageUrl,
           storeId: 1, // Assumindo que 1 é a Amazon

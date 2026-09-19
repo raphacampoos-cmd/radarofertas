@@ -3,7 +3,9 @@ import { offers, priceHistory } from '@radarofertas/db/schema'
 import { eq } from 'drizzle-orm'
 import { sendTelegramAlert } from '../lib/telegram.js'
 import { fetchAwinFeed } from '../lib/awin-feed.js'
-import { extractAmazonPrice } from '../lib/amazon-price.js'
+import { extractAmazonPriceInfo, type AmazonPriceInfo } from '../lib/amazon-price.js'
+import { getEurRate, roundMoney } from '../lib/fx.js'
+import { realOldPrice } from '../lib/awin-mapping.js'
 import { calculateDealScore } from '@radarofertas/deal-engine'
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -13,7 +15,13 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const MAX_PRICE_RATIO = 2.5
 const MIN_PRICE_RATIO = 0.4
 
-async function checkPrice(offer: any) {
+// Câmbio flutua todos os dias: variações abaixo disto nos preços da Awin (convertidos de GBP/USD)
+// são ruído de conversão, não mudanças reais de preço.
+const AWIN_MIN_CHANGE_RATIO = 0.015
+
+type OfferRow = typeof offers.$inferSelect
+
+async function checkPrice(offer: OfferRow): Promise<AmazonPriceInfo | null> {
   try {
     const res = await fetch(offer.affiliateUrl, {
       headers: {
@@ -23,27 +31,47 @@ async function checkPrice(offer: any) {
       },
       signal: AbortSignal.timeout(15000)
     });
-    
+
     if (!res.ok) return null;
     const html = await res.text();
 
     if (offer.affiliateUrl.includes('amazon')) {
-      return extractAmazonPrice(html);
+      return extractAmazonPriceInfo(html);
     }
-    
+
     return null;
   } catch (e) {
     return null;
   }
 }
 
+// Recalcula os campos derivados do preço (desconto e score) a partir de atual/original.
+function derivedFields(price: number, original: number, minimum: number | null, fallbackScore: string | null) {
+  const discountPct = original > price ? ((original - price) / original) * 100 : 0
+  const score = original > 0
+    ? calculateDealScore({ priceCurrent: price, priceOriginal: original, priceMinHistoric: minimum, priceAvg90Days: null }).score
+    : parseFloat(fallbackScore || '0')
+  return { discountPct: discountPct.toFixed(2), dealScore: score.toFixed(2) }
+}
+
 // Aplica uma nova cotação a uma oferta: atualiza preço/mínimo, regista histórico
 // e dispara notificações quando o preço desceu. Partilhado entre Amazon e Awin.
-async function applyPriceUpdate(offer: typeof offers.$inferSelect, newPrice: number) {
+// `newOriginal`: preço de referência REAL a usar (omitir para manter o atual).
+async function applyPriceUpdate(offer: OfferRow, newPrice: number, newOriginal?: number) {
   const oldPrice = parseFloat(offer.priceCurrent || '0')
+  const storedOriginal = parseFloat(offer.priceOriginal || '0')
+  const original = newOriginal ?? storedOriginal
 
   if (newPrice === oldPrice) {
-    await db.update(offers).set({ updatedAt: new Date() }).where(eq(offers.id, offer.id))
+    if (newOriginal !== undefined && Math.abs(newOriginal - storedOriginal) >= 0.005) {
+      await db.update(offers).set({
+        priceOriginal: newOriginal.toFixed(2),
+        ...derivedFields(newPrice, newOriginal, offer.priceMinimum ? parseFloat(offer.priceMinimum) : null, offer.dealScore),
+        updatedAt: new Date()
+      }).where(eq(offers.id, offer.id))
+    } else {
+      await db.update(offers).set({ updatedAt: new Date() }).where(eq(offers.id, offer.id))
+    }
     return 'unchanged' as const
   }
 
@@ -56,23 +84,14 @@ async function applyPriceUpdate(offer: typeof offers.$inferSelect, newPrice: num
   }
 
   const isMin = newPrice < parseFloat(offer.priceMinimum || '0')
-  const priceOriginal = parseFloat(offer.priceOriginal || '0')
-  const discountPct = priceOriginal > newPrice ? ((priceOriginal - newPrice) / priceOriginal) * 100 : 0
-  const score = priceOriginal > 0
-    ? calculateDealScore({
-        priceCurrent: newPrice,
-        priceOriginal,
-        priceMinHistoric: offer.priceMinimum ? parseFloat(offer.priceMinimum) : null,
-        priceAvg90Days: null,
-      }).score
-    : parseFloat(offer.dealScore || '0')
+  const minimum = isMin ? newPrice : (offer.priceMinimum ? parseFloat(offer.priceMinimum) : newPrice)
 
   await db.update(offers).set({
     priceCurrent: newPrice.toFixed(2),
-    priceMinimum: isMin ? newPrice.toFixed(2) : (offer.priceMinimum || newPrice.toFixed(2)),
+    priceOriginal: original.toFixed(2),
+    priceMinimum: minimum.toFixed(2),
     isMinHistoric: isMin,
-    discountPct: discountPct.toFixed(2),
-    dealScore: score.toFixed(2),
+    ...derivedFields(newPrice, original, minimum, offer.dealScore),
     updatedAt: new Date()
   }).where(eq(offers.id, offer.id))
 
@@ -109,14 +128,19 @@ async function applyPriceUpdate(offer: typeof offers.$inferSelect, newPrice: num
 }
 
 // Ofertas Amazon: cada uma exige o seu próprio pedido HTTP (scraping da página do produto)
-async function trackAmazonOffers(amazonOffers: (typeof offers.$inferSelect)[]) {
+async function trackAmazonOffers(amazonOffers: OfferRow[]) {
   let updatedCount = 0
 
   for (const offer of amazonOffers) {
-    const newPrice = await checkPrice(offer)
+    const info = await checkPrice(offer)
 
-    if (newPrice && newPrice > 0) {
-      const result = await applyPriceUpdate(offer, newPrice)
+    if (info?.price && info.price > 0) {
+      // Ofertas descobertas pelo robô: o "preço original" é o preço de tabela real da Amazon
+      // (riscado na página) ou, se não houver, o mais alto que já vimos — nunca um valor inventado.
+      const newOriginal = offer.source === 'crawler'
+        ? roundMoney(info.listPrice ?? Math.max(parseFloat(offer.priceOriginal || '0'), info.price))
+        : undefined
+      const result = await applyPriceUpdate(offer, info.price, newOriginal)
       if (result !== 'unchanged' && result !== 'skipped') updatedCount++
     }
 
@@ -130,29 +154,39 @@ async function trackAmazonOffers(amazonOffers: (typeof offers.$inferSelect)[]) {
 // Ofertas Awin: não há scraping por loja (cada merchant tem HTML diferente).
 // Em vez disso reaproveitamos o feed oficial (1 único pedido) e casamos pelo externalId
 // (aw_product_id), que é o mesmo ID gravado pelo awin-api-bot na ingestão.
-export async function trackAwinOffers(awinOffers: (typeof offers.$inferSelect)[]) {
-  if (awinOffers.length === 0) return 0
+export async function trackAwinOffers(awinOffers: OfferRow[]) {
+  const tracked = awinOffers.filter(o => o.externalId)
+  if (tracked.length === 0) return 0
 
-  let priceByExternalId: Map<string, number>
+  const wanted = new Set(tracked.map(o => o.externalId as string))
+  let rows
   try {
-    const rows = await fetchAwinFeed()
-    priceByExternalId = new Map(
-      rows
-        .filter(r => r.aw_product_id && r.search_price && Number(r.search_price) > 0)
-        .map(r => [r.aw_product_id, Number(r.search_price)])
-    )
+    // O filtro descarta as ~90 mil linhas que não são nossas durante o download
+    rows = await fetchAwinFeed(r => wanted.has(r.aw_product_id) && Number(r.search_price) > 0)
   } catch (err) {
     console.error('⚠️ Falha ao obter o feed Awin para atualização de preços:', err)
     return 0
   }
 
-  let updatedCount = 0
-  for (const offer of awinOffers) {
-    if (!offer.externalId) continue
-    const newPrice = priceByExternalId.get(offer.externalId)
-    if (!newPrice) continue // produto já não consta no feed (fora de stock ou descontinuado)
+  const byId = new Map(rows.map(r => [r.aw_product_id, r]))
 
-    const result = await applyPriceUpdate(offer, newPrice)
+  let updatedCount = 0
+  for (const offer of tracked) {
+    const row = byId.get(offer.externalId as string)
+    if (!row) continue // produto já não consta no feed (fora de stock ou descontinuado)
+
+    const rate = await getEurRate(row.currency)
+    if (!rate) continue
+
+    const newPrice = roundMoney(Number(row.search_price) * rate)
+    const oldPrice = parseFloat(offer.priceCurrent || '0')
+    if (oldPrice > 0 && Math.abs(newPrice - oldPrice) / oldPrice < AWIN_MIN_CHANGE_RATIO) continue
+
+    // Referência: o preço antigo real do feed, ou o mais alto que já registámos.
+    const feedOld = realOldPrice(row)
+    const newOriginal = roundMoney(feedOld ? feedOld * rate : Math.max(parseFloat(offer.priceOriginal || '0'), newPrice))
+
+    const result = await applyPriceUpdate(offer, newPrice, newOriginal)
     if (result !== 'unchanged' && result !== 'skipped') updatedCount++
   }
 

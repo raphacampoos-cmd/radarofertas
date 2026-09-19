@@ -23,9 +23,39 @@ export function parseEuroPrice(raw: string | null | undefined): number | null {
 
 const silentConsole = new VirtualConsole()
 
-export function extractAmazonPrice(html: string): number | null {
-  const doc = new JSDOM(html, { virtualConsole: silentConsole }).window.document
+// Preço "de tabela" riscado no buybox (o desconto real que a Amazon mostra).
+const LIST_PRICE_SELECTORS = [
+  '#corePrice_feature_div .basisPrice .a-offscreen',
+  '#corePrice_feature_div .a-price.a-text-price .a-offscreen',
+  '#apex_desktop .basisPrice .a-offscreen',
+  '#corePriceDisplay_desktop_feature_div .basisPrice .a-offscreen',
+]
 
+export interface AmazonPriceInfo {
+  price: number | null
+  /** Preço de tabela real (riscado) — só se for maior que o preço atual e plausível. */
+  listPrice: number | null
+}
+
+export function extractAmazonPriceInfo(html: string): AmazonPriceInfo {
+  const doc = new JSDOM(html, { virtualConsole: silentConsole }).window.document
+  const price = pickBuyboxPrice(doc, html)
+
+  let listPrice: number | null = null
+  for (const selector of LIST_PRICE_SELECTORS) {
+    const candidate = parseEuroPrice(doc.querySelector(selector)?.textContent)
+    if (candidate) { listPrice = candidate; break }
+  }
+  if (price && listPrice && !(listPrice > price && listPrice <= price * 3)) listPrice = null
+
+  return { price, listPrice }
+}
+
+export function extractAmazonPrice(html: string): number | null {
+  return extractAmazonPriceInfo(html).price
+}
+
+function pickBuyboxPrice(doc: Document, html: string): number | null {
   for (const selector of BUYBOX_PRICE_SELECTORS) {
     const price = parseEuroPrice(doc.querySelector(selector)?.textContent)
     if (price) return price

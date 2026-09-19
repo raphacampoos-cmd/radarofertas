@@ -4,13 +4,15 @@ import Link from 'next/link'
 import type { Offer } from '@/lib/types'
 import { VoteButtons } from './VoteButtons'
 import { TimeAgo } from '../ui/TimeAgo'
-import { formatPrice, truncate } from '@/lib/utils'
+import { formatPrice, truncate, optimizeImageUrl } from '@/lib/utils'
 
 interface OfferCardProps {
   offer: Offer
+  /** Cards acima da dobra carregam a imagem de imediato; os restantes em lazy. */
+  eager?: boolean
 }
 
-export function OfferCard({ offer }: OfferCardProps) {
+export function OfferCard({ offer, eager = false }: OfferCardProps) {
   const priceCurrent = parseFloat(offer.priceCurrent || '0')
   const priceOriginal = parseFloat(offer.priceOriginal || '0')
   const discountPct = parseFloat(offer.discountPct || '0')
@@ -65,10 +67,13 @@ export function OfferCard({ offer }: OfferCardProps) {
 
         {offer.imageUrl ? (
           <img
-            src={offer.imageUrl}
+            src={optimizeImageUrl(offer.imageUrl, 400) ?? offer.imageUrl}
             alt={`Oferta: ${offer.title}`}
+            width={160}
+            height={160}
             style={{ width: '160px', height: '160px', objectFit: 'contain', padding: '0.75rem' }}
-            loading="lazy"
+            loading={eager ? 'eager' : 'lazy'}
+            decoding="async"
           />
         ) : (
           <div style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>
@@ -171,7 +176,7 @@ export function OfferCard({ offer }: OfferCardProps) {
           </a>
 
           <a
-            href={offer.affiliateUrl}
+            href={offer.affiliateUrl || `/oferta/${offer.slug}`}
             target="_blank" rel="nofollow noopener sponsored"
             onClick={() => {
               fetch('/api/track', { method: 'POST', body: JSON.stringify({ offerId: offer.id }) }).catch(() => {})
