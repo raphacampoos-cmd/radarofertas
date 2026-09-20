@@ -17,6 +17,10 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const MAX_PRICE_RATIO = 1.4
 const MIN_PRICE_RATIO = 0.7
 
+// O preço é sempre atualizado, mas só anunciamos no Telegram/WhatsApp quedas que valem a pena
+// (evita mensagens públicas por variações de cêntimos).
+const MIN_DROP_TO_ANNOUNCE = 0.05
+
 // Câmbio flutua todos os dias: variações abaixo disto nos preços da Awin (convertidos de GBP/USD)
 // são ruído de conversão, não mudanças reais de preço.
 const AWIN_MIN_CHANGE_RATIO = 0.015
@@ -110,6 +114,8 @@ async function applyPriceUpdate(offer: OfferRow, newPrice: number, newOriginal?:
   }
 
   console.log(`📉 Bot detetou queda! ${offer.title.slice(0, 30)}: ${oldPrice}€ -> ${newPrice}€`)
+
+  if ((oldPrice - newPrice) / oldPrice < MIN_DROP_TO_ANNOUNCE) return 'decreased' as const
 
   sendTelegramAlert({
     title: `📉 BAIXOU O PREÇO! ${offer.title}`,
