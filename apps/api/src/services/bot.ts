@@ -1,6 +1,6 @@
 import { db } from '@radarofertas/db/client'
 import { offers, priceHistory } from '@radarofertas/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { sendTelegramAlert } from '../lib/telegram.js'
 import { fetchAwinFeed } from '../lib/awin-feed.js'
 import { extractAmazonPriceInfo, type AmazonPriceInfo } from '../lib/amazon-price.js'
@@ -26,6 +26,21 @@ const MIN_DROP_TO_ANNOUNCE = 0.05
 const AWIN_MIN_CHANGE_RATIO = 0.015
 
 type OfferRow = typeof offers.$inferSelect
+
+// Para dar o selo "mínimo histórico": pelo menos estes pontos de histórico, com esta antiguidade,
+// e um preço claramente abaixo do mínimo anterior (2%, para ignorar variações de cêntimos).
+const MIN_HISTORY_POINTS = 5
+const MIN_HISTORY_DAYS = 7
+const MIN_HISTORIC_MARGIN = 0.98
+
+async function hasReliableHistory(offerId: number): Promise<boolean> {
+  const [row] = await db
+    .select({ points: sql<number>`count(*)::int`, first: sql<string | null>`min(${priceHistory.recordedAt})` })
+    .from(priceHistory)
+    .where(eq(priceHistory.offerId, offerId))
+  if (!row || row.points < MIN_HISTORY_POINTS || !row.first) return false
+  return Date.now() - new Date(row.first).getTime() >= MIN_HISTORY_DAYS * 24 * 60 * 60 * 1000
+}
 
 async function checkPrice(offer: OfferRow): Promise<AmazonPriceInfo | null> {
   try {
@@ -89,8 +104,11 @@ async function applyPriceUpdate(offer: OfferRow, newPrice: number, newOriginal?:
     }
   }
 
-  const isMin = newPrice < parseFloat(offer.priceMinimum || '0')
-  const minimum = isMin ? newPrice : (offer.priceMinimum ? parseFloat(offer.priceMinimum) : newPrice)
+  const storedMin = parseFloat(offer.priceMinimum || '0')
+  const minimum = newPrice < storedMin ? newPrice : (storedMin > 0 ? storedMin : newPrice)
+  // O selo "mínimo histórico" só faz sentido com histórico de verdade: sem isto, uma oferta com
+  // 1 dia de dados ganha o selo por uma queda de cêntimos.
+  const isMin = newPrice < storedMin * MIN_HISTORIC_MARGIN && await hasReliableHistory(offer.id)
 
   await db.update(offers).set({
     priceCurrent: newPrice.toFixed(2),

@@ -11,9 +11,10 @@ export const categoriesRouter = new Hono()
 categoriesRouter.get('/', async (c) => {
   // 1. Ir buscar contagem de ofertas ATIVAS por categoria
   const catCountsRaw = await db.execute(sql`
-    SELECT c.id, COUNT(o.id) as count
+    SELECT c.id, COUNT(DISTINCT o.id) as count
     FROM categories c
-    LEFT JOIN offer_categories oc ON c.id = oc.category_id
+    LEFT JOIN categories sub ON sub.id = c.id OR sub.parent_id = c.id
+    LEFT JOIN offer_categories oc ON oc.category_id = sub.id
     LEFT JOIN offers o ON oc.offer_id = o.id AND o.status = 'active'
     WHERE c.active = true
     GROUP BY c.id
