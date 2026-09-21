@@ -17,7 +17,7 @@ clicksRouter.post('/', async (c) => {
 
     // Hash do IP para privacidade (RGPD)
     const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || 'unknown'
-    const ipHash = createHash('sha256').update(ip + process.env.IP_SALT || 'radar_salt').digest('hex').slice(0, 32)
+    const ipHash = createHash('sha256').update(ip + (process.env.IP_SALT || 'radar_salt')).digest('hex').slice(0, 32)
 
     // Registar clique
     await db.insert(clicks).values({

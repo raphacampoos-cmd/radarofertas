@@ -42,7 +42,8 @@ async function hasReliableHistory(offerId: number): Promise<boolean> {
   return Date.now() - new Date(row.first).getTime() >= MIN_HISTORY_DAYS * 24 * 60 * 60 * 1000
 }
 
-async function checkPrice(offer: OfferRow): Promise<AmazonPriceInfo | null> {
+// 'gone' = a Amazon respondeu 404/410 (o produto foi removido); null = falha temporária ou leitura impossível.
+async function checkPrice(offer: OfferRow): Promise<AmazonPriceInfo | 'gone' | null> {
   try {
     const res = await fetch(offer.affiliateUrl, {
       headers: {
@@ -53,6 +54,7 @@ async function checkPrice(offer: OfferRow): Promise<AmazonPriceInfo | null> {
       signal: AbortSignal.timeout(15000)
     });
 
+    if (res.status === 404 || res.status === 410) return 'gone';
     if (!res.ok) return null;
     const html = await res.text();
 
@@ -64,6 +66,12 @@ async function checkPrice(offer: OfferRow): Promise<AmazonPriceInfo | null> {
   } catch (e) {
     return null;
   }
+}
+
+// Retira do site uma oferta que já não existe na loja (para não mostrar preços de produtos mortos).
+async function expireOffer(offer: OfferRow, reason: string) {
+  await db.update(offers).set({ status: 'expired', updatedAt: new Date() }).where(eq(offers.id, offer.id))
+  console.log(`🗑️ Oferta retirada (${reason}): #${offer.id} ${offer.title.slice(0, 40)}`)
 }
 
 // Recalcula os campos derivados do preço (desconto e score) a partir de atual/original.
@@ -158,9 +166,17 @@ async function trackAmazonOffers(amazonOffers: OfferRow[]) {
   let updatedCount = 0
 
   for (const offer of amazonOffers) {
-    const info = await checkPrice(offer)
+    let info = await checkPrice(offer)
 
-    if (info?.price && info.price > 0) {
+    if (info === 'gone') {
+      // Confirma uma segunda vez antes de retirar: um 404 isolado não chega
+      await new Promise(r => setTimeout(r, 4000))
+      info = await checkPrice(offer)
+      if (info === 'gone') {
+        await expireOffer(offer, 'página da Amazon não existe')
+        updatedCount++
+      }
+    } else if (info?.price && info.price > 0) {
       // Ofertas descobertas pelo robô: o "preço original" é o preço de tabela real da Amazon
       // (riscado na página) ou, se não houver, o mais alto que já vimos — nunca um valor inventado.
       const newOriginal = offer.source === 'crawler'
@@ -196,10 +212,23 @@ export async function trackAwinOffers(awinOffers: OfferRow[]) {
 
   const byId = new Map(rows.map(r => [r.aw_product_id, r]))
 
+  // Um produto que desapareceu do feed foi descontinuado ou ficou sem stock: retiramos a oferta do site.
+  // Salvaguardas contra um feed incompleto: o feed tem de ter devolvido pelo menos metade das ofertas
+  // seguidas, e só retiramos as de um anunciante se pelo menos uma oferta dele ainda consta no feed
+  // (se o anunciante inteiro sumiu, é problema do feed, não dos produtos).
+  const feedLooksComplete = rows.length >= tracked.length * 0.5
+  const storesWithProducts = new Set(tracked.filter(o => byId.has(o.externalId as string)).map(o => o.storeId))
+
   let updatedCount = 0
   for (const offer of tracked) {
     const row = byId.get(offer.externalId as string)
-    if (!row) continue // produto já não consta no feed (fora de stock ou descontinuado)
+    if (!row) {
+      if (feedLooksComplete && storesWithProducts.has(offer.storeId)) {
+        await expireOffer(offer, 'já não consta no feed da Awin')
+        updatedCount++
+      }
+      continue
+    }
 
     const rate = await getEurRate(row.currency)
     if (!rate) continue
