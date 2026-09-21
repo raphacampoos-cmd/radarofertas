@@ -14,6 +14,9 @@ const TARGET_MERCHANTS = ['75408', '88453', '96499', '77156', '129139', '59557',
 
 // Só anunciamos no Telegram quando o desconto é real (vindo do feed), nunca inventado.
 const MIN_DISCOUNT_TO_ANNOUNCE = 10;
+// Anunciantes cujo "preço antigo" no feed não é fiável o suficiente para um alerta público:
+// os produtos entram no site, mas não vão para o Telegram. 128639 = ESR (EU), que tem ~-50% em quase tudo.
+const NO_ANNOUNCE_MERCHANTS = new Set(['128639']);
 
 async function ensureCategoryId(slug: string): Promise<number | null> {
   const [existing] = await db.select({ id: categories.id }).from(categories).where(eq(categories.slug, slug)).limit(1);
@@ -103,7 +106,7 @@ export async function runAwinApiBot() {
       inseridos++;
       console.log(`✅ Produto inserido: ${item.title} (${storeName}, ${item.categorySlug}, ${item.priceEur}€${item.discountPct > 0 ? `, -${Math.round(item.discountPct)}%` : ''})`);
 
-      if (item.discountPct >= MIN_DISCOUNT_TO_ANNOUNCE) {
+      if (item.discountPct >= MIN_DISCOUNT_TO_ANNOUNCE && !NO_ANNOUNCE_MERCHANTS.has(row.merchant_id)) {
         try {
           await sendTelegramAlert({
             title: item.title,
