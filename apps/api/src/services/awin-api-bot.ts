@@ -39,7 +39,11 @@ export async function runAwinApiBot() {
     !!row.merchant_image_url && Number(row.search_price) > 0
   );
 
-  const existing = await db.select({ externalId: offers.externalId, title: offers.title }).from(offers).where(eq(offers.source, 'awin_api'));
+  const existing = await db
+    .select({ externalId: offers.externalId, title: offers.title, storeName: stores.name })
+    .from(offers)
+    .innerJoin(stores, eq(offers.storeId, stores.id))
+    .where(eq(offers.source, 'awin_api'));
   const selected = await planAwinRun(candidates, existing, 5);
 
   console.log(`✅ Feed lido. ${candidates.length} produtos válidos dos ${TARGET_MERCHANTS.length} anunciantes alvo; ${selected.length} novos selecionados.`);

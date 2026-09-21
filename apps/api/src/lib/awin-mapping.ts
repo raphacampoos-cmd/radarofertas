@@ -141,10 +141,15 @@ export interface PlannedAwinOffer {
 export interface ExistingAwinOffer {
   externalId: string | null
   title: string
+  /** Nome da loja onde a oferta está publicada (para equilibrar os anunciantes). */
+  storeName?: string | null
 }
 
 // Variantes pensadas para outros mercados (tomadas US/AU/UK/JP, firmware chinês): não servem em Portugal.
 const NOT_FOR_PORTUGAL = /\b(US|AU|UK|JP|CA|KR|CN)\s*(plug|version|ver\.?)\b/i
+
+// Brindes e amostras que o anunciante lista no feed mas não vende avulso.
+const NOT_FOR_SALE = /not for (?:selling|sale|resale|individual)|free gift|gift with purchase|(?:^|[^a-z])sample(?:$|[^a-z])/i
 
 const MAX_PER_MERCHANT = 2
 const MIN_PRICE_EUR = 2
@@ -161,7 +166,7 @@ export async function planAwinRun(
   const knownKeys = existing.map((e) => variantKey(e.title))
 
   // 1. Só produtos novos (nem o mesmo ID, nem outra variante de algo já publicado)
-  const fresh = candidates.filter((c) => !NOT_FOR_PORTUGAL.test(c.product_name || '') && !knownIds.has(c.aw_product_id) && !knownKeys.some((k) => sameProduct(k, variantKey(c.product_name))))
+  const fresh = candidates.filter((c) => !NOT_FOR_PORTUGAL.test(c.product_name || '') && !NOT_FOR_SALE.test(c.product_name || '') && !knownIds.has(c.aw_product_id) && !knownKeys.some((k) => sameProduct(k, variantKey(c.product_name))))
 
   // 2. Uma linha por produto (as variantes de tamanho/cor contam como uma só)
   const byKey = new Map<string, AwinFeedRow>()
@@ -199,17 +204,34 @@ export async function planAwinRun(
     })
   }
 
-  // 4. Descontos reais primeiro, e no máximo MAX_PER_MERCHANT por anunciante (variedade)
+  // 4. Dentro de cada anunciante: descontos reais primeiro. Entre anunciantes: os menos representados
+  //    no site vêm primeiro, para os novos não ficarem afogados pelos que têm milhares de produtos.
   planned.sort((a, b) => Number(b.realDiscount) - Number(a.realDiscount) || b.discountPct - a.discountPct || a.tie - b.tie)
 
-  const perMerchant = new Map<string, number>()
-  const picked: PlannedAwinOffer[] = []
+  const publishedByStore = new Map<string, number>()
+  for (const e of existing) if (e.storeName) publishedByStore.set(e.storeName, (publishedByStore.get(e.storeName) ?? 0) + 1)
+
+  const groups = new Map<string, typeof planned>()
   for (const p of planned) {
-    const used = perMerchant.get(p.row.merchant_id) ?? 0
-    if (used >= MAX_PER_MERCHANT) continue
-    perMerchant.set(p.row.merchant_id, used + 1)
-    picked.push(p)
-    if (picked.length >= limit) break
+    const list = groups.get(p.row.merchant_id) ?? []
+    list.push(p)
+    groups.set(p.row.merchant_id, list)
+  }
+
+  const displayName = (id: string) => MERCHANT_DISPLAY_NAME[id] ?? groups.get(id)![0].row.merchant_name
+  const merchantOrder = [...groups.keys()]
+    .map((id) => ({ id, published: publishedByStore.get(displayName(id)) ?? 0, tie: random() }))
+    .sort((a, b) => a.published - b.published || a.tie - b.tie)
+    .map((m) => m.id)
+
+  // Rodadas: 1º produto de cada anunciante, depois o 2º (no máximo MAX_PER_MERCHANT), até ao limite.
+  const picked: PlannedAwinOffer[] = []
+  for (let round = 0; round < MAX_PER_MERCHANT && picked.length < limit; round++) {
+    for (const id of merchantOrder) {
+      const item = groups.get(id)![round]
+      if (item) picked.push(item)
+      if (picked.length >= limit) break
+    }
   }
   return picked
 }
