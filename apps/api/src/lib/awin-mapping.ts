@@ -5,6 +5,12 @@ import { getEurRate, roundMoney } from './fx.js'
 // O site não tinha categoria para moda (a loja Needs No Label vende só isso).
 export const EXTRA_CATEGORIES: Record<string, { name: string; icon: string }> = {
   moda: { name: 'Moda & Acessórios', icon: '👗' },
+  'thc-natural-line': { name: 'THC Natural Line', icon: '🧶' },
+}
+
+// Anunciantes com categoria própria: têm prioridade sobre as regras por texto do feed.
+const MERCHANT_OWN_CATEGORY: Record<string, string> = {
+  '129139': 'thc-natural-line', // THC Natural Line DE (lã de ovelha: gorros, luvas, casacos)
 }
 
 // Categoria por defeito de cada anunciante quando o feed não traz categoria própria.
@@ -20,7 +26,6 @@ const MERCHANT_DEFAULT_CATEGORY: Record<string, string> = {
   '77156': 'tecnologia-e-informatica', // Gshopper
   '59557': 'tecnologia-e-informatica', // LaserPecker (gravadores a laser)
   '128639': 'smartphones-e-acessorios', // ESR (EU) (capas, carregadores, acessórios)
-  '129139': 'moda', // THC Natural Line DE (gorros, casacos, luvas)
 }
 
 // O feed às vezes traz o nome da empresa e não o da marca que o utilizador conhece.
@@ -40,6 +45,9 @@ const CATEGORY_RULES: [RegExp, string][] = [
 ]
 
 export function mapAwinCategory(row: Pick<AwinFeedRow, 'merchant_id' | 'merchant_category' | 'category_name' | 'product_name'>): string {
+  const own = MERCHANT_OWN_CATEGORY[row.merchant_id]
+  if (own) return own
+
   const categoryText = `${row.merchant_category || ''} ${row.category_name || ''}`.trim()
   const texts = categoryText ? [categoryText] : [row.product_name || '']
 
