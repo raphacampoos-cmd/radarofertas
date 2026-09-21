@@ -44,6 +44,8 @@ export const MERCHANT_DISPLAY_NAME: Record<string, string> = {
   '69428': 'Ultrahuman',
   '88453': 'Wondershare',
   '128639': 'ESR',
+  '105805': 'EINSTAR', // no feed aparece como "SHINING 3D Technology Inc"
+  '68106': 'HTVRont',
 }
 
 // Ordem importa: a primeira regra que casar ganha.
