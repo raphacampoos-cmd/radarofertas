@@ -4,10 +4,13 @@ import { eq } from 'drizzle-orm';
 import { calculateDealScore } from '@radarofertas/deal-engine';
 import { sendTelegramAlert } from '../lib/telegram.js';
 import { fetchAwinFeed } from '../lib/awin-feed.js';
-import { EXTRA_CATEGORIES, planAwinRun, slugify } from '../lib/awin-mapping.js';
+import { EXTRA_CATEGORIES, MERCHANT_DISPLAY_NAME, planAwinRun, slugify } from '../lib/awin-mapping.js';
 
 // Os ID dos anunciantes que nos interessam
-const TARGET_MERCHANTS = ['75408', '88453', '96499', '77156', '129139'];
+// 75408 Nothingprojector, 88453 Wondershare, 96499 Ottocast, 77156 Gshopper, 129139 THC Natural Line DE,
+// 59557 LaserPecker, 128639 ESR (EU). Para um anunciante novo aparecer aqui tem de estar também
+// no feed (o parâmetro /fid/ do link em lib/awin-feed.ts) e em MERCHANT_DEFAULT_CATEGORY.
+const TARGET_MERCHANTS = ['75408', '88453', '96499', '77156', '129139', '59557', '128639'];
 
 // Só anunciamos no Telegram quando o desconto é real (vindo do feed), nunca inventado.
 const MIN_DISCOUNT_TO_ANNOUNCE = 10;
@@ -48,7 +51,7 @@ export async function runAwinApiBot() {
   for (const item of selected) {
     const { row } = item;
     try {
-      const storeName = row.merchant_name;
+      const storeName = MERCHANT_DISPLAY_NAME[row.merchant_id] ?? row.merchant_name;
 
       const existingStore = await db.select().from(stores).where(eq(stores.name, storeName)).limit(1);
       let storeId: number;

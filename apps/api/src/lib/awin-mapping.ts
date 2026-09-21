@@ -18,6 +18,14 @@ const MERCHANT_DEFAULT_CATEGORY: Record<string, string> = {
   '96499': 'tecnologia-e-informatica', // Ottocast
   '119703': 'tecnologia-e-informatica', // Vatrer
   '77156': 'tecnologia-e-informatica', // Gshopper
+  '59557': 'tecnologia-e-informatica', // LaserPecker (gravadores a laser)
+  '128639': 'smartphones-e-acessorios', // ESR (EU) (capas, carregadores, acessórios)
+  '129139': 'moda', // THC Natural Line DE (gorros, casacos, luvas)
+}
+
+// O feed às vezes traz o nome da empresa e não o da marca que o utilizador conhece.
+export const MERCHANT_DISPLAY_NAME: Record<string, string> = {
+  '59557': 'LaserPecker', // no feed aparece como "Shenzhen Hingin Technology Co.,Ltd"
 }
 
 // Ordem importa: a primeira regra que casar ganha.
@@ -85,11 +93,17 @@ export function slugify(text: string): string {
 
 // ── Variantes ──────────────────────────────────────────────────────────────
 // "Mono Dress | Clothing Size: 16" e "Mono Dress | Size: 10" são o mesmo produto em tamanhos
-// diferentes: comparamos pelo título sem a parte do tamanho.
+// diferentes, e "Case - Pink" / "Case - Red" o mesmo produto em cores diferentes: comparamos pelo
+// título sem a parte do tamanho/cor.
+const COLOR_WORDS = 'black|white|pink|red|purple|green|blue|lavender|gray|grey|yellow|orange|clear|transparent|brown|beige|silver|gold|teal|coral|violet|lilac|burgundy|khaki|navy|mint|cream|rose|olive|sage|peach|turquoise|ivory'
+const COLOR_MODIFIERS = 'matte|dark|light|deep|pastel|sky|baby|space|midnight|forest|hot|neon'
+// Até 3 palavras de cor/modificador no fim do título, separadas por espaço, / ou & ("Navy Blue", "Pink/Purple")
+const TRAILING_COLOR = new RegExp(`\\s+-\\s+(?:(?:${COLOR_WORDS}|${COLOR_MODIFIERS})(?:\\s*[/&]\\s*|\\s+)){0,2}(?:${COLOR_WORDS})\\s*$`, 'i')
+
 export function variantKey(title: string): string {
   const segments = title
     .split('|')
-    .map((s) => s.trim())
+    .map((s) => s.trim().replace(TRAILING_COLOR, ''))
     .filter((s) => s && !/^(clothing\s+)?(uk\s+)?size\b/i.test(s) && !/^(uk\s*)?\d{1,2}$/i.test(s))
   return segments.join(' | ').toLowerCase().replace(/\s+/g, ' ').trim()
 }
@@ -107,7 +121,9 @@ export function realOldPrice(row: { search_price: string; product_price_old?: st
   const price = Number(row.search_price)
   const old = Number(row.product_price_old)
   if (!(price > 0) || !(old > price)) return null
-  return (old - price) / old <= 0.85 ? old : null
+  // Acima de -60% o "preço antigo" é quase sempre um PVP inflacionado (ex.: o mesmo produto com
+  // preço antigo diferente por variante), por isso não o tratamos como desconto real.
+  return (old - price) / old <= 0.6 ? old : null
 }
 
 // ── Seleção ────────────────────────────────────────────────────────────────
@@ -127,6 +143,9 @@ export interface ExistingAwinOffer {
   title: string
 }
 
+// Variantes pensadas para outros mercados (tomadas US/AU/UK/JP, firmware chinês): não servem em Portugal.
+const NOT_FOR_PORTUGAL = /\b(US|AU|UK|JP|CA|KR|CN)\s*(plug|version|ver\.?)\b/i
+
 const MAX_PER_MERCHANT = 2
 const MIN_PRICE_EUR = 2
 // Produtos muito caros e sem desconto real não são "ofertas": ficam de fora da seleção automática.
@@ -142,7 +161,7 @@ export async function planAwinRun(
   const knownKeys = existing.map((e) => variantKey(e.title))
 
   // 1. Só produtos novos (nem o mesmo ID, nem outra variante de algo já publicado)
-  const fresh = candidates.filter((c) => !knownIds.has(c.aw_product_id) && !knownKeys.some((k) => sameProduct(k, variantKey(c.product_name))))
+  const fresh = candidates.filter((c) => !NOT_FOR_PORTUGAL.test(c.product_name || '') && !knownIds.has(c.aw_product_id) && !knownKeys.some((k) => sameProduct(k, variantKey(c.product_name))))
 
   // 2. Uma linha por produto (as variantes de tamanho/cor contam como uma só)
   const byKey = new Map<string, AwinFeedRow>()

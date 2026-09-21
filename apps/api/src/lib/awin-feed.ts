@@ -3,7 +3,7 @@ import zlib from 'zlib';
 import csv from 'csv-parser';
 
 // O URL fornecido pelo utilizador (Product Datafeed - CSV GZIPPED)
-export const AWIN_FEED_URL = 'https://productdata.awin.com/datafeed/download/apikey/fafdb9c3a02c084cbb3424202a43596c/language/en/fid/101189,103938,104051,104495,107946,108023,108813,109551,109975,114261,115564,116791/rid/0/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/';
+export const AWIN_FEED_URL = 'https://productdata.awin.com/datafeed/download/apikey/fafdb9c3a02c084cbb3424202a43596c/language/en/fid/101189,103938,104051,104495,107946,108023,108813,109551,109975,114261,115564,116791,109228,116686,117590/rid/0/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/';
 
 export interface AwinFeedRow {
   aw_deep_link: string;
