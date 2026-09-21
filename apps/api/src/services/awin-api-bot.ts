@@ -6,11 +6,24 @@ import { sendTelegramAlert } from '../lib/telegram.js';
 import { fetchAwinFeed } from '../lib/awin-feed.js';
 import { EXTRA_CATEGORIES, MERCHANT_DISPLAY_NAME, planAwinRun, slugify } from '../lib/awin-mapping.js';
 
-// Os ID dos anunciantes que nos interessam
-// 75408 Nothingprojector, 88453 Wondershare, 96499 Ottocast, 77156 Gshopper, 129139 THC Natural Line DE,
-// 59557 LaserPecker, 128639 ESR (EU). Para um anunciante novo aparecer aqui tem de estar também
-// no feed (o parâmetro /fid/ do link em lib/awin-feed.ts) e em MERCHANT_DEFAULT_CATEGORY.
-const TARGET_MERCHANTS = ['75408', '88453', '96499', '77156', '129139', '59557', '128639'];
+// Os ID dos 15 anunciantes aprovados
+const TARGET_MERCHANTS = [
+  '24562',  // Padel Market
+  '36144',  // OutIn
+  '59557',  // LaserPecker
+  '68106',  // HTVRont
+  '69428',  // Ultrahuman Healthcare
+  '75408',  // Nothingprojector
+  '77026',  // adidas PT
+  '77156',  // Gshopper
+  '82371',  // The Aeternum Company
+  '88453',  // Wondershare Global Limited
+  '96499',  // Ottocast
+  '102509', // KuKirin-scooter
+  '105805', // EINSTAR
+  '128639', // ESR (EU)
+  '129139', // THC Natural Line DE
+];
 
 // Só anunciamos no Telegram quando o desconto é real (vindo do feed), nunca inventado.
 const MIN_DISCOUNT_TO_ANNOUNCE = 10;

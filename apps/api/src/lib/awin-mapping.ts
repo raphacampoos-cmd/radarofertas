@@ -26,11 +26,24 @@ const MERCHANT_DEFAULT_CATEGORY: Record<string, string> = {
   '77156': 'tecnologia-e-informatica', // Gshopper
   '59557': 'tecnologia-e-informatica', // LaserPecker (gravadores a laser)
   '128639': 'smartphones-e-acessorios', // ESR (EU) (capas, carregadores, acessórios)
+  '24562': 'desporto-e-ar-livre', // Padel Market
+  '36144': 'casa', // OutIn (máquinas de café expresso portáteis)
+  '68106': 'casa', // HTVRont (artesanato, prensas térmicas)
+  '69428': 'beleza-e-saude', // Ultrahuman Healthcare (smart rings, trackers)
+  '77026': 'moda', // adidas PT
+  '82371': 'moda', // The Aeternum Company
+  '102509': 'desporto-e-ar-livre', // KuKirin-scooter (trotinetes elétricas)
+  '105805': 'tecnologia-e-informatica', // EINSTAR (scanners 3D)
 }
 
 // O feed às vezes traz o nome da empresa e não o da marca que o utilizador conhece.
 export const MERCHANT_DISPLAY_NAME: Record<string, string> = {
   '59557': 'LaserPecker', // no feed aparece como "Shenzhen Hingin Technology Co.,Ltd"
+  '77026': 'adidas',
+  '102509': 'KuKirin',
+  '69428': 'Ultrahuman',
+  '88453': 'Wondershare',
+  '128639': 'ESR',
 }
 
 // Ordem importa: a primeira regra que casar ganha.
