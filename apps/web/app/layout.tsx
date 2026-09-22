@@ -35,6 +35,13 @@ export default function RootLayout({
   return (
     <html lang="pt-PT">
       <head>
+        {/* Google AdSense */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2815702619453444"
+          crossOrigin="anonymous"
+        />
+
         {/* Impact.com Verification & Tracking */}
         <script
           type="text/javascript"
