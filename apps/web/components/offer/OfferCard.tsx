@@ -44,7 +44,8 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
         href={`/oferta/${offer.slug}`}
         style={{
           display: 'block', flexShrink: 0, position: 'relative',
-          width: '160px', background: 'var(--muted)',
+          width: '160px', background: '#ffffff',
+          borderRadius: 'var(--radius) 0 0 var(--radius)',
         }}
       >
         {offer.isMinHistoric && (
@@ -79,9 +80,18 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
             decoding="async"
             onError={() => setImageFailed(true)}
           />
+        ) : offer.store?.logoUrl ? (
+          <div style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem' }}>
+            <img
+              src={offer.store.logoUrl}
+              alt={offer.store.name}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
+          </div>
         ) : (
-          <div style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>
-            📦
+          <div style={{ width: '160px', height: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', background: '#1e293b', color: '#94a3b8', padding: '0.5rem' }}>
+            <span style={{ fontSize: '2rem' }}>🛍️</span>
+            <span style={{ fontSize: '0.7rem', fontWeight: 700, textAlign: 'center', color: '#cbd5e1' }}>{offer.store?.name || 'RadarOfertas'}</span>
           </div>
         )}
 

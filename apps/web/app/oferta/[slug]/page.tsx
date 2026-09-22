@@ -10,6 +10,7 @@ import { ShareButtonBig } from '@/components/offer/ShareButtonBig'
 import { VoteButtons } from '@/components/offer/VoteButtons'
 import { CommentsSection } from '@/components/offer/CommentsSection'
 import { OfferSpecsSection } from '@/components/offer/OfferSpecsSection'
+import { OfferImage } from '@/components/offer/OfferImage'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -137,31 +138,13 @@ export default async function OfferPage({ params }: PageProps) {
       }}>
         {/* Coluna esquerda: Imagem */}
         <div>
-          <div style={{
-            background: '#f8fafc',
-            borderRadius: 'var(--radius)',
-            border: '1px solid var(--border)',
-            overflow: 'hidden',
-            position: 'relative',
-            paddingTop: '100%',
-          }}>
-            {offer.imageUrl ? (
-              <img
-                src={offer.imageUrl}
-                alt={offer.title}
-                style={{
-                  position: 'absolute', inset: 0, width: '100%', height: '100%',
-                  objectFit: 'contain', padding: '1.5rem',
-                }}
-              />
-            ) : (
-              <div style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '5rem',
-              }}>📦</div>
-            )}
-          </div>
+          {/* Imagem do Produto com Fallback Inteligente */}
+          <OfferImage
+            src={offer.imageUrl}
+            alt={offer.title}
+            storeName={offer.store?.name}
+            storeLogo={offer.store?.logoUrl}
+          />
 
           {/* Histórico de preços */}
           <div style={{

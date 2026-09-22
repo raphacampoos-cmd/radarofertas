@@ -101,6 +101,12 @@ export async function runAwinApiBot() {
         ? 'https://ultrahumanhealthcare.pxf.io/c/7823444/3114542/38784'
         : row.aw_deep_link;
 
+      // Sanitizar URL da imagem para evitar links do Google Drive, Imgur album ou quebrados
+      let finalImageUrl = row.merchant_image_url;
+      if (!finalImageUrl || finalImageUrl.includes('drive.google.com') || finalImageUrl.includes('imgur.com/a/') || !finalImageUrl.startsWith('http')) {
+        finalImageUrl = `https://ui.awin.com/images/upload/merchant/profile/${row.merchant_id}.png`;
+      }
+
       const [inserted] = await db.insert(offers).values({
         title: item.title,
         slug: item.slug,
@@ -110,7 +116,7 @@ export async function runAwinApiBot() {
         priceMinimum: item.priceEur.toFixed(2),
         discountPct: item.discountPct.toFixed(2),
         currency: 'EUR',
-        imageUrl: row.merchant_image_url,
+        imageUrl: finalImageUrl,
         affiliateUrl,
         externalId: row.aw_product_id,
         storeId,
