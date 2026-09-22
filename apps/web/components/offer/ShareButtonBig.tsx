@@ -35,20 +35,28 @@ export function ShareButtonBig({ title, slug, price }: { title: string, slug: st
         gap: '0.5rem',
         width: '100%',
         padding: '0.75rem',
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
-        borderRadius: '0.5rem',
-        color: 'var(--foreground)',
+        background: '#1e293b',
+        border: '1px solid #334155',
+        borderRadius: 'var(--radius)',
+        color: '#f8fafc',
         fontWeight: 600,
-        fontSize: '0.875rem',
+        fontSize: '0.9rem',
         cursor: 'pointer',
-        transition: 'background 0.2s',
+        transition: 'all 0.2s ease',
       }}
-      onMouseOver={(e) => (e.currentTarget.style.background = '#f1f5f9')}
-      onMouseOut={(e) => (e.currentTarget.style.background = '#f8fafc')}
+      onMouseOver={(e) => {
+        e.currentTarget.style.background = '#334155';
+        e.currentTarget.style.borderColor = '#475569';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.background = '#1e293b';
+        e.currentTarget.style.borderColor = '#334155';
+      }}
     >
-      {copied ? <Check size={18} color="#16a34a" /> : <Share2 size={18} />}
-      {copied ? 'Link copiado!' : 'Partilhar Oferta'}
+      {copied ? <Check size={18} color="#22c55e" /> : <Share2 size={18} color="#94a3b8" />}
+      <span style={{ color: copied ? '#22c55e' : '#f8fafc' }}>
+        {copied ? 'Link copiado para a área de transferência!' : 'Partilhar Oferta'}
+      </span>
     </button>
   )
 }

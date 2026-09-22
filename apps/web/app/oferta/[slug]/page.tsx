@@ -9,6 +9,7 @@ import { CouponBox } from '@/components/offer/CouponBox'
 import { ShareButtonBig } from '@/components/offer/ShareButtonBig'
 import { VoteButtons } from '@/components/offer/VoteButtons'
 import { CommentsSection } from '@/components/offer/CommentsSection'
+import { OfferSpecsSection } from '@/components/offer/OfferSpecsSection'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -275,23 +276,16 @@ export default async function OfferPage({ params }: PageProps) {
             ⚠️ Os preços e disponibilidade podem variar após a publicação. Verifica sempre o preço final na loja antes de comprar. Links com * podem gerar comissão para o RadarOfertas.
           </p>
 
-          {/* Descrição */}
-          {offer.description && (
-            <div style={{
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
-              padding: '1rem',
-            }}>
-              <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-                Sobre este produto
-              </h3>
-              <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', lineHeight: 1.7 }}>
-                {offer.description}
-              </p>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Secção Completa de Especificações, Detalhes e Garantias */}
+      <OfferSpecsSection
+        offer={offer}
+        priceCurrent={priceCurrent}
+        priceOriginal={priceOriginal}
+        discountPct={discountPct}
+      />
 
       <CommentsSection offerId={offer.id} />
 
