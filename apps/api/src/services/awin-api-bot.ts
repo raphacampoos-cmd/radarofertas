@@ -96,6 +96,11 @@ export async function runAwinApiBot() {
         priceAvg90Days: null,
       }).score;
 
+      // Se for Ultrahuman (69428), usar o link de afiliado direto da Impact.com com 7% de comissão
+      const affiliateUrl = row.merchant_id === '69428'
+        ? 'https://ultrahumanhealthcare.pxf.io/c/7823444/3114542/38784'
+        : row.aw_deep_link;
+
       const [inserted] = await db.insert(offers).values({
         title: item.title,
         slug: item.slug,
@@ -106,12 +111,12 @@ export async function runAwinApiBot() {
         discountPct: item.discountPct.toFixed(2),
         currency: 'EUR',
         imageUrl: row.merchant_image_url,
-        affiliateUrl: row.aw_deep_link,
+        affiliateUrl,
         externalId: row.aw_product_id,
         storeId,
         status: 'active',
         dealScore: score.toFixed(2),
-        source: 'awin_api',
+        source: row.merchant_id === '69428' ? 'impact' : 'awin_api',
         upvotes: 0,
         downvotes: 0,
       }).returning({ id: offers.id });
