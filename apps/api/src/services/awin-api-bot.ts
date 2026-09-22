@@ -6,7 +6,7 @@ import { sendTelegramAlert } from '../lib/telegram.js';
 import { fetchAwinFeed } from '../lib/awin-feed.js';
 import { EXTRA_CATEGORIES, MERCHANT_DISPLAY_NAME, planAwinRun, slugify } from '../lib/awin-mapping.js';
 
-// Os ID dos 15 anunciantes aprovados
+// Os ID dos 16 anunciantes aprovados
 const TARGET_MERCHANTS = [
   '24562',  // Padel Market
   '36144',  // OutIn
@@ -18,6 +18,7 @@ const TARGET_MERCHANTS = [
   '77156',  // Gshopper
   '82371',  // The Aeternum Company
   '88453',  // Wondershare Global Limited
+  '90211',  // FastestVPN (Fast Technology Limited)
   '96499',  // Ottocast
   '102509', // KuKirin-scooter
   '105805', // EINSTAR

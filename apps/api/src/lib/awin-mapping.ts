@@ -34,6 +34,7 @@ const MERCHANT_DEFAULT_CATEGORY: Record<string, string> = {
   '82371': 'moda', // The Aeternum Company
   '102509': 'desporto-e-ar-livre', // KuKirin-scooter (trotinetes elétricas)
   '105805': 'tecnologia-e-informatica', // EINSTAR (scanners 3D)
+  '90211': 'tecnologia-e-informatica', // FastestVPN (Fast Technology Limited)
 }
 
 // O feed às vezes traz o nome da empresa e não o da marca que o utilizador conhece.
@@ -46,6 +47,7 @@ export const MERCHANT_DISPLAY_NAME: Record<string, string> = {
   '128639': 'ESR',
   '105805': 'EINSTAR', // no feed aparece como "SHINING 3D Technology Inc"
   '68106': 'HTVRont',
+  '90211': 'FastestVPN', // no feed aparece como "Fast Technology Limited"
 }
 
 // Ordem importa: a primeira regra que casar ganha.

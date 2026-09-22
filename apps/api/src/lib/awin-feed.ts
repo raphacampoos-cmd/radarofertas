@@ -2,8 +2,8 @@ import https from 'https';
 import zlib from 'zlib';
 import csv from 'csv-parser';
 
-// O URL fornecido pelo utilizador (Product Datafeed - CSV GZIPPED com todos os anunciantes)
-export const AWIN_FEED_URL = 'https://productdata.awin.com/datafeed/download/apikey/fafdb9c3a02c084cbb3424202a43596c/language/en/fid/97523,98176,100347,101189,103938,104051,104488,104495,105185,107946,108023,108292,108336,108813,109219,109220,109221,109222,109225,109228,109551,109975,114261,114793,115564,115853,116383,116399,116791,117590/rid/0/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/';
+// O URL fornecido pelo utilizador (Product Datafeed - CSV GZIPPED com todos os anunciantes incluindo FastestVPN)
+export const AWIN_FEED_URL = 'https://productdata.awin.com/datafeed/download/apikey/fafdb9c3a02c084cbb3424202a43596c/language/en/fid/97523,98176,100347,101189,103938,104051,104488,104495,105185,107741,107946,108023,108292,108336,108813,109219,109220,109221,109222,109225,109228,109551,109975,114261,114793,115564,115853,116383,116399,116791,117590/rid/0/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/';
 
 export interface AwinFeedRow {
   aw_deep_link: string;
