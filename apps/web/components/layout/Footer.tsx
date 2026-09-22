@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ManageCookiesButton } from '@/components/ui/ManageCookiesButton'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -54,7 +55,9 @@ export function Footer() {
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <li><Link href="/como-funciona" style={{ color: '#94a3b8', fontSize: '0.875rem', textDecoration: 'none' }}>Como funciona</Link></li>
               <li><Link href="/termos" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Termos de Utilização</Link></li>
-              <li><Link href="/privacidade" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Política de Privacidade</Link></li>
+              <li><Link href="/privacidade" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Política de Privacidade (RGPD)</Link></li>
+              <li><Link href="/politica-cookies" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Política de Cookies</Link></li>
+              <li><ManageCookiesButton /></li>
             </ul>
           </div>
         </div>
