@@ -87,6 +87,7 @@ import { sendWeeklyNewsletter } from './services/newsletter.js'
 import { runDiscoveryBot } from './services/discovery-bot.js'
 import { runAwinApiBot } from './services/awin-api-bot.js'
 import { startTelegramSniper } from './services/telegram-sniper.js'
+import { sendDailyOffer } from './services/telegram-daily.js'
 
 const port = parseInt(process.env.PORT || '3001')
 console.log(`🚀 RadarOfertas API a correr em http://localhost:${port}`)
@@ -112,6 +113,18 @@ if (BACKGROUND_JOBS_ENABLED) {
   cron.schedule('0 4 * * *', () => {
     console.log('🌐 A acordar o Agente Awin para ler os feeds oficiais...')
     runAwinApiBot().catch(console.error)
+  }, { timezone: 'Europe/Lisbon' })
+
+  // 📢 Telegram Autónomo: Oferta da Manhã — todos os dias às 09:00
+  cron.schedule('0 9 * * *', () => {
+    console.log('📢 Telegram: a publicar Oferta da Manhã...')
+    sendDailyOffer('morning', 40, 10).catch(console.error)
+  }, { timezone: 'Europe/Lisbon' })
+
+  // 📢 Telegram Autónomo: Oferta da Tarde — todos os dias às 19:00
+  cron.schedule('0 19 * * *', () => {
+    console.log('📢 Telegram: a publicar Oferta da Tarde...')
+    sendDailyOffer('evening', 35, 0).catch(console.error)
   }, { timezone: 'Europe/Lisbon' })
 
   // Iniciar o robô autónomo de preços em background

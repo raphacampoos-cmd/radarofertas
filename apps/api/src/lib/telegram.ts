@@ -70,3 +70,40 @@ export async function sendTelegramAlert(offer: {
     console.error('Erro ao enviar mensagem para o Telegram:', err);
   }
 }
+
+/**
+ * Envia texto já formatado directamente para o canal — sem reformatar.
+ * Usado pelo telegram-daily para controlar totalmente o copy da mensagem.
+ */
+export async function sendRawTelegram(text: string, imageUrl?: string) {
+  const TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8889237428:AAHE1qahwf3OkCZ9KHxXTVNkOoYSe7IDXpI'
+  const CHAT = process.env.TELEGRAM_CHANNEL_ID || '@radarofertaspt'
+
+  const post = (method: 'sendPhoto' | 'sendMessage', body: Record<string, unknown>) =>
+    fetch(`https://api.telegram.org/bot${TOKEN}/${method}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CHAT, parse_mode: 'Markdown', ...body }),
+    })
+
+  try {
+    let res: Response
+    if (imageUrl) {
+      res = await post('sendPhoto', { photo: imageUrl, caption: text })
+      if (!res.ok) {
+        console.warn('Telegram: imagem falhou, a enviar só texto.')
+        res = await post('sendMessage', { text })
+      }
+    } else {
+      res = await post('sendMessage', { text })
+    }
+
+    if (res.ok) {
+      console.log('✅ Mensagem enviada para o Telegram.')
+    } else {
+      console.error('❌ Telegram error:', await res.text())
+    }
+  } catch (err) {
+    console.error('Erro sendRawTelegram:', err)
+  }
+}
