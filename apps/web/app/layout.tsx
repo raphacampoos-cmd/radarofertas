@@ -35,6 +35,16 @@ export default function RootLayout({
   return (
     <html lang="pt-PT">
       <head>
+        {/* Resource Hints para acelerar imagens e conexões externas */}
+        <link rel="preconnect" href="https://ui.awin.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://ui.awin.com" />
+        <link rel="preconnect" href="https://m.media-amazon.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://m.media-amazon.com" />
+        <link rel="preconnect" href="https://images-na.ssl-images-amazon.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images-na.ssl-images-amazon.com" />
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+
         {/* Google AdSense */}
         <script
           async

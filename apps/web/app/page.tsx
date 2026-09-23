@@ -36,7 +36,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
   let error = false
 
   try {
-    const res = await getOffers({ limit: 200, sort: 'published_at', store })
+    const res = await getOffers({ limit: 40, sort: 'published_at', store })
     offers = res.data
     total = res.pagination?.total ?? res.data.length
   } catch {

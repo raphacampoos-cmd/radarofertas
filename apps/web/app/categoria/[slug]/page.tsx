@@ -135,23 +135,98 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         </>
       )}
 
-      {/* Schema.org CollectionPage */}
+      {/* Secção de Perguntas Frequentes & Guia de Compra (SEO & Rich Snippet) */}
+      <section style={{
+        marginTop: '3.5rem',
+        padding: '2rem 1.5rem',
+        background: 'var(--card)',
+        borderRadius: 'var(--radius)',
+        border: '1px solid var(--border)',
+      }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.25rem', color: '#f97316' }}>
+          💡 Perguntas Frequentes sobre {category.name}
+        </h2>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--foreground)' }}>
+              1. Como garantimos que as ofertas de {category.name} são descontos reais?
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', lineHeight: 1.6 }}>
+              O algoritmo do RadarOfertas analisa o histórico de preços de 90 dias em lojas de referência em Portugal e na Europa. Apenas destacamos promoções com Deal Score elevado que estejam próximas ou no mínimo histórico registado.
+            </p>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--foreground)' }}>
+              2. Os produtos comprados nas lojas parceiras têm garantia em Portugal?
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', lineHeight: 1.6 }}>
+              Sim. Todas as compras efetuadas nas lojas oficiais parceiras (como Amazon, Worten, adidas, etc.) estão abrangidas pela legislação portuguesa e da União Europeia, garantindo um mínimo de 3 anos de garantia legal e direito de devolução até 14 a 30 dias.
+            </p>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--foreground)' }}>
+              3. O que significa o Deal Score apresentado nas ofertas?
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', lineHeight: 1.6 }}>
+              O Deal Score (0 a 100) é uma pontuação automática que cruza a percentagem de desconto, a proximidade face ao menor preço histórico e a fiabilidade da loja. Pontuações acima de 80 indicam promoções excecionais.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Schema.org CollectionPage & FAQPage */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'CollectionPage',
-            name: `${category.name} — Ofertas RadarOfertas`,
-            description: category.description,
-            url: `https://radarofertas.pt/categoria/${slug}`,
-            breadcrumb: {
-              '@type': 'BreadcrumbList',
-              itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Início', item: 'https://radarofertas.pt' },
-                { '@type': 'ListItem', position: 2, name: category.name, item: `https://radarofertas.pt/categoria/${slug}` },
-              ],
-            },
+            '@graph': [
+              {
+                '@type': 'CollectionPage',
+                name: `${category.name} — Ofertas RadarOfertas`,
+                description: category.description || `As melhores ofertas de ${category.name} em Portugal com histórico de preços e cupões verificados.`,
+                url: `https://radarofertas-psi.vercel.app/categoria/${slug}`,
+                breadcrumb: {
+                  '@type': 'BreadcrumbList',
+                  itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Início', item: 'https://radarofertas-psi.vercel.app' },
+                    { '@type': 'ListItem', position: 2, name: category.name, item: `https://radarofertas-psi.vercel.app/categoria/${slug}` },
+                  ],
+                },
+              },
+              {
+                '@type': 'FAQPage',
+                mainEntity: [
+                  {
+                    '@type': 'Question',
+                    name: `Como garantimos que as ofertas de ${category.name} são descontos reais?`,
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: `O algoritmo do RadarOfertas analisa o histórico de preços de 90 dias em lojas de referência em Portugal e na Europa. Apenas destacamos promoções com Deal Score elevado que estejam próximas ou no mínimo histórico registado.`,
+                    },
+                  },
+                  {
+                    '@type': 'Question',
+                    name: `Os produtos comprados nas lojas parceiras têm garantia em Portugal?`,
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: `Sim. Todas as compras efetuadas nas lojas oficiais parceiras estão abrangidas pela legislação portuguesa e da UE com 3 anos de garantia legal.`,
+                    },
+                  },
+                  {
+                    '@type': 'Question',
+                    name: `O que significa o Deal Score apresentado nas ofertas?`,
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: `O Deal Score (0 a 100) é uma pontuação automática que cruza a percentagem de desconto, a proximidade face ao menor preço histórico e a fiabilidade da loja.`,
+                    },
+                  },
+                ],
+              },
+            ],
           }),
         }}
       />
