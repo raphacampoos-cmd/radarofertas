@@ -22,6 +22,7 @@ function getFormattedMonthYear(): string {
 }
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
@@ -177,17 +178,19 @@ export default async function StorePage({ params }: PageProps) {
 
         <div style={{ flex: 1, minWidth: '260px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-            <span style={{
-              background: 'rgba(249, 115, 22, 0.15)',
-              border: '1px solid rgba(249, 115, 22, 0.3)',
-              color: '#f97316',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              padding: '0.2rem 0.6rem',
-              borderRadius: '9999px',
-            }}>
-              ⭐ Loja Parceira
-            </span>
+            {store.affiliateNetwork && store.active && !isEmpty && (
+              <span style={{
+                background: 'rgba(249, 115, 22, 0.15)',
+                border: '1px solid rgba(249, 115, 22, 0.3)',
+                color: '#f97316',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                padding: '0.2rem 0.6rem',
+                borderRadius: '9999px',
+              }}>
+                ⭐ Loja Parceira
+              </span>
+            )}
             <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
               {offers.length} {offers.length === 1 ? 'oferta qualificada' : 'ofertas qualificadas'}
             </span>

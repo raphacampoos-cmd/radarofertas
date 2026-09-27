@@ -3,11 +3,10 @@ import type { Offer, Category, Store, ApiResponse, PaginationMeta, PricePoint, R
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  // Leituras (GET) no servidor ficam em cache 60s: a home é dinâmica (filtro por loja) e sem isto
-  // cada visita bateria na API. No browser esta opção é ignorada.
   const isGet = !options?.method || options.method === 'GET'
+  const hasCustomCache = options?.cache !== undefined || options?.next !== undefined
   const res = await fetch(`${API_URL}${path}`, {
-    ...(isGet ? { next: { revalidate: 60 } } : {}),
+    ...(isGet && !hasCustomCache ? { next: { revalidate: 60 } } : {}),
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -74,7 +73,7 @@ export async function getStore(slug: string, page = 1): Promise<{
     pagination: PaginationMeta
   }
 }> {
-  return apiFetch(`/api/stores/${slug}?page=${page}`, { next: { revalidate: 0 } })
+  return apiFetch(`/api/stores/${slug}?page=${page}`, { cache: 'no-store' })
 }
 
 // ── Pesquisa ──────────────────────────────────────────────────

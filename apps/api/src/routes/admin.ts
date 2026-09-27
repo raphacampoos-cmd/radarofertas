@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { db } from '@radarofertas/db/client'
-import { offers, offerCategories, priceHistory, subscribers, categories } from '@radarofertas/db/schema'
+import { offers, offerCategories, priceHistory, subscribers, categories, stores } from '@radarofertas/db/schema'
 import { eq, desc, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { calculateDealScore } from '@radarofertas/deal-engine'
@@ -62,6 +62,38 @@ const createOfferSchema = z.object({
   campaign: z.string().optional(),
 })
 
+// Validação estrita: O link da oferta tem de corresponder à loja selecionada
+function validateStoreMatchesUrl(storeSlug: string, storeName: string, affiliateUrl: string): { valid: boolean; error?: string } {
+  const urlLower = affiliateUrl.toLowerCase()
+  const slug = storeSlug.toLowerCase()
+
+  const isAmazon = slug === 'amazon'
+  const isAmazonUrl = urlLower.includes('amazon.') || urlLower.includes('amzn.to')
+
+  if (isAmazon && !isAmazonUrl) {
+    return { valid: false, error: 'A loja selecionada é Amazon, mas o link fornecido não pertence à Amazon.' }
+  }
+  if (!isAmazon && isAmazonUrl) {
+    return { valid: false, error: `O link fornecido é da Amazon, mas a loja indicada é "${storeName}". O domínio do link tem de corresponder à loja.` }
+  }
+
+  // Lojas específicas
+  if (slug === 'worten' && !urlLower.includes('worten') && !urlLower.includes('12149')) {
+    return { valid: false, error: 'O link fornecido não pertence à Worten nem ao seu programa de afiliados.' }
+  }
+  if (slug === 'pc-componentes' && !urlLower.includes('pccomponentes') && !urlLower.includes('12149')) {
+    return { valid: false, error: 'O link fornecido não pertence à PC Componentes.' }
+  }
+  if (slug === 'fnac' && !urlLower.includes('fnac')) {
+    return { valid: false, error: 'O link fornecido não pertence à Fnac.' }
+  }
+  if (slug === 'pcdiga' && !urlLower.includes('pcdiga')) {
+    return { valid: false, error: 'O link fornecido não pertence à PCDIGA.' }
+  }
+
+  return { valid: true }
+}
+
 // POST /api/admin/offers — criar oferta
 adminRouter.post('/offers', async (c) => {
   try {
@@ -73,6 +105,16 @@ adminRouter.post('/offers', async (c) => {
     }
 
     const data = parsed.data
+
+    // Validar se a loja existe e se o link corresponde ao domínio da loja
+    const store = await db.query.stores.findFirst({ where: eq(stores.id, data.storeId) })
+    if (!store) {
+      return c.json({ error: 'Loja especificada não existe.' }, 400)
+    }
+    const val = validateStoreMatchesUrl(store.slug, store.name, data.affiliateUrl)
+    if (!val.valid) {
+      return c.json({ error: val.error }, 400)
+    }
 
     // Gerar slug a partir do título
     const slug = data.title
@@ -174,6 +216,22 @@ adminRouter.put('/offers/:id', async (c) => {
   if (isNaN(id)) return c.json({ error: 'ID inválido' }, 400)
 
   const body = await c.req.json()
+
+  // Se estiver a atualizar storeId ou affiliateUrl, valida a correspondência
+  if (body.storeId || body.affiliateUrl) {
+    const current = await db.query.offers.findFirst({ where: eq(offers.id, id) })
+    if (current) {
+      const storeIdToCheck = body.storeId || current.storeId
+      const urlToCheck = body.affiliateUrl || current.affiliateUrl
+      const store = await db.query.stores.findFirst({ where: eq(stores.id, storeIdToCheck) })
+      if (store && urlToCheck) {
+        const val = validateStoreMatchesUrl(store.slug, store.name, urlToCheck)
+        if (!val.valid) {
+          return c.json({ error: val.error }, 400)
+        }
+      }
+    }
+  }
 
   await db.update(offers).set({
     ...body,
