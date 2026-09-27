@@ -26,8 +26,11 @@ export async function sendTelegramAlert(offer: {
     
     const current = Number(offer.priceCurrent);
     const original = offer.priceOriginal ? Number(offer.priceOriginal) : 0;
+    const isAmazon = offer.affiliateUrl?.includes('amazon');
 
-    if (original > current) {
+    if (isAmazon) {
+      text += `💰 Preço atualizado em direto na Amazon. Clica no link para consultar:\n`;
+    } else if (original > current) {
       const discount = Math.round(((original - current) / original) * 100);
       text += `💰 Preço: *€${current.toFixed(2)}* ~~(antes €${original.toFixed(2)})~~\n`;
       text += `📉 Desconto: *${discount}%*\n`;
@@ -39,7 +42,9 @@ export async function sendTelegramAlert(offer: {
       text += `🎟️ Cupão: \`${offer.couponCode}\`\n`;
     }
     
-    text += `\n🛒 *Compra aqui:* [Aceder à Loja](${offer.affiliateUrl})`;
+    text += isAmazon
+      ? `\n🛒 *Ver preço atual na Amazon:* [Aceder à Loja](${offer.affiliateUrl})`
+      : `\n🛒 *Compra aqui:* [Aceder à Loja](${offer.affiliateUrl})`;
 
     const post = (method: 'sendPhoto' | 'sendMessage', body: Record<string, unknown>) =>
       fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/${method}`, {

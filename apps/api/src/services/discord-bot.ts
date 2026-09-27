@@ -80,9 +80,14 @@ export async function initDiscordBot() {
           .setTitle(`🔎 Resultados para: ${termo}`)
 
         resultados.forEach(oferta => {
+          const isAmazon = oferta.affiliateUrl?.includes('amazon')
+          const value = isAmazon
+            ? `🛒 **Preço em tempo real na Amazon**\n🔗 [Ver preço atual na Amazon](https://radarofertas-psi.vercel.app/oferta/${oferta.slug})`
+            : `💰 **€${oferta.priceCurrent}** (antes €${oferta.priceOriginal})\n🔥 Desconto: ${oferta.discountPct}%\n🔗 [Ver Oferta](https://radarofertas-psi.vercel.app/oferta/${oferta.slug})`
+
           embed.addFields({
             name: oferta.titlePt || oferta.title,
-            value: `💰 **€${oferta.priceCurrent}** (antes €${oferta.priceOriginal})\n🔥 Desconto: ${oferta.discountPct}%\n🔗 [Ver Oferta](https://radarofertas-psi.vercel.app/oferta/${oferta.slug})`
+            value
           })
         })
 
@@ -159,12 +164,17 @@ export async function sendOfferToDiscord(oferta: any) {
   else if (isCasa) canalId = CANAIS.CASA
   else if (isGaming) canalId = CANAIS.GAMING
 
+  const isAmazon = oferta.affiliateUrl?.includes('amazon')
+  const description = isAmazon
+    ? `🛒 **Preço em tempo real na Amazon.es**\nConsulta o valor atualizado e opções de envio na página oficial.`
+    : `💰 **€${oferta.priceCurrent}** (antes €${oferta.priceOriginal})\n📉 Caiu ${oferta.discountPct}%!`
+
   const embed = new EmbedBuilder()
-    .setColor('#ef4444')
-    .setTitle(`🔥 NOVO DESCONTO: ${oferta.titlePt || oferta.title}`)
+    .setColor(isAmazon ? '#f97316' : '#ef4444')
+    .setTitle(isAmazon ? `📦 DESTAQUE AMAZON: ${oferta.titlePt || oferta.title}` : `🔥 NOVO DESCONTO: ${oferta.titlePt || oferta.title}`)
     .setURL(`https://radarofertas-psi.vercel.app/oferta/${oferta.slug}`)
     .setImage(oferta.imageUrl)
-    .setDescription(`💰 **€${oferta.priceCurrent}** (antes €${oferta.priceOriginal})\n📉 Caiu ${oferta.discountPct}%!`)
+    .setDescription(description)
     .setFooter({ text: 'RadarOfertas PT', iconURL: 'https://radarofertas-psi.vercel.app/favicon.ico' })
 
   try {

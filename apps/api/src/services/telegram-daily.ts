@@ -87,22 +87,26 @@ export async function sendDailyOffer(
     const original = Number(offer.priceOriginal)
     const displayTitle = offer.titlePt || offer.title
 
+    const isAmazon = Boolean(offer.storeName?.toLowerCase().includes('amazon') || offer.affiliateUrl?.includes('amazon'))
+
     // Construir título com emoji adequado ao slot
     const slotEmoji = slot === 'morning' ? '🌅' : '🌆'
-    const dealEmoji = Number(offer.dealScore) >= 80 ? '🔥🔥🔥' : Number(offer.dealScore) >= 60 ? '🔥🔥' : '🔥'
+    const dealEmoji = !isAmazon && Number(offer.dealScore) >= 80 ? '🔥🔥🔥' : !isAmazon && Number(offer.dealScore) >= 60 ? '🔥🔥' : '🔥'
 
     // Montar mensagem rica
     let text = `${slotEmoji} *OFERTA DO DIA* ${dealEmoji}\n\n`
     text += `📦 *${displayTitle}*\n\n`
 
-    if (original > current && discount > 0) {
+    if (isAmazon) {
+      text += `💰 Preço atualizado em direto na Amazon. Clica no link para ver:\n`
+    } else if (original > current && discount > 0) {
       text += `💰 *€${current.toFixed(2)}* ~~(antes €${original.toFixed(2)})~~\n`
       text += `📉 Desconto: *-${Math.round(discount)}%*\n`
     } else {
       text += `💰 Preço: *€${current.toFixed(2)}*\n`
     }
 
-    if (offer.isMinHistoric) {
+    if (!isAmazon && offer.isMinHistoric) {
       text += `⚠️ *MÍNIMO HISTÓRICO* — nunca esteve tão barato!\n`
     }
 
@@ -114,7 +118,9 @@ export async function sendDailyOffer(
       text += `🏪 Loja: ${offer.storeName}\n`
     }
 
-    text += `\n🛒 [Ver Oferta](${siteUrl})\n`
+    text += isAmazon
+      ? `\n🛒 [Ver preço atual na Amazon](${siteUrl})\n`
+      : `\n🛒 [Ver Oferta](${siteUrl})\n`
     text += `\n#PromocoesPT #Descontos #RadarOfertas`
 
     await sendRawTelegram(text, offer.imageUrl ?? undefined)

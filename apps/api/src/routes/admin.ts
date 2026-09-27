@@ -182,8 +182,11 @@ adminRouter.post('/offers', async (c) => {
     // Enviar alerta automático para o Canal de Telegram e WhatsApp
     const priceOriginalNum = Number(newOffer.priceOriginal) || 0;
     const priceCurrentNum = Number(newOffer.priceCurrent) || 0;
+    const isAmazon = newOffer.affiliateUrl?.includes('amazon');
     
-    const wppMsg = `🔥 *${newOffer.title}*\n\n💰 Preço: €${newOffer.priceCurrent}${priceOriginalNum > priceCurrentNum ? ` (antes €${newOffer.priceOriginal})` : ''}\n${newOffer.couponCode ? `🏷️ Cupão: ${newOffer.couponCode}\n` : ''}\n👉 Compra aqui: ${newOffer.affiliateUrl}`;
+    const wppMsg = isAmazon
+      ? `📦 *DESTAQUE NA AMAZON!*\n\n🔥 *${newOffer.title}*\n\n💰 Preço atualizado em direto na Amazon.\n👉 Ver preço atual na Amazon: ${newOffer.affiliateUrl}`
+      : `🔥 *${newOffer.title}*\n\n💰 Preço: €${newOffer.priceCurrent}${priceOriginalNum > priceCurrentNum ? ` (antes €${newOffer.priceOriginal})` : ''}\n${newOffer.couponCode ? `🏷️ Cupão: ${newOffer.couponCode}\n` : ''}\n👉 Compra aqui: ${newOffer.affiliateUrl}`;
 
     // Disparar o Telegram sem bloquear a resposta HTTP
     sendTelegramAlert({

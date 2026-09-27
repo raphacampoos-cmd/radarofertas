@@ -143,8 +143,10 @@ async function applyPriceUpdate(offer: OfferRow, newPrice: number, newOriginal?:
 
   if ((oldPrice - newPrice) / oldPrice < MIN_DROP_TO_ANNOUNCE) return 'decreased' as const
 
+  const isAmazon = offer.affiliateUrl?.includes('amazon')
+
   sendTelegramAlert({
-    title: `📉 BAIXOU O PREÇO! ${offer.title}`,
+    title: isAmazon ? `📦 DESTAQUE AMAZON: ${offer.title}` : `📉 BAIXOU O PREÇO! ${offer.title}`,
     priceCurrent: newPrice.toFixed(2),
     priceOriginal: oldPrice.toFixed(2),
     affiliateUrl: offer.affiliateUrl,
@@ -154,7 +156,9 @@ async function applyPriceUpdate(offer: OfferRow, newPrice: number, newOriginal?:
 
   if (process.env.WHATSAPP_GROUP_ID) {
     const { sendWhatsAppMessage } = await import('../lib/whatsapp.js')
-    const wppMsg = `📉 *BAIXOU O PREÇO!*\n\n🔥 *${offer.title}*\n\n💰 Agora: €${newPrice.toFixed(2)} (antes €${oldPrice.toFixed(2)})\n👉 Compra aqui: ${offer.affiliateUrl}`
+    const wppMsg = isAmazon
+      ? `📦 *DESTAQUE NA AMAZON!*\n\n🔥 *${offer.title}*\n\n💰 Preço atualizado em direto na Amazon.\n👉 Ver preço atual na Amazon: ${offer.affiliateUrl}`
+      : `📉 *BAIXOU O PREÇO!*\n\n🔥 *${offer.title}*\n\n💰 Agora: €${newPrice.toFixed(2)} (antes €${oldPrice.toFixed(2)})\n👉 Compra aqui: ${offer.affiliateUrl}`
     sendWhatsAppMessage(process.env.WHATSAPP_GROUP_ID, wppMsg, offer.imageUrl || undefined).catch(console.error)
   }
 

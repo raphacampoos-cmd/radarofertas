@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { formatPrice } from '@/lib/utils'
+import { isAmazonOffer } from '@/lib/amazon-compliance'
 import { 
   CheckCircle2, 
   ShieldCheck, 
@@ -27,6 +28,7 @@ interface OfferSpecsSectionProps {
 export function OfferSpecsSection({ offer, priceCurrent, priceOriginal, discountPct }: OfferSpecsSectionProps) {
   const [activeTab, setActiveTab] = useState<'specs' | 'description' | 'trust'>('specs')
 
+  const isAmazon = isAmazonOffer(offer)
   const categoryName = offer.categories?.[0]?.name || 'Tecnologia & Geral'
   const storeName = offer.store?.name || 'Loja Oficial'
   const savings = priceOriginal > priceCurrent ? priceOriginal - priceCurrent : 0
@@ -175,43 +177,56 @@ export function OfferSpecsSection({ offer, priceCurrent, priceOriginal, discount
                 alignItems: 'center',
                 gap: '0.75rem',
               }}>
-                <div style={{ background: 'rgba(34, 197, 94, 0.1)', padding: '0.6rem', borderRadius: '0.5rem', color: '#22c55e' }}>
+                <div style={{ background: isAmazon ? 'rgba(249, 115, 22, 0.1)' : 'rgba(34, 197, 94, 0.1)', padding: '0.6rem', borderRadius: '0.5rem', color: isAmazon ? '#f97316' : '#22c55e' }}>
                   <Award size={22} />
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Condição de Preço</div>
-                  <div style={{ fontWeight: 700, color: '#22c55e' }}>
-                    {formatPrice(priceCurrent)} {discountPct > 0 && `(-${Math.round(discountPct)}%)`}
-                    {savings > 0 && (
-                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block' }}>
-                        Poupas {formatPrice(savings)} face ao preço de {formatPrice(priceOriginal)}
-                      </span>
+                  <div style={{ fontWeight: 700, color: isAmazon ? '#f97316' : '#22c55e' }}>
+                    {isAmazon ? (
+                      <>
+                        Preço em direto na Amazon.es
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block' }}>
+                          Atualizado em tempo real na página do produto
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        {formatPrice(priceCurrent)} {discountPct > 0 && `(-${Math.round(discountPct)}%)`}
+                        {savings > 0 && (
+                          <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block' }}>
+                            Poupas {formatPrice(savings)} face ao preço de {formatPrice(priceOriginal)}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Item: Deal Score */}
-              <div style={{
-                background: '#1e293b',
-                padding: '1rem',
-                borderRadius: '0.75rem',
-                border: '1px solid #334155',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-              }}>
-                <div style={{ background: 'rgba(234, 179, 8, 0.1)', padding: '0.6rem', borderRadius: '0.5rem', color: '#eab308' }}>
-                  <CheckCircle2 size={22} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Índice de Qualidade Radar</div>
-                  <div style={{ fontWeight: 700, color: '#f1f5f9' }}>
-                    {Math.round(parseFloat(offer.dealScore || '80'))} / 100
-                    {isMinHistoric && <span style={{ marginLeft: '0.5rem', color: '#ef4444' }}>🔥 Mínimo Histórico</span>}
+              {/* Item: Deal Score (apenas lojas não-Amazon sem PA-API) */}
+              {!isAmazon && (
+                <div style={{
+                  background: '#1e293b',
+                  padding: '1rem',
+                  borderRadius: '0.75rem',
+                  border: '1px solid #334155',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                }}>
+                  <div style={{ background: 'rgba(234, 179, 8, 0.1)', padding: '0.6rem', borderRadius: '0.5rem', color: '#eab308' }}>
+                    <CheckCircle2 size={22} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Índice de Qualidade Radar</div>
+                    <div style={{ fontWeight: 700, color: '#f1f5f9' }}>
+                      {Math.round(parseFloat(offer.dealScore || '80'))} / 100
+                      {isMinHistoric && <span style={{ marginLeft: '0.5rem', color: '#ef4444' }}>🔥 Mínimo Histórico</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Item: Disponibilidade */}
               <div style={{

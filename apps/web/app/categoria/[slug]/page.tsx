@@ -153,7 +153,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               1. Como garantimos que as ofertas de {category.name} são descontos reais?
             </h3>
             <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', lineHeight: 1.6 }}>
-              O algoritmo do RadarOfertas analisa o histórico de preços de 90 dias em lojas de referência em Portugal e na Europa. Apenas destacamos promoções com Deal Score elevado que estejam próximas ou no mínimo histórico registado.
+              O algoritmo do RadarOfertas analisa o histórico de preços em lojas de referência em Portugal e na Europa. Apenas destacamos promoções com Deal Score elevado que estejam próximas ou no mínimo histórico registado.
             </p>
           </div>
 
@@ -205,7 +205,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                     name: `Como garantimos que as ofertas de ${category.name} são descontos reais?`,
                     acceptedAnswer: {
                       '@type': 'Answer',
-                      text: `O algoritmo do RadarOfertas analisa o histórico de preços de 90 dias em lojas de referência em Portugal e na Europa. Apenas destacamos promoções com Deal Score elevado que estejam próximas ou no mínimo histórico registado.`,
+                      text: `O algoritmo do RadarOfertas analisa o histórico de preços em lojas de referência em Portugal e na Europa. Apenas destacamos promoções com Deal Score elevado que estejam próximas ou no mínimo histórico registado.`,
                     },
                   },
                   {

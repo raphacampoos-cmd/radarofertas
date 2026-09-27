@@ -13,6 +13,8 @@ import { CommentsSection } from '@/components/offer/CommentsSection'
 import { OfferSpecsSection } from '@/components/offer/OfferSpecsSection'
 import { OfferImage } from '@/components/offer/OfferImage'
 
+import { isAmazonOffer } from '@/lib/amazon-compliance'
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }
@@ -23,25 +25,34 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const res = await getOffer(slug)
     const offer = res.data
+    const isAmazon = isAmazonOffer(offer)
     const price = parseFloat(offer.priceCurrent || '0')
     const discount = parseFloat(offer.discountPct || '0')
-    const title = discount > 0
+    const title = !isAmazon && discount > 0
       ? `${offer.title} — ${Math.round(discount)}% Desconto`
       : offer.title
 
+    const description = isAmazon
+      ? `${offer.title} na ${offer.store.name}. Consulta o preço atualizado em tempo real e opções de envio diretamente na loja.`
+      : `${offer.title} por ${formatPrice(price)} na ${offer.store.name}. Deal Score: ${Math.round(parseFloat(offer.dealScore || '0'))}/100. ${offer.isMinHistoric ? '🔥 Mínimo histórico!' : ''}`
+
+    const ogDescription = isAmazon
+      ? `Disponível na ${offer.store.name}. Consulta o preço em tempo real.`
+      : `${formatPrice(price)} na ${offer.store.name}`
+
     return {
       title,
-      description: `${offer.title} por ${formatPrice(price)} na ${offer.store.name}. Deal Score: ${Math.round(parseFloat(offer.dealScore || '0'))}/100. ${offer.isMinHistoric ? '🔥 Mínimo histórico!' : ''}`,
+      description,
       openGraph: {
         title: offer.title,
-        description: `${formatPrice(price)} na ${offer.store.name}`,
+        description: ogDescription,
         images: offer.imageUrl ? [{ url: offer.imageUrl, width: 800, height: 600 }] : [],
         type: 'article',
       },
       twitter: {
         card: 'summary_large_image',
         title: offer.title,
-        description: `${formatPrice(price)} na ${offer.store.name}`,
+        description: ogDescription,
         images: offer.imageUrl ? [offer.imageUrl] : [],
       },
       // INDEXADO! Diferencial vs Cupões Tá Fixe que usa noindex
@@ -79,6 +90,7 @@ export default async function OfferPage({ params }: PageProps) {
 
   if (!offer) notFound()
 
+  const isAmazon = isAmazonOffer(offer)
   const priceCurrent = parseFloat(offer.priceCurrent || '0')
   const priceOriginal = parseFloat(offer.priceOriginal || '0')
   const priceMinimum = parseFloat(offer.priceMinimum || '0')
@@ -96,8 +108,7 @@ export default async function OfferPage({ params }: PageProps) {
     brand: { '@type': 'Brand', name: offer.store.name },
     offers: {
       '@type': 'Offer',
-      price: priceCurrent.toFixed(2),
-      priceCurrency: 'EUR',
+      ...(isAmazon ? {} : { price: priceCurrent.toFixed(2), priceCurrency: 'EUR' }),
       availability: offer.availability === 'InStock'
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
@@ -107,13 +118,15 @@ export default async function OfferPage({ params }: PageProps) {
       seller: { '@type': 'Organization', name: offer.store.name },
       url: offer.affiliateUrl,
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: Math.min(5, (dealScore / 100) * 5).toFixed(1),
-      bestRating: '5',
-      worstRating: '1',
-      reviewCount: Math.max(1, offer.clickCount || 1),
-    },
+    ...(!isAmazon && dealScore > 0 ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: Math.min(5, (dealScore / 100) * 5).toFixed(1),
+        bestRating: '5',
+        worstRating: '1',
+        reviewCount: Math.max(1, offer.clickCount || 1),
+      },
+    } : {}),
   }
 
   return (
@@ -150,27 +163,29 @@ export default async function OfferPage({ params }: PageProps) {
             storeLogo={offer.store?.logoUrl}
           />
 
-          {/* Histórico de preços */}
-          <div style={{
-            marginTop: '1.5rem',
-            background: 'var(--card)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            padding: '1.25rem',
-          }}>
-            <PriceHistory
-              history={history}
-              currentPrice={priceCurrent}
-              minPrice={priceMinimum > 0 ? priceMinimum : null}
-            />
-          </div>
+          {/* Histórico de preços (apenas lojas não-Amazon sem PA-API) */}
+          {!isAmazon && (
+            <div style={{
+              marginTop: '1.5rem',
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)',
+              padding: '1.25rem',
+            }}>
+              <PriceHistory
+                history={history}
+                currentPrice={priceCurrent}
+                minPrice={priceMinimum > 0 ? priceMinimum : null}
+              />
+            </div>
+          )}
         </div>
 
         {/* Coluna direita: Detalhes */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* Badges */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {offer.isMinHistoric && (
+            {!isAmazon && offer.isMinHistoric && (
               <span style={{
                 background: '#dc2626',
                 color: '#fff',
@@ -182,7 +197,7 @@ export default async function OfferPage({ params }: PageProps) {
                 🔥 MÍNIMO HISTÓRICO
               </span>
             )}
-            {discountPct > 0 && (
+            {!isAmazon && discountPct > 0 && (
               <span style={{
                 background: '#16a34a',
                 color: '#fff',
@@ -215,30 +230,46 @@ export default async function OfferPage({ params }: PageProps) {
           </div>
 
           {/* Preços */}
-          <div style={{
-            background: 'var(--muted)',
-            borderRadius: 'var(--radius)',
-            padding: '1.25rem',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '2.25rem', fontWeight: 900, color: 'var(--primary)' }}>
-                {formatPrice(priceCurrent)}
-              </span>
-              {priceOriginal > priceCurrent && (
-                <span style={{ fontSize: '1.1rem', color: 'var(--muted-foreground)', textDecoration: 'line-through' }}>
-                  {formatPrice(priceOriginal)}
+          {isAmazon ? (
+            <div style={{
+              background: 'var(--muted)',
+              borderRadius: 'var(--radius)',
+              padding: '1.25rem',
+              border: '1px solid var(--border)',
+            }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.35rem' }}>
+                📦 Preço atualizado em direto na Amazon.es
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', margin: 0, lineHeight: 1.5 }}>
+                Os preços na Amazon oscilam dinamicamente ao longo do dia consoante o stock e os vendedores. Consulta o valor atualizado e condições de envio diretamente na página oficial da Amazon.
+              </p>
+            </div>
+          ) : (
+            <div style={{
+              background: 'var(--muted)',
+              borderRadius: 'var(--radius)',
+              padding: '1.25rem',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '2.25rem', fontWeight: 900, color: 'var(--primary)' }}>
+                  {formatPrice(priceCurrent)}
                 </span>
+                {priceOriginal > priceCurrent && (
+                  <span style={{ fontSize: '1.1rem', color: 'var(--muted-foreground)', textDecoration: 'line-through' }}>
+                    {formatPrice(priceOriginal)}
+                  </span>
+                )}
+              </div>
+              {priceMinimum > 0 && priceMinimum < priceCurrent && (
+                <div style={{ fontSize: '0.8rem', color: '#16a34a', marginTop: '0.5rem' }}>
+                  📊 Mínimo histórico registado: {formatPrice(priceMinimum)}
+                </div>
               )}
             </div>
-            {priceMinimum > 0 && priceMinimum < priceCurrent && (
-              <div style={{ fontSize: '0.8rem', color: '#16a34a', marginTop: '0.5rem' }}>
-                📊 Mínimo histórico registado: {formatPrice(priceMinimum)}
-              </div>
-            )}
-          </div>
+          )}
 
-          {/* Deal Score */}
-          <DealScoreBadge score={dealScore} />
+          {/* Deal Score (apenas lojas não-Amazon sem PA-API) */}
+          {!isAmazon && <DealScoreBadge score={dealScore} />}
 
           {/* Cupão */}
           {offer.couponCode && (
@@ -250,13 +281,14 @@ export default async function OfferPage({ params }: PageProps) {
             offerId={offer.id}
             affiliateUrl={offer.affiliateUrl}
             storeName={offer.store.name}
+            customLabel={isAmazon ? 'Ver preço atual na Amazon →' : undefined}
           />
 
           {/* Botão de Partilha */}
           <ShareButtonBig 
             title={offer.title} 
             slug={offer.slug} 
-            price={formatPrice(priceCurrent)} 
+            price={isAmazon ? '' : formatPrice(priceCurrent)} 
           />
 
           {/* Votos Fixe / Terminado */}

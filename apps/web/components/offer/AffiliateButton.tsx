@@ -7,9 +7,10 @@ interface AffiliateButtonProps {
   offerId: number
   affiliateUrl: string
   storeName: string
+  customLabel?: string
 }
 
-export function AffiliateButton({ offerId, affiliateUrl, storeName }: AffiliateButtonProps) {
+export function AffiliateButton({ offerId, affiliateUrl, storeName, customLabel }: AffiliateButtonProps) {
   const [redirecting, setRedirecting] = useState(false)
 
   async function handleClick() {
@@ -57,6 +58,8 @@ export function AffiliateButton({ offerId, affiliateUrl, storeName }: AffiliateB
           <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', fontSize: '1.1rem' }}>⏳</span>
           A redirecionar para {storeName}...
         </>
+      ) : customLabel ? (
+        <>{customLabel}</>
       ) : (
         <>🛒 Ver Oferta na {storeName} →</>
       )}

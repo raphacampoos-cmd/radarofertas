@@ -6,6 +6,7 @@ import type { Offer } from '@/lib/types'
 import { VoteButtons } from './VoteButtons'
 import { TimeAgo } from '../ui/TimeAgo'
 import { formatPrice, truncate, optimizeImageUrl } from '@/lib/utils'
+import { isAmazonOffer } from '@/lib/amazon-compliance'
 
 interface OfferCardProps {
   offer: Offer
@@ -14,6 +15,7 @@ interface OfferCardProps {
 }
 
 export function OfferCard({ offer, eager = false }: OfferCardProps) {
+  const isAmazon = isAmazonOffer(offer)
   const priceCurrent = parseFloat(offer.priceCurrent || '0')
   const priceOriginal = parseFloat(offer.priceOriginal || '0')
   const discountPct = parseFloat(offer.discountPct || '0')
@@ -48,7 +50,7 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
           borderRadius: 'var(--radius) 0 0 var(--radius)',
         }}
       >
-        {offer.isMinHistoric && (
+        {!isAmazon && offer.isMinHistoric && (
           <span style={{
             position: 'absolute', top: '0.4rem', left: '0.4rem', zIndex: 2,
             background: '#ef4444', color: '#fff', fontSize: '0.6rem',
@@ -59,7 +61,7 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
           </span>
         )}
 
-        {discountPct > 0 && (
+        {!isAmazon && discountPct > 0 && (
           <span style={{
             position: 'absolute', top: '0.4rem', right: '0.4rem', zIndex: 2,
             background: '#f97316', color: '#fff', fontSize: '0.75rem',
@@ -95,15 +97,17 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
           </div>
         )}
 
-        {/* Etiqueta de preço sobreposta */}
-        <span style={{
-          position: 'absolute', bottom: '0.4rem', right: '0.4rem',
-          background: '#facc15', color: '#1a1a1a', fontWeight: 800,
-          fontSize: '0.9rem', padding: '0.2rem 0.5rem', borderRadius: '0.3rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-        }}>
-          {formatPrice(priceCurrent)}
-        </span>
+        {/* Etiqueta de preço sobreposta (apenas lojas não-Amazon sem PA-API) */}
+        {!isAmazon && (
+          <span style={{
+            position: 'absolute', bottom: '0.4rem', right: '0.4rem',
+            background: '#facc15', color: '#1a1a1a', fontWeight: 800,
+            fontSize: '0.9rem', padding: '0.2rem 0.5rem', borderRadius: '0.3rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+          }}>
+            {formatPrice(priceCurrent)}
+          </span>
+        )}
       </Link>
 
       {/* Conteúdo */}
@@ -116,7 +120,7 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
             initialDownvotes={offer.downvotes}
             compact
           />
-          {dealScore > 0 && (
+          {!isAmazon && dealScore > 0 && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#f97316', fontWeight: 700 }}>
               🎯 {Math.round(dealScore)}
             </span>
@@ -136,25 +140,31 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
         </Link>
 
         {/* Preços */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f97316' }}>
-            {formatPrice(priceCurrent)}
-          </span>
-          {priceOriginal > priceCurrent && (
-            <span style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', textDecoration: 'line-through' }}>
-              {formatPrice(priceOriginal)}
+        {isAmazon ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#f97316', fontSize: '0.85rem', fontWeight: 700 }}>
+            <span>📦 Preço em tempo real na Amazon</span>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f97316' }}>
+              {formatPrice(priceCurrent)}
             </span>
-          )}
-          {offer.couponCode && (
-            <span style={{
-              background: 'rgba(34, 197, 94, 0.1)', border: '1px dashed #22c55e',
-              borderRadius: '0.375rem', padding: '0.1rem 0.4rem',
-              fontSize: '0.72rem', fontWeight: 700, color: '#22c55e',
-            }}>
-              🏷️ {offer.couponCode}
-            </span>
-          )}
-        </div>
+            {priceOriginal > priceCurrent && (
+              <span style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', textDecoration: 'line-through' }}>
+                {formatPrice(priceOriginal)}
+              </span>
+            )}
+            {offer.couponCode && (
+              <span style={{
+                background: 'rgba(34, 197, 94, 0.1)', border: '1px dashed #22c55e',
+                borderRadius: '0.375rem', padding: '0.1rem 0.4rem',
+                fontSize: '0.72rem', fontWeight: 700, color: '#22c55e',
+              }}>
+                🏷️ {offer.couponCode}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Loja */}
         <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>
@@ -190,7 +200,11 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
             </Link>
           )}
           <a
-            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🔥 ${offer.title} por ${formatPrice(priceCurrent)}!\n\nhttps://radarofertas-psi.vercel.app/oferta/${offer.slug}`)}`}
+            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+              isAmazon
+                ? `🔥 ${offer.title} na Amazon!\n\nhttps://radarofertas-psi.vercel.app/oferta/${offer.slug}`
+                : `🔥 ${offer.title} por ${formatPrice(priceCurrent)}!\n\nhttps://radarofertas-psi.vercel.app/oferta/${offer.slug}`
+            )}`}
             target="_blank" rel="noopener noreferrer"
             style={{ color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.95rem' }}
             aria-label="Partilhar" title="Partilhar"
@@ -213,7 +227,7 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
             onMouseOver={(e) => (e.currentTarget.style.opacity = '0.88')}
             onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
           >
-            Abrir desconto →
+            {isAmazon ? 'Ver preço atual na Amazon →' : 'Abrir desconto →'}
           </a>
         </div>
       </div>
