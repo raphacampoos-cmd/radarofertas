@@ -136,7 +136,7 @@ export default async function StoresPage() {
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                 }}>
-                  {store.name}
+                  {store.slug === 'amazon' ? 'Amazon.es' : store.name}
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>

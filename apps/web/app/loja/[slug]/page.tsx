@@ -12,7 +12,7 @@ interface PageProps {
 function getFormattedMonthYear(): string {
   const now = new Date()
   const raw = now.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' })
-  // "março de 2026" -> "Março 2026"
+  // "setembro de 2026" -> "Setembro 2026"
   const parts = raw.split(' de ')
   if (parts.length === 2) {
     const month = parts[0].charAt(0).toUpperCase() + parts[0].slice(1)
@@ -21,6 +21,8 @@ function getFormattedMonthYear(): string {
   return raw.charAt(0).toUpperCase() + raw.slice(1)
 }
 
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const monthYear = getFormattedMonthYear()
@@ -28,13 +30,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const res = await getStore(slug)
     const store = res.data.store
+    const coupons = res.data.coupons || []
+    const offers = res.data.offers || []
+    const isEmpty = coupons.length === 0 && offers.length === 0
 
-    const title = store.seoTitle || `Códigos Promocionais e Descontos ${store.name} – ${monthYear} | RadarOfertas`
-    const description = store.seoDescription || `Encontra os melhores cupões de desconto e promoções verificadas da ${store.name} para Portugal em ${monthYear}. Poupa nas tuas compras online com o RadarOfertas.`
+    const displayName = store.slug === 'amazon' ? 'Amazon.es' : store.name
+    const title = `Códigos Promocionais e Descontos ${displayName} – ${monthYear} | RadarOfertas`
+    const description = store.slug === 'amazon'
+      ? `Descobre códigos promocionais, cupões e as melhores promoções da Amazon.es com entrega em Portugal em ${monthYear}. Poupa nas tuas compras online com o RadarOfertas.`
+      : store.seoDescription || `Encontra os melhores cupões de desconto e promoções verificadas da ${store.name} para Portugal em ${monthYear}. Poupa nas tuas compras online com o RadarOfertas.`
 
     return {
       title,
       description,
+      robots: isEmpty ? { index: false, follow: true } : { index: true, follow: true },
       openGraph: {
         title,
         description,
@@ -58,8 +67,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export const revalidate = 600 // 10 minutos
-
 export default async function StorePage({ params }: PageProps) {
   const { slug } = await params
   const monthYear = getFormattedMonthYear()
@@ -78,6 +85,8 @@ export default async function StorePage({ params }: PageProps) {
 
   const { store, coupons = [], offers = [] } = storeData
   const faqs: Array<{ question: string; answer: string }> = store.seoFaqs || []
+  const isEmpty = coupons.length === 0 && offers.length === 0
+  const displayName = store.slug === 'amazon' ? 'Amazon.es' : store.name
 
   // Schema.org FAQPage em JSON-LD
   const faqSchema = faqs.length > 0 ? {
@@ -109,7 +118,7 @@ export default async function StorePage({ params }: PageProps) {
         <span>›</span>
         <Link href="/lojas" style={{ color: 'inherit', textDecoration: 'none' }}>Lojas</Link>
         <span>›</span>
-        <span style={{ color: '#f1f5f9', fontWeight: 600 }}>{store.name}</span>
+        <span style={{ color: '#f1f5f9', fontWeight: 600 }}>{displayName}</span>
       </nav>
 
       {/* Hero Header da Loja */}
@@ -139,7 +148,7 @@ export default async function StorePage({ params }: PageProps) {
           }}>
             <img
               src={store.logoUrl}
-              alt={`Logótipo da loja ${store.name}`}
+              alt={`Logótipo da loja ${displayName}`}
               style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
             />
           </div>
@@ -198,14 +207,57 @@ export default async function StorePage({ params }: PageProps) {
             lineHeight: 1.3,
             marginBottom: '0.5rem',
           }}>
-            Códigos Promocionais e Descontos {store.name} – {monthYear}
+            Códigos Promocionais e Descontos {displayName} – {monthYear}
           </h1>
 
           <p style={{ color: '#94a3b8', fontSize: '0.95rem', margin: 0, maxWidth: '750px', lineHeight: 1.5 }}>
-            Todos os cupões de desconto e melhores pechinchas da {store.name} verificados automaticamente pelo RadarOfertas para Portugal.
+            {store.slug === 'amazon'
+              ? 'Todos os cupões de desconto e melhores promoções da Amazon.es com entrega em Portugal verificados pelo RadarOfertas.'
+              : `Todos os cupões de desconto e melhores pechinchas da ${store.name} verificados automaticamente pelo RadarOfertas para Portugal.`}
           </p>
         </div>
       </div>
+
+      {/* ── LOJA VAZIA: MENSAGEM HONESTA ────────────────────── */}
+      {isEmpty && (
+        <div style={{
+          background: '#161622',
+          border: '1px dashed #2a2a3a',
+          borderRadius: 'var(--radius)',
+          padding: '3rem 2rem',
+          textAlign: 'center',
+          marginBottom: '3rem',
+        }}>
+          <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.75rem' }}>⏳</span>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '0.5rem' }}>
+            De momento não temos códigos ativos para {displayName}.
+          </h2>
+          <p style={{ color: '#94a3b8', fontSize: '0.95rem', maxWidth: '540px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+            O RadarOfertas rastreia a loja diariamente à procura de descontos reais e cupões verificados. Segue o nosso Telegram para seres avisado assim que surgir uma nova oportunidade!
+          </p>
+          <a
+            href="https://t.me/radarofertaspt"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: '#0088cc',
+              color: '#fff',
+              padding: '0.65rem 1.5rem',
+              borderRadius: '9999px',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              textDecoration: 'none',
+              transition: 'opacity 0.2s',
+            }}
+          >
+            <span>✈️</span>
+            <span>Seguir no Telegram para ser avisado</span>
+          </a>
+        </div>
+      )}
 
       {/* ── 1. CUPÕES ATIVOS NO TOPO (se houver) ──────────────── */}
       {coupons.length > 0 && (
@@ -223,71 +275,56 @@ export default async function StorePage({ params }: PageProps) {
             gap: '1.25rem',
           }}>
             {coupons.map((coupon: any) => (
-              <StoreCouponCard key={coupon.id} offer={coupon} storeName={store.name} />
+              <StoreCouponCard key={coupon.id} offer={coupon} storeName={displayName} />
             ))}
           </div>
         </section>
       )}
 
       {/* ── 2. OFERTAS QUALIFICADAS DA LOJA ─────────────────── */}
-      <section style={{ marginBottom: '3.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '1.5rem' }}>🔥</span>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>
-              Melhores Promoções e Descontos {store.name} ({offers.length})
-            </h2>
+      {!isEmpty && (
+        <section style={{ marginBottom: '3.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>🔥</span>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>
+                Melhores Promoções e Descontos {displayName} ({offers.length})
+              </h2>
+            </div>
+            <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+              Filtro ativo: Descontos ≥ 15% ou Mínimos Históricos
+            </span>
           </div>
-          <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-            Filtro ativo: Descontos ≥ 15% ou Mínimos Históricos
-          </span>
-        </div>
 
-        {offers.length > 0 ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            gap: '1rem',
-          }}>
-            {offers.map((offer: any) => (
-              <OfferCard key={offer.id} offer={offer} />
-            ))}
-          </div>
-        ) : (
-          <div style={{
-            padding: '3rem 2rem',
-            textAlign: 'center',
-            background: '#161622',
-            border: '1px dashed #2a2a3a',
-            borderRadius: 'var(--radius)',
-          }}>
-            <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.75rem' }}>🔍</span>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9', marginBottom: '0.5rem' }}>
-              Sem ofertas qualificadas neste momento
-            </h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
-              O nosso radar verifica a {store.name} continuamente. Assim que surgir uma queda real de preço ou cupão novo, será publicado aqui.
-            </p>
-            <a
-              href="https://t.me/radarofertaspt"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-block',
-                background: '#f97316',
-                color: '#fff',
-                padding: '0.6rem 1.25rem',
-                borderRadius: '9999px',
-                fontWeight: 700,
-                fontSize: '0.875rem',
-                textDecoration: 'none',
-              }}
-            >
-              🔔 Receber Alertas no Telegram
-            </a>
-          </div>
-        )}
-      </section>
+          {offers.length > 0 ? (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              gap: '1rem',
+            }}>
+              {offers.map((offer: any) => (
+                <OfferCard key={offer.id} offer={offer} />
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              padding: '2.5rem 1.5rem',
+              textAlign: 'center',
+              background: '#161622',
+              border: '1px dashed #2a2a3a',
+              borderRadius: 'var(--radius)',
+            }}>
+              <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>🔍</span>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#f1f5f9', marginBottom: '0.25rem' }}>
+                Sem outras ofertas qualificadas de momento
+              </h3>
+              <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>
+                Apenas são apresentadas ofertas com desconto comprovado igual ou superior a 15% ou no mínimo histórico.
+              </p>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ── 3. GUIA EDITÁVEL DE POUPANÇA (SEO TEXT) ───────────── */}
       {store.seoText && (
@@ -301,7 +338,7 @@ export default async function StorePage({ params }: PageProps) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
             <span style={{ fontSize: '1.4rem' }}>💡</span>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f97316', margin: 0 }}>
-              Guia de Poupança e Como Usar Cupões na {store.name}
+              Guia de Poupança e Como Usar Cupões na {displayName}
             </h2>
           </div>
 
@@ -327,7 +364,7 @@ export default async function StorePage({ params }: PageProps) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem' }}>
             <span style={{ fontSize: '1.4rem' }}>❓</span>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>
-              Perguntas Frequentes sobre Códigos e Promoções {store.name}
+              Perguntas Frequentes sobre Códigos e Promoções {displayName}
             </h2>
           </div>
 

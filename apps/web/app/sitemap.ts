@@ -26,16 +26,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   } catch {}
 
-  // Lojas dinâmicas
+  // Lojas dinâmicas (apenas lojas com ofertas qualificadas ou cupões ativos)
   let storeRoutes: MetadataRoute.Sitemap = []
   try {
     const storesRes = await fetch(`${API_URL}/api/stores`, { next: { revalidate: 3600 } })
     const storesData = await storesRes.json()
-    storeRoutes = (storesData?.data || []).map((store: any) => ({
-      url: `${baseUrl}/loja/${store.slug}`,
-      changeFrequency: 'daily' as const,
-      priority: 0.85,
-    }))
+    storeRoutes = (storesData?.data || [])
+      .filter((store: any) => (store.activeOffersCount > 0 || store.couponsCount > 0))
+      .map((store: any) => ({
+        url: `${baseUrl}/loja/${store.slug}`,
+        changeFrequency: 'daily' as const,
+        priority: 0.85,
+      }))
   } catch {}
 
   // Ofertas dinâmicas
