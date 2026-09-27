@@ -34,7 +34,7 @@ export function Footer() {
             <h3 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '1rem', color: '#f97316' }}>Categorias</h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <li><Link href="/categoria/gaming" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Gaming & Consolas</Link></li>
-              <li><Link href="/categoria/casa-electrodomesticos" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Casa & Eletrodomésticos</Link></li>
+              <li><Link href="/categoria/casa" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Casa & Eletrodomésticos</Link></li>
               <li><Link href="/categoria/suplementacao" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Suplementação</Link></li>
             </ul>
           </div>

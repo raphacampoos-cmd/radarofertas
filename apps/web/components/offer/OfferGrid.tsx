@@ -2,19 +2,25 @@
 
 import { useState } from 'react'
 import type { Offer } from '@/lib/types'
+import { isQualifiedOffer } from '@radarofertas/deal-engine'
 import { OfferCard } from './OfferCard'
 
 interface OfferGridProps {
   initialOffers: Offer[]
+  totalCount?: number
 }
 
 type SortOption = 'recent' | 'discount' | 'score' | 'votes' | 'comments'
 
-export function OfferGrid({ initialOffers }: OfferGridProps) {
+export function OfferGrid({ initialOffers, totalCount }: OfferGridProps) {
   const [sortBy, setSortBy] = useState<SortOption>('recent')
   const [visibleCount, setVisibleCount] = useState(20)
 
-  const sorted = [...initialOffers].sort((a, b) => {
+  // Garantir que na listagem apenas aparecem ofertas qualificadas
+  const qualifiedOffers = initialOffers.filter(isQualifiedOffer)
+  const totalOffersCount = totalCount ?? qualifiedOffers.length
+
+  const sorted = [...qualifiedOffers].sort((a, b) => {
     switch (sortBy) {
       case 'discount':
         return parseFloat(b.discountPct || '0') - parseFloat(a.discountPct || '0')
@@ -112,7 +118,7 @@ export function OfferGrid({ initialOffers }: OfferGridProps) {
 
       {/* Total count */}
       <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: '#64748b' }}>
-        A mostrar {visible.length} de {sorted.length} ofertas
+        A mostrar {visible.length} de {totalOffersCount} ofertas
       </div>
     </>
   )

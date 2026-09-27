@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, REST, Routes, EmbedBuilder } from 'discord.j
 import { db } from '@radarofertas/db/client'
 import { offers, offerCategories, categories, discordAlerts } from '@radarofertas/db/schema'
 import { ilike, eq, desc, and, inArray } from 'drizzle-orm'
+import { isQualifiedOffer } from '@radarofertas/deal-engine'
 
 let client: Client | null = null
 
@@ -129,6 +130,12 @@ const CANAIS = {
 // Função para enviar uma oferta diretamente para o canal certo
 export async function sendOfferToDiscord(oferta: any) {
   if (!client || !client.isReady()) return
+
+  // Apenas ofertas qualificadas (desconto >= 15%, mínimo histórico ou cupão)
+  if (!isQualifiedOffer(oferta)) {
+    console.log(`ℹ️ Discord: oferta #${oferta.id} "${oferta.title.slice(0, 30)}" não é qualificada, ignorada.`)
+    return
+  }
 
   // Ir buscar os slugs de categoria reais da oferta (M:N via offerCategories)
   const offerCats = await db

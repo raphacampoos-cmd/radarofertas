@@ -3,6 +3,39 @@
 // Calcula um score de 0 a 100 para cada oferta
 // ─────────────────────────────────────────────
 
+/**
+ * Limiar mínimo de desconto percentual para uma oferta ser considerada qualificada.
+ * Fácil de alterar como ponto central da aplicação.
+ */
+export const MIN_QUALIFIED_DISCOUNT = 15
+
+export interface QualifiedOfferInput {
+  priceOriginal?: number | string | null
+  priceCurrent?: number | string | null
+  discountPct?: number | string | null
+  isMinHistoric?: boolean | null
+  couponCode?: string | null
+}
+
+/**
+ * Regra de "oferta qualificada":
+ * Cumpre PELO MENOS UMA destas condições:
+ * 1. Tem preço antigo e o desconto é de 15% ou mais;
+ * 2. Está no mínimo histórico de preço;
+ * 3. Tem um código de cupão associado.
+ */
+export function isQualifiedOffer(
+  offer: QualifiedOfferInput,
+  minDiscount = MIN_QUALIFIED_DISCOUNT
+): boolean {
+  const hasOriginal = offer.priceOriginal !== null && offer.priceOriginal !== undefined && Number(offer.priceOriginal) > 0
+  const discount = Number(offer.discountPct || 0)
+  const isMin = Boolean(offer.isMinHistoric)
+  const hasCoupon = Boolean(offer.couponCode && String(offer.couponCode).trim().length > 0)
+
+  return (hasOriginal && discount >= minDiscount) || isMin || hasCoupon
+}
+
 export interface DealScoreInput {
   /** Preço atual da oferta em EUR */
   priceCurrent: number

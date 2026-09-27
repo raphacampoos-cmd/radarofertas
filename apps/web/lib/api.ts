@@ -27,6 +27,7 @@ export async function getOffers(params?: {
   category?: string
   store?: string
   sort?: string
+  qualified?: boolean
 }): Promise<{ data: Offer[]; pagination: PaginationMeta }> {
   const qs = new URLSearchParams()
   if (params?.page) qs.set('page', String(params.page))
@@ -34,6 +35,7 @@ export async function getOffers(params?: {
   if (params?.category) qs.set('category', params.category)
   if (params?.store) qs.set('store', params.store)
   if (params?.sort) qs.set('sort', params.sort)
+  if (params?.qualified !== undefined) qs.set('qualified', String(params.qualified))
 
   return apiFetch(`/api/offers?${qs}`)
 }

@@ -62,7 +62,7 @@ export function VoteButtons({ offerId, initialUpvotes = 0, initialDownvotes = 0,
             opacity: (hasVoted && hasVoted !== 'up') ? 0.6 : 1,
           }}
         >
-          👍 Fixe {upvotes}
+          👍 Fixe{upvotes > 0 ? ` ${upvotes}` : ''}
         </button>
         <button
           onClick={() => handleVote('down')}
@@ -77,7 +77,7 @@ export function VoteButtons({ offerId, initialUpvotes = 0, initialDownvotes = 0,
             opacity: (hasVoted && hasVoted !== 'down') ? 0.6 : 1,
           }}
         >
-          🔕 Terminado {downvotes}
+          🔕 Terminado{downvotes > 0 ? ` ${downvotes}` : ''}
         </button>
       </div>
     )
@@ -102,7 +102,7 @@ export function VoteButtons({ offerId, initialUpvotes = 0, initialDownvotes = 0,
         onMouseOver={(e) => { if (!hasVoted) e.currentTarget.style.background = '#334155' }}
         onMouseOut={(e) => { if (!hasVoted) e.currentTarget.style.background = '#1e293b' }}
       >
-        <span>👍</span> Fixe <span style={{ background: hasVoted === 'up' ? '#3b82f6' : '#334155', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '12px', fontSize: '0.7rem', marginLeft: '0.2rem' }}>{upvotes}</span>
+        <span>👍</span> Fixe {upvotes > 0 && <span style={{ background: hasVoted === 'up' ? '#3b82f6' : '#334155', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '12px', fontSize: '0.7rem', marginLeft: '0.2rem' }}>{upvotes}</span>}
       </button>
 
       <button
@@ -122,7 +122,7 @@ export function VoteButtons({ offerId, initialUpvotes = 0, initialDownvotes = 0,
         onMouseOver={(e) => { if (!hasVoted) e.currentTarget.style.background = '#334155' }}
         onMouseOut={(e) => { if (!hasVoted) e.currentTarget.style.background = '#1e293b' }}
       >
-        <span>🔕</span> Terminado <span style={{ background: hasVoted === 'down' ? '#ef4444' : '#334155', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '12px', fontSize: '0.7rem', marginLeft: '0.2rem' }}>{downvotes}</span>
+        <span>🔕</span> Terminado {downvotes > 0 && <span style={{ background: hasVoted === 'down' ? '#ef4444' : '#334155', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '12px', fontSize: '0.7rem', marginLeft: '0.2rem' }}>{downvotes}</span>}
       </button>
     </div>
   )

@@ -34,6 +34,27 @@ const nextConfig: NextConfig = {
     ]
   },
 
+  // Redirecionamentos 301 (SEO e slugs unificados)
+  async redirects() {
+    return [
+      {
+        source: '/categoria/thc-natural-line',
+        destination: '/categoria/roupa-de-la',
+        permanent: true,
+      },
+      {
+        source: '/categoria/casa-electrodomesticos',
+        destination: '/categoria/casa',
+        permanent: true,
+      },
+      {
+        source: '/categoria/casa-e-eletrodomesticos',
+        destination: '/categoria/casa',
+        permanent: true,
+      },
+    ]
+  },
+
   // Output standalone para Railway/Docker
   // output: 'standalone',  // ← descomentar para deploy em Railway
 

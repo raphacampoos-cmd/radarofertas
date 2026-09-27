@@ -2,6 +2,7 @@ import { db } from '@radarofertas/db/client'
 import { offers, stores } from '@radarofertas/db/schema'
 import { desc, eq, and, gt, notInArray } from 'drizzle-orm'
 import { sendRawTelegram } from '../lib/telegram.js'
+import { qualifiedOfferCondition } from '../lib/qualified-offer.js'
 
 // IDs das ofertas já publicadas nesta sessão — evita repetir a mesma oferta
 // no mesmo dia mesmo que o servidor reinicie (ficam na memória até restart)
@@ -33,9 +34,10 @@ export async function sendDailyOffer(
   console.log(`📢 Telegram Daily [${slot}]: a procurar a melhor oferta...`)
 
   try {
-    // Construir query base
+    // Construir query base (apenas ofertas ativas e qualificadas)
     const conditions = [
       eq(offers.status, 'active'),
+      qualifiedOfferCondition(),
       gt(offers.dealScore, minScore.toFixed(2)),
     ]
 

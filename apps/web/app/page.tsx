@@ -36,7 +36,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
   let error = false
 
   try {
-    const res = await getOffers({ limit: 40, sort: 'published_at', store })
+    const res = await getOffers({ limit: 100, sort: 'published_at', store, qualified: true })
     offers = res.data
     total = res.pagination?.total ?? res.data.length
   } catch {
@@ -104,7 +104,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
               <p>Ainda não há ofertas. Adiciona a primeira via o admin.</p>
             </div>
           ) : (
-            <OfferGrid initialOffers={offers} />
+            <OfferGrid initialOffers={offers} totalCount={total} />
           )}
         </div>
 

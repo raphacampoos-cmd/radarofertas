@@ -173,13 +173,15 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
 
         {/* Rodapé: comentários + partilha + CTA */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: 'auto', paddingTop: '0.3rem' }}>
-          <Link
-            href={`/oferta/${offer.slug}#comentarios`}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.8rem' }}
-            title="Comentários"
-          >
-            💬 {offer.commentCount ?? 0}
-          </Link>
+          {(offer.commentCount ?? 0) > 0 && (
+            <Link
+              href={`/oferta/${offer.slug}#comentarios`}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--muted-foreground)', textDecoration: 'none', fontSize: '0.8rem' }}
+              title="Comentários"
+            >
+              💬 {offer.commentCount}
+            </Link>
+          )}
           <a
             href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🔥 ${offer.title} por ${formatPrice(priceCurrent)}!\n\nhttps://radarofertas-psi.vercel.app/oferta/${offer.slug}`)}`}
             target="_blank" rel="noopener noreferrer"

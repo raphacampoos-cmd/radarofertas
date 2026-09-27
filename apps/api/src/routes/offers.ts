@@ -5,11 +5,12 @@ import { eq, desc, and, sql, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import { offerListFields } from '../lib/offer-fields.js'
 import { offerIdsForCategory } from '../lib/category-offers.js'
+import { qualifiedOfferCondition } from '../lib/qualified-offer.js'
 
 export const offersRouter = new Hono()
 
 // ── Listagem paginada de ofertas ──────────────────────────────
-// GET /api/offers?page=1&limit=20&category=gaming&store=amazon
+// GET /api/offers?page=1&limit=20&category=gaming&store=amazon&qualified=true
 offersRouter.get('/', async (c) => {
   const page = Math.max(1, parseInt(c.req.query('page') || '1') || 1)
   const limit = Math.min(200, Math.max(1, parseInt(c.req.query('limit') || '20') || 20))
@@ -17,9 +18,14 @@ offersRouter.get('/', async (c) => {
   const categorySlug = c.req.query('category')
   const storeSlug = c.req.query('store')
   const sort = c.req.query('sort') || 'published_at' // published_at | deal_score | price_asc
+  const qualified = c.req.query('qualified') !== 'false'
 
   const emptyResult = { data: [], pagination: { page, limit, total: 0, totalPages: 0 } }
   const conditions = [eq(offers.status, 'active')]
+
+  if (qualified) {
+    conditions.push(qualifiedOfferCondition())
+  }
 
   // Filtro por loja (loja inexistente = sem resultados, em vez de ignorar o filtro)
   if (storeSlug) {

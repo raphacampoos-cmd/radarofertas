@@ -2,14 +2,15 @@ import { TwitterApi } from 'twitter-api-v2'
 import { db } from '@radarofertas/db/client'
 import { offers } from '@radarofertas/db/schema'
 import { desc, and, eq, sql } from 'drizzle-orm'
+import { qualifiedOfferCondition } from '../lib/qualified-offer.js'
 
 export async function runSocialBot() {
   console.log('🤖 A iniciar o Social Promo Bot...')
 
-  // 1. Encontrar a melhor oferta do dia (Maior desconto, score alto)
+  // 1. Encontrar a melhor oferta do dia (Maior desconto, score alto, apenas qualificada)
   const [topOffer] = await db.select()
     .from(offers)
-    .where(and(eq(offers.status, 'active')))
+    .where(and(eq(offers.status, 'active'), qualifiedOfferCondition()))
     .orderBy(desc(offers.dealScore), desc(offers.discountPct))
     .limit(1)
 
