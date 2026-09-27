@@ -139,12 +139,9 @@ export function OfferSpecsSection({ offer, priceCurrent, priceOriginal, discount
                   <Store size={22} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Loja / Vendedor Oficial</div>
-                  <div style={{ fontWeight: 700, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Loja / Vendedor</div>
+                  <div style={{ fontWeight: 700, color: '#f1f5f9' }}>
                     {storeName}
-                    <span style={{ fontSize: '0.7rem', background: '#22c55e', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '9999px' }}>
-                      Parceiro Verificado
-                    </span>
                   </div>
                 </div>
               </div>
@@ -232,9 +229,9 @@ export function OfferSpecsSection({ offer, priceCurrent, priceOriginal, discount
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Disponibilidade & Entrega</div>
                   <div style={{ fontWeight: 700, color: '#f1f5f9' }}>
-                    Disponível na Loja Oficial
+                    Disponível online
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Expedição direta por {storeName}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Vendido e expedido por {storeName}</div>
                 </div>
               </div>
 
@@ -254,7 +251,7 @@ export function OfferSpecsSection({ offer, priceCurrent, priceOriginal, discount
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Garantia & Devoluções</div>
                   <div style={{ fontWeight: 700, color: '#f1f5f9' }}>
-                    Garantia Oficial do Vendedor
+                    Garantia legal da UE
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>14 dias de livre resolução na UE</div>
                 </div>
@@ -327,7 +324,7 @@ export function OfferSpecsSection({ offer, priceCurrent, priceOriginal, discount
                 </p>
                 <ul style={{ listStyle: 'disc', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', color: '#cbd5e1' }}>
                   <li>Artigo fornecido diretamente pelo parceiro <strong>{storeName}</strong>.</li>
-                  <li>Elegível para entrega e apoio direto ao cliente da loja oficial.</li>
+                  <li>Elegível para entrega e apoio direto ao cliente da loja.</li>
                   <li>Garantia legal aplicável e direito de devolução de 14 dias para compras online na União Europeia.</li>
                   <li>Link verificado contra fraudes e seguro para navegação.</li>
                 </ul>

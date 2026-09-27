@@ -1,5 +1,9 @@
 const API = process.env.API_URL || "https://radarofertas-api-production.up.railway.app";
-const KEY = process.env.ADMIN_KEY || "radar_admin_secret_change_in_production";
+const KEY = process.env.ADMIN_KEY;
+if (!KEY) {
+  console.error("ERRO: ADMIN_KEY é obrigatória.");
+  process.exit(1);
+}
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 async function extractAmazonPrice(html) {

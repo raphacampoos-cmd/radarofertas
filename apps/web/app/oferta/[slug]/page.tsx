@@ -24,9 +24,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const offer = res.data
     const price = parseFloat(offer.priceCurrent || '0')
     const discount = parseFloat(offer.discountPct || '0')
+    const title = discount > 0
+      ? `${offer.title} — ${Math.round(discount)}% Desconto`
+      : offer.title
 
     return {
-      title: `${offer.title} — ${Math.round(discount)}% Desconto`,
+      title,
       description: `${offer.title} por ${formatPrice(price)} na ${offer.store.name}. Deal Score: ${Math.round(parseFloat(offer.dealScore || '0'))}/100. ${offer.isMinHistoric ? '🔥 Mínimo histórico!' : ''}`,
       openGraph: {
         title: offer.title,

@@ -12,16 +12,36 @@ import { processOfferTranslation } from '../lib/translate.js'
 
 export const adminRouter = new Hono()
 
-// Middleware de autenticação admin (suporta cabeçalho X-Admin-Key ou parâmetro ?key= no URL)
-adminRouter.use('*', async (c, next) => {
-  const keyHeader = c.req.header('x-admin-key')
-  const keyQuery = c.req.query('key')
-  const key = keyHeader || keyQuery
-  const validKey = process.env.ADMIN_API_KEY
+// Chaves de exemplo e valores inseguros proibidos
+const FORBIDDEN_KEYS = new Set([
+  'radar_admin_secret_change_in_production',
+  'admin',
+  'secret',
+  'password',
+  'change_me',
+])
 
-  if (!validKey || key !== validKey) {
-    return c.json({ error: 'Não autorizado. Fornece o cabeçalho X-Admin-Key ou ?key=CHAVE_ADMIN' }, 401)
+// Middleware de autenticação admin estrito
+adminRouter.use('*', async (c, next) => {
+  // SEGURANÇA: Proibido passar chave na URL (?key=). Aceite APENAS no cabeçalho x-admin-key.
+  if (c.req.query('key')) {
+    return c.json({ error: 'Proibido passar chave na URL. Utiliza exclusivamente o cabeçalho X-Admin-Key.' }, 400)
   }
+
+  const clientKey = c.req.header('x-admin-key')?.trim()
+  const serverKey = process.env.ADMIN_API_KEY?.trim()
+
+  // Se o servidor não tiver chave configurada, for muito curta ou for a chave de exemplo exposta, recusa terminantemente
+  if (!serverKey || serverKey.length < 24 || FORBIDDEN_KEYS.has(serverKey)) {
+    console.error('🚨 [Segurança] ADMIN_API_KEY insegura, padrão ou não configurada no servidor.')
+    return c.json({ error: 'Área de administração inativa: ADMIN_API_KEY não configurada de forma segura no servidor.' }, 503)
+  }
+
+  // Recusa se o cliente tentar usar chave vazia, chaves proibidas ou diferente da chave real
+  if (!clientKey || FORBIDDEN_KEYS.has(clientKey) || clientKey !== serverKey) {
+    return c.json({ error: 'Não autorizado. Chave de administração inválida.' }, 401)
+  }
+
   await next()
 })
 
