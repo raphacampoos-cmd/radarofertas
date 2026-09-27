@@ -104,11 +104,12 @@ if (BACKGROUND_JOBS_ENABLED) {
     sendWeeklyNewsletter().catch(console.error)
   }, { timezone: 'Europe/Lisbon' })
 
-  // Agendar o Robô Descobridor (Crawler) para correr todas as noites às 03:00 da manhã
-  cron.schedule('0 3 * * *', () => {
-    console.log('🕵️‍♂️ A acordar o Robô Descobridor para caçar novos BestSellers...')
-    runDiscoveryBot().catch(console.error)
-  }, { timezone: 'Europe/Lisbon' })
+  // Agendar o Robô Descobridor (Crawler da Amazon) — DESATIVADO por conformidade.
+  // Será reativado exclusivamente quando a Creators API oficial estiver configurada.
+  // cron.schedule('0 3 * * *', () => {
+  //   console.log('🕵️‍♂️ A acordar o Robô Descobridor para caçar novos BestSellers...')
+  //   runDiscoveryBot().catch(console.error)
+  // }, { timezone: 'Europe/Lisbon' })
   // Agendar o Agente 2 (Awin) para correr todas as noites às 04:00 da manhã
   cron.schedule('0 4 * * *', () => {
     console.log('🌐 A acordar o Agente Awin para ler os feeds oficiais...')

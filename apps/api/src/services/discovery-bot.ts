@@ -25,6 +25,12 @@ function generateSlug(title: string): string {
 }
 
 export async function runDiscoveryBot() {
+  const AMAZON_SCRAPING_ENABLED = process.env.AMAZON_SCRAPING_ENABLED === 'true';
+  if (!AMAZON_SCRAPING_ENABLED) {
+    console.log('⏸️ [Amazon Discovery Bot] Scraping de páginas Amazon desativado por conformidade com o Programa de Associados. Nenhum pedido HTTP efetuado à Amazon.');
+    return;
+  }
+
   console.log('🕵️‍♂️ Bot Descobridor: A iniciar patrulha na Amazon...');
   let newItemsCount = 0;
 

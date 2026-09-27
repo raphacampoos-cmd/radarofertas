@@ -128,6 +128,12 @@ async function processTrendSignal(text: string) {
 }
 
 async function verifyAndCreateAmazonOffer(asin: string, originalText: string) {
+  // Scraping da Amazon desativado por conformidade com o Programa de Associados.
+  if (process.env.AMAZON_SCRAPING_ENABLED !== 'true') {
+    console.log(`⏸️ [Telegram Sniper] Scraping de páginas Amazon desativado para ASIN ${asin}. Adições manuais via /admin.`);
+    return;
+  }
+
   // Verificar se já temos este ASIN
   const existing = await db.select({ id: offers.id }).from(offers).where(like(offers.affiliateUrl, `%${asin}%`));
   if (existing.length > 0) {

@@ -44,6 +44,11 @@ async function hasReliableHistory(offerId: number): Promise<boolean> {
 
 // 'gone' = a Amazon respondeu 404/410 (o produto foi removido); null = falha temporária ou leitura impossível.
 async function checkPrice(offer: OfferRow): Promise<AmazonPriceInfo | 'gone' | null> {
+  // Scraping da Amazon desativado por conformidade com o Acordo de Associados.
+  if (offer.affiliateUrl.includes('amazon') && process.env.AMAZON_SCRAPING_ENABLED !== 'true') {
+    return null;
+  }
+
   try {
     const res = await fetch(offer.affiliateUrl, {
       headers: {
@@ -166,7 +171,14 @@ async function applyPriceUpdate(offer: OfferRow, newPrice: number, newOriginal?:
 }
 
 // Ofertas Amazon: cada uma exige o seu próprio pedido HTTP (scraping da página do produto)
+// DESATIVADO: por conformidade com o Programa de Associados da Amazon.
 async function trackAmazonOffers(amazonOffers: OfferRow[]) {
+  const AMAZON_SCRAPING_ENABLED = process.env.AMAZON_SCRAPING_ENABLED === 'true'
+  if (!AMAZON_SCRAPING_ENABLED) {
+    console.log(`⏸️ [Amazon Bot] Rastreador de preços Amazon (scraping) desativado (${amazonOffers.length} ofertas mantidas sem pedidos HTTP à Amazon).`)
+    return 0
+  }
+
   let updatedCount = 0
 
   for (const offer of amazonOffers) {

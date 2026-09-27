@@ -47,18 +47,18 @@ adminRouter.use('*', async (c, next) => {
 
 // ── Schema de validação ────────────────────────────────────────
 const createOfferSchema = z.object({
-  title: z.string().min(5).max(500),
+  title: z.string().min(3).max(500),
   storeId: z.number().positive(),
   externalId: z.string().optional(),
-  priceCurrent: z.number().positive(),
-  priceOriginal: z.number().positive(),
+  priceCurrent: z.number().positive().optional(),
+  priceOriginal: z.number().positive().optional(),
   couponCode: z.string().optional(),
   imageUrl: z.string().url().optional(),
   description: z.string().optional(),
   affiliateUrl: z.string().url(),
   categoryIds: z.array(z.number()).min(1),
   expiresAt: z.string().datetime().optional(),
-  source: z.enum(['editorial', 'community', 'auto']).default('editorial'),
+  source: z.enum(['editorial', 'community', 'auto', 'manual', 'crawler', 'awin_api']).default('manual'),
   campaign: z.string().optional(),
 })
 
@@ -125,16 +125,22 @@ adminRouter.post('/offers', async (c) => {
       .replace(/^-|-$/g, '')
       .slice(0, 200)
 
-    // Calcular desconto
-    const discountPct = ((data.priceOriginal - data.priceCurrent) / data.priceOriginal * 100)
+    // Calcular desconto (se houver preço)
+    const curPrice = data.priceCurrent || 0
+    const origPrice = data.priceOriginal || curPrice
+    const discountPct = (origPrice > curPrice && origPrice > 0)
+      ? ((origPrice - curPrice) / origPrice * 100)
+      : 0
 
     // Calcular Deal Score inicial (sem histórico)
-    const scoreResult = calculateDealScore({
-      priceCurrent: data.priceCurrent,
-      priceOriginal: data.priceOriginal,
-      priceMinHistoric: null,
-      priceAvg90Days: null,
-    })
+    const scoreResult = curPrice > 0
+      ? calculateDealScore({
+          priceCurrent: curPrice,
+          priceOriginal: origPrice,
+          priceMinHistoric: null,
+          priceAvg90Days: null,
+        })
+      : { score: 0 }
 
     // Traduzir e encurtar título se necessário
     const translation = await processOfferTranslation(data.title, data.description)
@@ -145,9 +151,9 @@ adminRouter.post('/offers', async (c) => {
       slug,
       storeId: data.storeId,
       externalId: data.externalId,
-      priceCurrent: data.priceCurrent.toFixed(2),
-      priceOriginal: data.priceOriginal.toFixed(2),
-      priceMinimum: data.priceCurrent.toFixed(2),
+      priceCurrent: data.priceCurrent ? data.priceCurrent.toFixed(2) : null,
+      priceOriginal: data.priceOriginal ? data.priceOriginal.toFixed(2) : null,
+      priceMinimum: data.priceCurrent ? data.priceCurrent.toFixed(2) : null,
       discountPct: discountPct.toFixed(2),
       couponCode: data.couponCode,
       imageUrl: data.imageUrl,
@@ -171,13 +177,15 @@ adminRouter.post('/offers', async (c) => {
       })
     }
 
-    // Primeiro registo de histórico de preços
-    await db.insert(priceHistory).values({
-      offerId: newOffer.id,
-      storeId: data.storeId,
-      price: data.priceCurrent.toFixed(2),
-      source: 'manual',
-    })
+    // Primeiro registo de histórico de preços (se tiver preço)
+    if (data.priceCurrent) {
+      await db.insert(priceHistory).values({
+        offerId: newOffer.id,
+        storeId: data.storeId,
+        price: data.priceCurrent.toFixed(2),
+        source: 'manual',
+      })
+    }
 
     // Enviar alerta automático para o Canal de Telegram e WhatsApp
     const priceOriginalNum = Number(newOffer.priceOriginal) || 0;
@@ -360,10 +368,16 @@ adminRouter.post('/trigger-bot', async (c) => {
   }
 })
 
-// POST /api/admin/trigger-discovery — corre o Robô Descobridor (Amazon bestsellers) em background
+// POST /api/admin/trigger-discovery — corre o Robô Descobridor (Amazon bestsellers)
 adminRouter.post('/trigger-discovery', async (c) => {
+  if (process.env.AMAZON_SCRAPING_ENABLED !== 'true') {
+    return c.json({
+      success: false,
+      message: 'Scraping de páginas Amazon desativado por conformidade com o Programa de Associados. Será ativado automaticamente com a Creators API oficial.'
+    })
+  }
   runDiscoveryBot().catch(console.error)
-  return c.json({ success: true, message: 'Robô Descobridor iniciado em segundo plano. Os novos produtos aparecem daqui a alguns minutos.' })
+  return c.json({ success: true, message: 'Robô Descobridor iniciado em segundo plano.' })
 })
 
 // POST /api/admin/trigger-newsletter { email } — envia a newsletter SÓ para o e-mail de teste indicado

@@ -362,11 +362,16 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
     if (fd.get('cat_suple')) cats.push(8)
     if (cats.length === 0) cats.push(1) // Fallback para Gaming
 
+    const rawPriceCurrent = fd.get('priceCurrent') as string
+    const rawPriceOriginal = fd.get('priceOriginal') as string
+    const parsedCurrent = rawPriceCurrent ? parseFloat(rawPriceCurrent) : undefined
+    const parsedOriginal = rawPriceOriginal ? parseFloat(rawPriceOriginal) : undefined
+
     const payload = {
       title: fd.get('title'),
       storeId: 1, // Por defeito: Amazon
-      priceCurrent: parseFloat(fd.get('priceCurrent') as string),
-      priceOriginal: fd.get('priceOriginal') ? parseFloat(fd.get('priceOriginal') as string) : undefined,
+      priceCurrent: parsedCurrent !== undefined && !isNaN(parsedCurrent) ? parsedCurrent : undefined,
+      priceOriginal: parsedOriginal !== undefined && !isNaN(parsedOriginal) ? parsedOriginal : undefined,
       affiliateUrl: affiliateUrl || fd.get('affiliateUrl'),
       imageUrl: fd.get('imageUrl') || undefined,
       couponCode: fd.get('couponCode') || undefined,
@@ -408,8 +413,8 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Preço Atual (€) *</label>
-          <input name="priceCurrent" type="number" step="0.01" required placeholder="399.99" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Preço Atual (€) (Opcional p/ Amazon)</label>
+          <input name="priceCurrent" type="number" step="0.01" placeholder="Ex: 399.99 (ou vazio p/ Ver preço)" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -461,7 +466,7 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>URL da Imagem * (Clica c/ direito na imagem da Amazon e copia)</label>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>URL da Imagem * (Usa a imagem do SiteStripe da Amazon)</label>
           <input name="imageUrl" type="url" required placeholder="https://m.media-amazon.com/images/I/51FjXk0L+rL._AC_SL1500_.jpg" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
         </div>
 
