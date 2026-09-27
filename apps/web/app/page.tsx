@@ -38,7 +38,8 @@ export default async function HomePage({ searchParams }: HomeProps) {
   try {
     const res = await getOffers({ limit: 100, sort: 'published_at', store, qualified: true })
     offers = res.data
-    total = res.pagination?.total ?? res.data.length
+    // Use offers.length (already filtered by API) to avoid showing stale total from pagination
+    total = res.data.length
   } catch {
     error = true
   }
