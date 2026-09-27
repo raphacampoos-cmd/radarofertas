@@ -29,9 +29,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   try {
     const res = await getStore(slug)
-    const store = res.data.store
-    const coupons = res.data.coupons || []
-    const offers = res.data.offers || []
+    const rawData = res.data
+    const store = (rawData as any)?.store || rawData
+    if (!store || !store.name) {
+      return { title: 'Loja não encontrada | RadarOfertas' }
+    }
+    const coupons = (rawData as any)?.coupons || []
+    const offers = (rawData as any)?.offers || []
     const isEmpty = coupons.length === 0 && offers.length === 0
 
     const displayName = store.slug === 'amazon' ? 'Amazon.es' : store.name
@@ -79,11 +83,13 @@ export default async function StorePage({ params }: PageProps) {
     notFound()
   }
 
-  if (!storeData || !storeData.store) {
+  const store = storeData?.store || storeData
+  if (!store || !store.name) {
     notFound()
   }
 
-  const { store, coupons = [], offers = [] } = storeData
+  const coupons: any[] = storeData?.coupons || []
+  const offers: any[] = storeData?.offers || []
   const faqs: Array<{ question: string; answer: string }> = store.seoFaqs || []
   const isEmpty = coupons.length === 0 && offers.length === 0
   const displayName = store.slug === 'amazon' ? 'Amazon.es' : store.name

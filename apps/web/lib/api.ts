@@ -72,7 +72,7 @@ export async function getStore(slug: string, page = 1): Promise<{
     pagination: PaginationMeta
   }
 }> {
-  return apiFetch(`/api/stores/${slug}?page=${page}`)
+  return apiFetch(`/api/stores/${slug}?page=${page}`, { next: { revalidate: 0 } })
 }
 
 // ── Pesquisa ──────────────────────────────────────────────────
