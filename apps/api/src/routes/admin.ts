@@ -8,16 +8,19 @@ import { sendTelegramAlert } from '../lib/telegram.js'
 import { sendWhatsAppMessage } from '../lib/whatsapp.js'
 import { runDiscoveryBot } from '../services/discovery-bot.js'
 import { sendWeeklyNewsletter } from '../services/newsletter.js'
+import { processOfferTranslation } from '../lib/translate.js'
 
 export const adminRouter = new Hono()
 
-// Middleware de autenticação admin
+// Middleware de autenticação admin (suporta cabeçalho X-Admin-Key ou parâmetro ?key= no URL)
 adminRouter.use('*', async (c, next) => {
-  const key = c.req.header('x-admin-key')
+  const keyHeader = c.req.header('x-admin-key')
+  const keyQuery = c.req.query('key')
+  const key = keyHeader || keyQuery
   const validKey = process.env.ADMIN_API_KEY
 
   if (!validKey || key !== validKey) {
-    return c.json({ error: 'Não autorizado' }, 401)
+    return c.json({ error: 'Não autorizado. Fornece o cabeçalho X-Admin-Key ou ?key=CHAVE_ADMIN' }, 401)
   }
   await next()
 })
@@ -70,8 +73,12 @@ adminRouter.post('/offers', async (c) => {
       priceAvg90Days: null,
     })
 
+    // Traduzir e encurtar título se necessário
+    const translation = await processOfferTranslation(data.title, data.description)
+
     const [newOffer] = await db.insert(offers).values({
       title: data.title,
+      titlePt: translation.titlePt,
       slug,
       storeId: data.storeId,
       externalId: data.externalId,
@@ -82,6 +89,7 @@ adminRouter.post('/offers', async (c) => {
       couponCode: data.couponCode,
       imageUrl: data.imageUrl,
       description: data.description,
+      descriptionPt: translation.descriptionPt,
       affiliateUrl: data.affiliateUrl,
       dealScore: scoreResult.score.toFixed(2),
       isMinHistoric: false,
@@ -311,3 +319,71 @@ adminRouter.post('/awin/test-agent', async (c) => {
 
   return c.json({ success: true })
 })
+
+// ── Tradução em Lote de Ofertas (PT-PT) ──────────────────────
+// GET ou POST /api/admin/translate-all?key=...&force=true&limit=200
+async function handleBatchTranslation(c: any) {
+  const force = c.req.query('force') === 'true'
+  const limit = Math.min(500, Math.max(1, parseInt(c.req.query('limit') || '250') || 250))
+
+  // Condição: por padrão traduz ofertas onde titlePt é nulo ou vazio
+  const whereCondition = force
+    ? undefined
+    : sql`${offers.titlePt} IS NULL OR ${offers.titlePt} = ''`
+
+  const targetOffers = await db
+    .select({
+      id: offers.id,
+      title: offers.title,
+      description: offers.description,
+      titlePt: offers.titlePt,
+    })
+    .from(offers)
+    .where(whereCondition)
+    .limit(limit)
+
+  console.log(`🌐 [Tradução em Lote] A processar ${targetOffers.length} ofertas (force=${force})...`)
+
+  const results: Array<{ id: number; original: string; titlePt: string; wasTranslated: boolean }> = []
+  let updatedCount = 0
+
+  for (const item of targetOffers) {
+    try {
+      const translation = await processOfferTranslation(item.title, item.description)
+
+      await db
+        .update(offers)
+        .set({
+          titlePt: translation.titlePt,
+          descriptionPt: translation.descriptionPt,
+          updatedAt: new Date(),
+        })
+        .where(eq(offers.id, item.id))
+
+      updatedCount++
+      results.push({
+        id: item.id,
+        original: item.title,
+        titlePt: translation.titlePt,
+        wasTranslated: translation.wasTranslated,
+      })
+
+      // Intervalo de 80ms para suavizar chamadas
+      await new Promise((r) => setTimeout(r, 80))
+    } catch (err) {
+      console.error(`Erro ao traduzir oferta #${item.id}:`, err)
+    }
+  }
+
+  return c.json({
+    success: true,
+    message: `Tradução concluída! ${updatedCount} de ${targetOffers.length} ofertas processadas e atualizadas para PT-PT.`,
+    totalProcessed: targetOffers.length,
+    updatedCount,
+    samples: results.slice(0, 15),
+  })
+}
+
+adminRouter.get('/translate-all', handleBatchTranslation)
+adminRouter.post('/translate-all', handleBatchTranslation)
+

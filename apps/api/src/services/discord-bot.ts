@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, REST, Routes, EmbedBuilder } from 'discord.js'
 import { db } from '@radarofertas/db/client'
 import { offers, offerCategories, categories, discordAlerts } from '@radarofertas/db/schema'
-import { ilike, eq, desc, and, inArray } from 'drizzle-orm'
+import { ilike, eq, desc, and, inArray, or } from 'drizzle-orm'
 import { isQualifiedOffer } from '@radarofertas/deal-engine'
 
 let client: Client | null = null
@@ -61,7 +61,10 @@ export async function initDiscordBot() {
           .where(
             and(
               eq(offers.status, 'active'),
-              ilike(offers.title, `%${termo}%`)
+              or(
+                ilike(offers.title, `%${termo}%`),
+                ilike(offers.titlePt, `%${termo}%`)
+              )
             )
           )
           .orderBy(desc(offers.dealScore))
@@ -78,7 +81,7 @@ export async function initDiscordBot() {
 
         resultados.forEach(oferta => {
           embed.addFields({
-            name: oferta.title,
+            name: oferta.titlePt || oferta.title,
             value: `💰 **€${oferta.priceCurrent}** (antes €${oferta.priceOriginal})\n🔥 Desconto: ${oferta.discountPct}%\n🔗 [Ver Oferta](https://radarofertas-psi.vercel.app/oferta/${oferta.slug})`
           })
         })
@@ -158,7 +161,7 @@ export async function sendOfferToDiscord(oferta: any) {
 
   const embed = new EmbedBuilder()
     .setColor('#ef4444')
-    .setTitle(`🔥 NOVO DESCONTO: ${oferta.title}`)
+    .setTitle(`🔥 NOVO DESCONTO: ${oferta.titlePt || oferta.title}`)
     .setURL(`https://radarofertas-psi.vercel.app/oferta/${oferta.slug}`)
     .setImage(oferta.imageUrl)
     .setDescription(`💰 **€${oferta.priceCurrent}** (antes €${oferta.priceOriginal})\n📉 Caiu ${oferta.discountPct}%!`)

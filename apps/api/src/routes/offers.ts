@@ -130,6 +130,10 @@ offersRouter.get('/:slug', async (c) => {
   return c.json({
     data: {
       ...offer,
+      title: offer.titlePt || offer.title,
+      titleOriginal: offer.title,
+      description: offer.descriptionPt || offer.description,
+      descriptionOriginal: offer.description,
       categories: offer.offerCategories.map(oc => oc.category),
       priceStats: {
         avg90Days: avg90 ? Math.round(avg90 * 100) / 100 : null,

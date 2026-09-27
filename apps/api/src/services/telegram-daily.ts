@@ -50,6 +50,7 @@ export async function sendDailyOffer(
       .select({
         id: offers.id,
         title: offers.title,
+        titlePt: offers.titlePt,
         slug: offers.slug,
         priceCurrent: offers.priceCurrent,
         priceOriginal: offers.priceOriginal,
@@ -84,6 +85,7 @@ export async function sendDailyOffer(
     const discount = Number(offer.discountPct)
     const current = Number(offer.priceCurrent)
     const original = Number(offer.priceOriginal)
+    const displayTitle = offer.titlePt || offer.title
 
     // Construir título com emoji adequado ao slot
     const slotEmoji = slot === 'morning' ? '🌅' : '🌆'
@@ -91,7 +93,7 @@ export async function sendDailyOffer(
 
     // Montar mensagem rica
     let text = `${slotEmoji} *OFERTA DO DIA* ${dealEmoji}\n\n`
-    text += `📦 *${offer.title}*\n\n`
+    text += `📦 *${displayTitle}*\n\n`
 
     if (original > current && discount > 0) {
       text += `💰 *€${current.toFixed(2)}* ~~(antes €${original.toFixed(2)})~~\n`

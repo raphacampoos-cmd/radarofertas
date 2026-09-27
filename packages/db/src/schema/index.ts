@@ -62,6 +62,7 @@ export const categories = pgTable('categories', {
 export const offers = pgTable('offers', {
   id: serial('id').primaryKey(),
   title: varchar('title', { length: 500 }).notNull(),
+  titlePt: varchar('title_pt', { length: 500 }),
   slug: varchar('slug', { length: 600 }).notNull().unique(),
   storeId: integer('store_id').notNull().references(() => stores.id),
   externalId: varchar('external_id', { length: 50 }), // ASIN ou ID externo
@@ -73,6 +74,7 @@ export const offers = pgTable('offers', {
   currency: char('currency', { length: 3 }).default('EUR'),
   imageUrl: text('image_url'),
   description: text('description'),
+  descriptionPt: text('description_pt'),
   affiliateUrl: text('affiliate_url').notNull(),
   dealScore: decimal('deal_score', { precision: 5, scale: 2 }).default('0'), // 0-100
   isMinHistoric: boolean('is_min_historic').default(false),

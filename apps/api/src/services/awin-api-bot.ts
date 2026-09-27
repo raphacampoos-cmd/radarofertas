@@ -5,6 +5,7 @@ import { calculateDealScore } from '@radarofertas/deal-engine';
 import { sendTelegramAlert } from '../lib/telegram.js';
 import { fetchAwinFeed } from '../lib/awin-feed.js';
 import { EXTRA_CATEGORIES, MERCHANT_DISPLAY_NAME, planAwinRun, slugify } from '../lib/awin-mapping.js';
+import { processOfferTranslation } from '../lib/translate.js';
 
 // Os ID dos 16 anunciantes aprovados
 const TARGET_MERCHANTS = [
@@ -107,10 +108,15 @@ export async function runAwinApiBot() {
         finalImageUrl = `https://ui.awin.com/images/upload/merchant/profile/${row.merchant_id}.png`;
       }
 
+      // Traduzir para PT-PT e encurtar o título se necessário
+      const translation = await processOfferTranslation(item.title, item.description);
+
       const [inserted] = await db.insert(offers).values({
         title: item.title,
+        titlePt: translation.titlePt,
         slug: item.slug,
         description: item.description,
+        descriptionPt: translation.descriptionPt,
         priceCurrent: item.priceEur.toFixed(2),
         priceOriginal: item.originalEur.toFixed(2),
         priceMinimum: item.priceEur.toFixed(2),
@@ -133,12 +139,12 @@ export async function runAwinApiBot() {
       }
 
       inseridos++;
-      console.log(`✅ Produto inserido: ${item.title} (${storeName}, ${item.categorySlug}, ${item.priceEur}€${item.discountPct > 0 ? `, -${Math.round(item.discountPct)}%` : ''})`);
+      console.log(`✅ Produto inserido: ${translation.titlePt || item.title} (${storeName}, ${item.categorySlug}, ${item.priceEur}€${item.discountPct > 0 ? `, -${Math.round(item.discountPct)}%` : ''})`);
 
       if (item.discountPct >= MIN_DISCOUNT_TO_ANNOUNCE && !NO_ANNOUNCE_MERCHANTS.has(row.merchant_id)) {
         try {
           await sendTelegramAlert({
-            title: item.title,
+            title: translation.titlePt || item.title,
             priceCurrent: item.priceEur,
             priceOriginal: item.originalEur,
             affiliateUrl: `https://radarofertas.pt/oferta/${item.slug}`,

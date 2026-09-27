@@ -5,7 +5,9 @@ import { offers, stores } from '@radarofertas/db/schema'
 // do site funcionarem em todo o lado (inclui o link de afiliado do botão "Abrir desconto").
 export const offerListFields = {
   id: offers.id,
-  title: offers.title,
+  title: sql<string>`COALESCE(NULLIF(${offers.titlePt}, ''), ${offers.title})`,
+  titlePt: offers.titlePt,
+  titleOriginal: offers.title,
   slug: offers.slug,
   priceCurrent: offers.priceCurrent,
   priceOriginal: offers.priceOriginal,
@@ -13,7 +15,8 @@ export const offerListFields = {
   discountPct: offers.discountPct,
   couponCode: offers.couponCode,
   imageUrl: offers.imageUrl,
-  description: offers.description,
+  description: sql<string | null>`COALESCE(NULLIF(${offers.descriptionPt}, ''), ${offers.description})`,
+  descriptionPt: offers.descriptionPt,
   affiliateUrl: offers.affiliateUrl,
   dealScore: offers.dealScore,
   isMinHistoric: offers.isMinHistoric,

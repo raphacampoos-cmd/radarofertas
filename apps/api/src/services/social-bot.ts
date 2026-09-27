@@ -23,9 +23,10 @@ export async function runSocialBot() {
   const discountText = Number(topOffer.discountPct) > 0 ? `🔥 -${Number(topOffer.discountPct).toFixed(0)}% DESCONTO 🔥` : '🚨 PREÇO BOMBÁSTICO 🚨'
   const url = `https://radarofertas-psi.vercel.app/oferta/${topOffer.slug}`
   
+  const displayTitle = topOffer.titlePt || topOffer.title
   const msgText = `${discountText}
 
-${topOffer.title}
+${displayTitle}
 
 💰 Está a €${topOffer.priceCurrent} (antes €${topOffer.priceOriginal})
 ${topOffer.isMinHistoric ? '⚠️ É O PREÇO MAIS BAIXO DE SEMPRE!\n' : ''}

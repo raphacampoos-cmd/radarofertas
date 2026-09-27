@@ -132,7 +132,7 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
           fontWeight: 700, lineHeight: 1.3,
           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
         }}>
-          {offer.title}
+          {offer.titlePt || offer.title}
         </Link>
 
         {/* Preços */}

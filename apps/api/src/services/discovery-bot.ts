@@ -4,6 +4,7 @@ import { eq, sql, like } from 'drizzle-orm'
 import { JSDOM, VirtualConsole } from 'jsdom'
 import { extractAmazonPriceInfo } from '../lib/amazon-price.js'
 import { calculateDealScore } from '@radarofertas/deal-engine'
+import { processOfferTranslation } from '../lib/translate.js'
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const AFFILIATE_ID = "radaroferta0c-21"; // O teu código de afiliado
@@ -96,11 +97,17 @@ export async function runDiscoveryBot() {
 
         console.log(`🌟 Novo Bestseller Encontrado! ${title.slice(0,40)}... (${currentPrice}€)`);
 
+        // Traduzir para PT-PT e encurtar o título se necessário
+        const defaultDesc = 'Produto em destaque nos mais vendidos da Amazon. Monitorizado automaticamente pelo RadarOfertas.'
+        const translation = await processOfferTranslation(title, defaultDesc)
+
         // 2. Inserir na tabela offers (como Active para o Rastreador começar a seguir)
         const inserted = await db.insert(offers).values({
-          title: title.slice(0, 255),
-          slug: generateSlug(title.slice(0, 50)),
-          description: 'Produto em destaque nos mais vendidos da Amazon. Monitorizado automaticamente pelo RadarOfertas.',
+          title: title.slice(0, 500),
+          titlePt: translation.titlePt,
+          slug: generateSlug((translation.titlePt || title).slice(0, 50)),
+          description: defaultDesc,
+          descriptionPt: translation.descriptionPt || defaultDesc,
           priceCurrent: currentPrice.toFixed(2),
           priceOriginal: originalPrice.toFixed(2),
           priceMinimum: currentPrice.toFixed(2),

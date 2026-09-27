@@ -600,6 +600,27 @@ function BotsPanel() {
     setLoading(false)
   }
 
+  async function triggerTranslation(force = false) {
+    if (!confirm(force ? 'Queres re-traduzir TODAS as ofertas para PT-PT (incluindo as já traduzidas)?' : 'Queres traduzir todas as ofertas pendentes para PT-PT?')) return
+    setLoading(true)
+    setMsg('A traduzir ofertas para PT-PT e a encurtar títulos... Isto pode demorar alguns instantes.')
+    try {
+      const res = await fetch(`${API_URL}/api/admin/translate-all?force=${force}&limit=300`, {
+        method: 'POST',
+        headers: { 'X-Admin-Key': getAdminKey() }
+      })
+      const data = await res.json()
+      if (data.success) {
+        setMsg(`✅ ${data.message}`)
+      } else {
+        setMsg(`❌ ${data.error || 'Erro ao traduzir.'}`)
+      }
+    } catch {
+      setMsg('Erro ao contactar a API.')
+    }
+    setLoading(false)
+  }
+
   return (
     <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '2rem' }}>
       <p style={{ color: 'var(--muted-foreground)', marginBottom: '2rem' }}>
@@ -633,6 +654,30 @@ function BotsPanel() {
           >
             Enviar Teste Manual
           </button>
+        </div>
+
+        <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', background: '#f8fafc', gridColumn: 'span 2' }}>
+          <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1.1rem' }}>🇵🇹 Tradutor Inteligente PT-PT</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', marginBottom: '1.25rem', lineHeight: 1.4 }}>
+            Deteta automaticamente o idioma dos títulos e descrições (inglês, espanhol, alemão), traduz para português de Portugal (ecrã, telemóvel, frigorífico) e encurta títulos longos para ~80 caracteres preservando marca e modelo.
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => triggerTranslation(false)} 
+              disabled={loading}
+              style={{ flex: 1, minWidth: '220px', padding: '0.75rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 'var(--radius)', fontWeight: 600, cursor: loading ? 'wait' : 'pointer' }}
+            >
+              Traduzir Ofertas Pendentes
+            </button>
+            <button 
+              onClick={() => triggerTranslation(true)} 
+              disabled={loading}
+              style={{ padding: '0.75rem 1.25rem', background: 'transparent', color: 'var(--muted-foreground)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontWeight: 600, cursor: loading ? 'wait' : 'pointer' }}
+              title="Re-traduz todas as ofertas existentes na base de dados"
+            >
+              🔄 Forçar Todas
+            </button>
+          </div>
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { offers } from '@radarofertas/db/schema';
 import { eq, like } from 'drizzle-orm';
 import { NlpManager } from 'node-nlp';
 import { extractAmazonPriceInfo } from '../lib/amazon-price.js';
+import { processOfferTranslation } from '../lib/translate.js';
 
 // Configurações e Variáveis de Ambiente
 const apiId = parseInt(process.env.TG_API_ID || '0', 10);
@@ -155,11 +156,16 @@ async function verifyAndCreateAmazonOffer(asin: string, originalText: string) {
 
     if (currentPrice <= 0) return; // Descartar, produto inválido ou sem preço
 
+    const defaultDesc = '⚠️ [MÁQUINA INTERNA] Descoberto via Sinal de Tendência. Valida o preço e escreve uma boa descrição.';
+    const translation = await processOfferTranslation(title, defaultDesc);
+
     // Inserir na Fila de Aprovação (pending)
     await db.insert(offers).values({
-      title: title.slice(0, 255),
+      title: title.slice(0, 500),
+      titlePt: translation.titlePt,
       slug: 'amazon-' + asin + '-' + Math.floor(Math.random() * 1000),
-      description: '⚠️ [MÁQUINA INTERNA] Descoberto via Sinal de Tendência. Valida o preço e escreve uma boa descrição.',
+      description: defaultDesc,
+      descriptionPt: translation.descriptionPt || defaultDesc,
       priceCurrent: currentPrice.toFixed(2),
       priceOriginal: (priceInfo.listPrice ?? currentPrice).toFixed(2), // só há desconto se a Amazon mostrar preço de tabela
       priceMinimum: currentPrice.toFixed(2),

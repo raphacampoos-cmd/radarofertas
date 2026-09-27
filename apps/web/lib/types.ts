@@ -26,6 +26,7 @@ export interface Category {
 export interface Offer {
   id: number
   title: string
+  titlePt?: string | null
   slug: string
   storeId: number
   externalId: string | null
@@ -37,6 +38,7 @@ export interface Offer {
   currency: string
   imageUrl: string | null
   description: string | null
+  descriptionPt?: string | null
   affiliateUrl: string
   dealScore: string | null
   isMinHistoric: boolean
