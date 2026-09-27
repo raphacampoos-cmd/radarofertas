@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const isEmpty = coupons.length === 0 && offers.length === 0
 
     const displayName = store.slug === 'amazon' ? 'Amazon.es' : store.name
-    const title = `Códigos Promocionais e Descontos ${displayName} – ${monthYear} | RadarOfertas`
+    const title = `Códigos Promocionais e Descontos ${displayName} – ${monthYear}`
     const description = store.slug === 'amazon'
       ? `Descobre códigos promocionais, cupões e as melhores promoções da Amazon.es com entrega em Portugal em ${monthYear}. Poupa nas tuas compras online com o RadarOfertas.`
       : store.seoDescription || `Encontra os melhores cupões de desconto e promoções verificadas da ${store.name} para Portugal em ${monthYear}. Poupa nas tuas compras online com o RadarOfertas.`
