@@ -59,6 +59,7 @@ const createOfferSchema = z.object({
   categoryIds: z.array(z.number()).min(1),
   expiresAt: z.string().datetime().optional(),
   source: z.enum(['editorial', 'community', 'auto']).default('editorial'),
+  campaign: z.string().optional(),
 })
 
 // POST /api/admin/offers — criar oferta
@@ -117,6 +118,7 @@ adminRouter.post('/offers', async (c) => {
       status: (!data.imageUrl || !data.affiliateUrl) ? 'draft' : 'active',
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       source: data.source,
+      campaign: data.campaign || null,
     }).returning()
 
     // Associar categorias

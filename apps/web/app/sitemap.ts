@@ -11,6 +11,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/privacidade`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${baseUrl}/politica-cookies`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${baseUrl}/lojas`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/black-friday`, changeFrequency: 'daily', priority: 0.95 },
+    { url: `${baseUrl}/cyber-monday`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/singles-day`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/natal`, changeFrequency: 'daily', priority: 0.9 },
   ]
 
   // Categorias dinâmicas

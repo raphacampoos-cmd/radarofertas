@@ -88,6 +88,15 @@ export default function AdminDashboard() {
     loadOffers()
   }
 
+  async function updateOfferCampaign(id: number, campaignVal: string) {
+    await fetch(`${API_URL}/api/admin/offers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': getAdminKey() },
+      body: JSON.stringify({ campaign: campaignVal || null }),
+    })
+    setOffers(prev => prev.map(o => o.id === id ? { ...o, campaign: campaignVal || null } : o))
+  }
+
   if (!authed) {
     return (
       <div className="container" style={{ paddingTop: '4rem', paddingBottom: '4rem', maxWidth: '420px' }}>
@@ -200,6 +209,7 @@ export default function AdminDashboard() {
                   <tr style={{ borderBottom: '2px solid var(--border)' }}>
                     <th style={{ padding: '0.75rem' }}>Produto</th>
                     <th style={{ padding: '0.75rem' }}>Preço</th>
+                    <th style={{ padding: '0.75rem' }}>Campanha Sazonal</th>
                     <th style={{ padding: '0.75rem' }}>Cliques</th>
                     <th style={{ padding: '0.75rem' }}>Ações</th>
                   </tr>
@@ -213,6 +223,28 @@ export default function AdminDashboard() {
                         </a>
                       </td>
                       <td style={{ padding: '0.75rem', fontWeight: 700 }}>€{o.priceCurrent}</td>
+                      <td style={{ padding: '0.75rem' }}>
+                        <select
+                          value={o.campaign || ''}
+                          onChange={(e) => updateOfferCampaign(o.id, e.target.value)}
+                          style={{
+                            background: o.campaign ? 'rgba(249, 115, 22, 0.15)' : 'var(--card)',
+                            color: o.campaign ? '#f97316' : 'var(--foreground)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '0.375rem',
+                            padding: '0.3rem 0.5rem',
+                            fontSize: '0.8rem',
+                            fontWeight: o.campaign ? 700 : 400,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <option value="">Nenhuma</option>
+                          <option value="black-friday">🔥 Black Friday</option>
+                          <option value="cyber-monday">💻 Cyber Monday</option>
+                          <option value="singles-day">🛍️ Singles' Day (11.11)</option>
+                          <option value="natal">🎁 Natal</option>
+                        </select>
+                      </td>
                       <td style={{ padding: '0.75rem' }}>{o.clickCount || 0}</td>
                       <td style={{ padding: '0.75rem' }}>
                         <button onClick={() => deleteOffer(o.id, o.title)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}>🗑️</button>
@@ -340,7 +372,8 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
       couponCode: fd.get('couponCode') || undefined,
       description: fd.get('description') || '',
       categoryIds: cats,
-      source: 'manual'
+      source: 'manual',
+      campaign: (fd.get('campaign') as string) || undefined,
     }
 
     try {
@@ -435,6 +468,17 @@ function CreateOfferForm({ onSuccess }: { onSuccess: () => void }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Cupão de Desconto (Opcional)</label>
           <input name="couponCode" placeholder="Ex: AMAZON20" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Campanha Sazonal (Opcional)</label>
+          <select name="campaign" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }}>
+            <option value="">Nenhuma</option>
+            <option value="black-friday">🔥 Black Friday</option>
+            <option value="cyber-monday">💻 Cyber Monday</option>
+            <option value="singles-day">🛍️ Singles' Day (11.11)</option>
+            <option value="natal">🎁 Natal</option>
+          </select>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', gridColumn: 'span 2' }}>

@@ -44,6 +44,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
   }
 
   const storeName = store ? (offers[0]?.store.name ?? store) : null
+  const isBlackFridaySeason = new Date() >= new Date('2026-11-01T00:00:00Z')
 
   return (
     <div className="container" style={{ paddingTop: '1.5rem' }}>
@@ -57,6 +58,35 @@ export default async function HomePage({ searchParams }: HomeProps) {
           Poupa em lojas como <strong style={{ color: 'var(--primary)' }}>Amazon</strong>, <strong style={{ color: 'var(--primary)' }}>Worten</strong>, <strong style={{ color: 'var(--primary)' }}>PC Componentes</strong> e muito mais!
         </p>
       </section>
+
+      {isBlackFridaySeason && (
+        <Link
+          href="/black-friday"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            background: 'linear-gradient(90deg, rgba(249, 115, 22, 0.12) 0%, rgba(220, 38, 38, 0.12) 100%)',
+            border: '1px solid rgba(249, 115, 22, 0.3)',
+            borderRadius: 'var(--radius)',
+            padding: '0.75rem 1.25rem',
+            marginBottom: '1.25rem',
+            textDecoration: 'none',
+            color: 'var(--foreground)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.25rem' }}>🔥</span>
+            <div style={{ fontSize: '0.9rem' }}>
+              <strong style={{ color: '#f97316' }}>Black Friday 2026:</strong> O nosso radar especial já está a seguir as melhores descidas de preço em Portugal.
+            </div>
+          </div>
+          <span style={{ fontWeight: 700, color: '#f97316', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+            Ver Guia & Ofertas →
+          </span>
+        </Link>
+      )}
 
       <ActivityTicker />
 

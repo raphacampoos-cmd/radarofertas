@@ -19,12 +19,18 @@ offersRouter.get('/', async (c) => {
   const storeSlug = c.req.query('store')
   const sort = c.req.query('sort') || 'published_at' // published_at | deal_score | price_asc
   const qualified = c.req.query('qualified') !== 'false'
+  const campaign = c.req.query('campaign')
 
   const emptyResult = { data: [], pagination: { page, limit, total: 0, totalPages: 0 } }
   const conditions = [eq(offers.status, 'active')]
 
   if (qualified) {
     conditions.push(qualifiedOfferCondition())
+  }
+
+  // Filtro por campanha sazonal (ex: 'black-friday', 'cyber-monday', 'singles-day', 'natal')
+  if (campaign) {
+    conditions.push(eq(offers.campaign, campaign))
   }
 
   // Filtro por loja (loja inexistente = sem resultados, em vez de ignorar o filtro)

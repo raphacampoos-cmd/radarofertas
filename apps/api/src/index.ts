@@ -54,13 +54,13 @@ import { db } from '@radarofertas/db/client'
 import { subscribers } from '@radarofertas/db/schema'
 app.post('/api/newsletter', async (c) => {
   try {
-    const { email } = await c.req.json()
+    const { email, source } = await c.req.json()
     if (!email || !email.includes('@')) {
       return c.json({ error: 'Email inválido' }, 400)
     }
 
     await db.insert(subscribers)
-      .values({ email })
+      .values({ email, source: source || 'web' })
       .onConflictDoNothing({ target: subscribers.email })
 
     return c.json({ success: true, message: 'Subscrito com sucesso!' })

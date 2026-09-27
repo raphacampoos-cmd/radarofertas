@@ -91,12 +91,14 @@ export const offers = pgTable('offers', {
   expiresAt: timestamp('expires_at', { withTimezone: true }),
   clickCount: integer('click_count').default(0),
   source: varchar('source', { length: 50 }).default('editorial'), // editorial|community|auto
+  campaign: varchar('campaign', { length: 50 }), // 'black-friday', 'cyber-monday', 'singles-day', 'natal'
   publishedAt: timestamp('published_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (t) => [
   index('offers_store_id_idx').on(t.storeId),
   index('offers_status_idx').on(t.status),
+  index('offers_campaign_idx').on(t.campaign),
   index('offers_published_at_idx').on(t.publishedAt),
   index('offers_deal_score_idx').on(t.dealScore),
   uniqueIndex('offers_slug_idx').on(t.slug),

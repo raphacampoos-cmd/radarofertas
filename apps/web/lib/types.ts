@@ -55,6 +55,7 @@ export interface Offer {
   clickCount: number
   publishedAt: string
   updatedAt: string
+  campaign?: string | null
   upvotes?: number
   downvotes?: number
   commentCount?: number

@@ -2,7 +2,21 @@
 
 import { useState } from 'react'
 
-export function Newsletter() {
+interface NewsletterProps {
+  source?: string
+  title?: string
+  description?: string
+  buttonText?: string
+  placeholder?: string
+}
+
+export function Newsletter({
+  source = 'web',
+  title = 'Não percas nenhum mínimo histórico!',
+  description = 'Junta-te à nossa lista VIP. Enviamos um email (no máximo 1 por semana) com os maiores descontos que os nossos radares detetaram. Zero spam.',
+  buttonText = 'Quero receber as ofertas',
+  placeholder = 'O teu melhor email...',
+}: NewsletterProps = {}) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
@@ -17,7 +31,7 @@ export function Newsletter() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/newsletter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, source })
       })
       
       if (res.ok) {
@@ -47,10 +61,10 @@ export function Newsletter() {
     }}>
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
         <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.2 }}>
-          Não percas nenhum mínimo histórico!
+          {title}
         </h2>
         <p style={{ fontSize: '1.1rem', marginBottom: '2rem', opacity: 0.9 }}>
-          Junta-te à nossa lista VIP. Enviamos um email (no máximo 1 por semana) com os maiores descontos que os nossos radares detetaram. Zero spam.
+          {description}
         </p>
         
         {status === 'success' ? (
@@ -72,7 +86,7 @@ export function Newsletter() {
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <input
                 type="email"
-                placeholder="O teu melhor email..."
+                placeholder={placeholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -106,7 +120,7 @@ export function Newsletter() {
                 onMouseOver={(e) => (e.currentTarget.style.background = '#333')}
                 onMouseOut={(e) => (e.currentTarget.style.background = '#111')}
               >
-                {status === 'loading' ? 'A subscrever...' : 'Quero receber as ofertas'}
+                {status === 'loading' ? 'A subscrever...' : buttonText}
               </button>
             </div>
             {status === 'error' && (

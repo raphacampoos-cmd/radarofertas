@@ -23,6 +23,7 @@ export const offerListFields = {
   availability: offers.availability,
   expiresAt: offers.expiresAt,
   clickCount: offers.clickCount,
+  campaign: offers.campaign,
   publishedAt: offers.publishedAt,
   updatedAt: offers.updatedAt,
   upvotes: offers.upvotes,
