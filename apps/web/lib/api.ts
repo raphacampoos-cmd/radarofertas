@@ -64,6 +64,17 @@ export async function getStores(): Promise<{ data: Store[] }> {
   return apiFetch('/api/stores')
 }
 
+export async function getStore(slug: string, page = 1): Promise<{
+  data: {
+    store: Store
+    coupons: Offer[]
+    offers: Offer[]
+    pagination: PaginationMeta
+  }
+}> {
+  return apiFetch(`/api/stores/${slug}?page=${page}`)
+}
+
 // ── Pesquisa ──────────────────────────────────────────────────
 export async function searchOffers(q: string): Promise<{ data: Offer[]; query: string }> {
   return apiFetch(`/api/search?q=${encodeURIComponent(q)}`)

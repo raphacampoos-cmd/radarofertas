@@ -10,6 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/termos`, changeFrequency: 'monthly', priority: 0.3 },
     { url: `${baseUrl}/privacidade`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${baseUrl}/politica-cookies`, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${baseUrl}/lojas`, changeFrequency: 'daily', priority: 0.9 },
   ]
 
   // Categorias dinâmicas
@@ -17,10 +18,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const catRes = await fetch(`${API_URL}/api/categories`, { next: { revalidate: 3600 } })
     const catData = await catRes.json()
-    categoryRoutes = catData.data.map((cat: any) => ({
+    const rawCats = catData?.data?.categories || catData?.data || []
+    categoryRoutes = rawCats.map((cat: any) => ({
       url: `${baseUrl}/categoria/${cat.slug}`,
       changeFrequency: 'hourly' as const,
       priority: 0.9,
+    }))
+  } catch {}
+
+  // Lojas dinâmicas
+  let storeRoutes: MetadataRoute.Sitemap = []
+  try {
+    const storesRes = await fetch(`${API_URL}/api/stores`, { next: { revalidate: 3600 } })
+    const storesData = await storesRes.json()
+    storeRoutes = (storesData?.data || []).map((store: any) => ({
+      url: `${baseUrl}/loja/${store.slug}`,
+      changeFrequency: 'daily' as const,
+      priority: 0.85,
     }))
   } catch {}
 
@@ -29,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const res = await fetch(`${API_URL}/api/offers?limit=500`, { next: { revalidate: 3600 } })
     const data = await res.json()
-    offerRoutes = data.data.map((offer: any) => ({
+    offerRoutes = (data?.data || []).map((offer: any) => ({
       url: `${baseUrl}/oferta/${offer.slug}`,
       lastModified: new Date(offer.updatedAt || offer.publishedAt),
       changeFrequency: 'hourly' as const,
@@ -37,5 +51,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   } catch {}
 
-  return [...staticRoutes, ...categoryRoutes, ...offerRoutes]
+  return [...staticRoutes, ...categoryRoutes, ...storeRoutes, ...offerRoutes]
 }

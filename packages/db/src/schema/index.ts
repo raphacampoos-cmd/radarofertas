@@ -32,6 +32,10 @@ export const stores = pgTable('stores', {
   commissionMax: decimal('commission_max', { precision: 5, scale: 4 }),
   reliability: decimal('reliability', { precision: 3, scale: 2 }).default('0.90'),
   active: boolean('active').default(true),
+  seoText: text('seo_text'),
+  seoFaqs: jsonb('seo_faqs').$type<Array<{ question: string; answer: string }>>(),
+  seoTitle: varchar('seo_title', { length: 255 }),
+  seoDescription: text('seo_description'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (t) => [
   index('stores_slug_idx').on(t.slug),

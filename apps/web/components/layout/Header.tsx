@@ -125,6 +125,19 @@ export async function Header() {
                 ⭐ Home
               </Link>
 
+              <Link href="/lojas" style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: '9999px',
+                textDecoration: 'none',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                color: '#f1f5f9',
+                background: 'rgba(255, 255, 255, 0.08)',
+                whiteSpace: 'nowrap',
+              }}>
+                🏬 Lojas
+              </Link>
+
               {/* Todas as categorias reais do catálogo */}
               {categories.map((cat: any) => (
                 <Link

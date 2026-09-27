@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getOffer, getPriceHistory } from '@/lib/api'
 import { DealScoreBadge } from '@/components/offer/DealScoreBadge'
 import { PriceHistory } from '@/components/offer/PriceHistory'
@@ -202,7 +203,15 @@ export default async function OfferPage({ params }: PageProps) {
 
           {/* Loja e data */}
           <div style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)' }}>
-            Vendido por <strong>{offer.store.name}</strong> · Publicado {formatTimeAgo(offer.publishedAt)}
+            Disponível na{' '}
+            <Link
+              href={`/loja/${offer.store.slug}`}
+              style={{ color: '#f97316', fontWeight: 700, textDecoration: 'none' }}
+              title={`Ver todos os cupões e promoções da ${offer.store.name}`}
+            >
+              {offer.store.name}
+            </Link>{' '}
+            · Publicado {formatTimeAgo(offer.publishedAt)}
           </div>
 
           {/* Preços */}

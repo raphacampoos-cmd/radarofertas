@@ -10,6 +10,13 @@ export interface Store {
   commissionMax: string | null
   reliability: string | null
   active: boolean
+  seoText?: string | null
+  seoFaqs?: Array<{ question: string; answer: string }> | null
+  seoTitle?: string | null
+  seoDescription?: string | null
+  activeOffersCount?: number
+  totalOffersCount?: number
+  couponsCount?: number
 }
 
 export interface Category {

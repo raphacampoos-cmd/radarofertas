@@ -158,7 +158,14 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
 
         {/* Loja */}
         <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>
-          Disponível na <strong style={{ color: 'var(--foreground)' }}>{offer.store.name}</strong>
+          Disponível na{' '}
+          <Link
+            href={`/loja/${offer.store.slug}`}
+            style={{ color: '#f97316', fontWeight: 700, textDecoration: 'none' }}
+            title={`Ver cupões e promoções da loja ${offer.store.name}`}
+          >
+            {offer.store.name}
+          </Link>
         </div>
 
         {/* Descrição */}
