@@ -11,8 +11,12 @@ const AFFILIATE_ID = "radaroferta0c-21"; // O teu código de afiliado
 
 // URLs das categorias que queremos descobrir
 const DISCOVERY_URLS = [
-  { url: 'https://www.amazon.es/gp/bestsellers/electronics/?language=pt_PT', categorySlug: 'smartphones-e-acessorios' },
   { url: 'https://www.amazon.es/gp/bestsellers/videogames/?language=pt_PT', categorySlug: 'gaming' },
+  { url: 'https://www.amazon.es/gp/bestsellers/videogames/12145520031/?language=pt_PT', categorySlug: 'gaming' },
+  { url: 'https://www.amazon.es/gp/bestsellers/videogames/13793796031/?language=pt_PT', categorySlug: 'gaming' },
+  { url: 'https://www.amazon.es/gp/bestsellers/computers/937935031/?language=pt_PT', categorySlug: 'gaming' },
+  { url: 'https://www.amazon.es/gp/movers-and-shakers/videogames/?language=pt_PT', categorySlug: 'gaming' },
+  { url: 'https://www.amazon.es/gp/bestsellers/electronics/?language=pt_PT', categorySlug: 'smartphones-e-acessorios' },
   { url: 'https://www.amazon.es/gp/bestsellers/kitchen/?language=pt_PT', categorySlug: 'casa' }
 ];
 
