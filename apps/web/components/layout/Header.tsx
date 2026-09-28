@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getCategories } from '@/lib/api'
 import type { Category, Store } from '@/lib/types'
 import { CategoryDropdown } from './CategoryDropdown'
+import { LanguageSelector } from '@/components/ui/LanguageSelector'
 
 export async function Header() {
   let categories: Category[] = []
@@ -64,6 +65,7 @@ export async function Header() {
 
           {/* Ações rápidas */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0, marginLeft: 'auto' }}>
+            <LanguageSelector />
             <a
               href="https://t.me/radarofertaspt"
               target="_blank"

@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Newsletter } from '@/components/ui/Newsletter'
 import { CookieBanner } from '@/components/ui/CookieBanner'
 import { WhatsAppWidget } from '@/components/ui/WhatsAppWidget'
+import { GoogleTranslateScript } from '@/components/ui/GoogleTranslateScript'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://radarofertas-psi.vercel.app'),
@@ -75,6 +76,7 @@ export default function RootLayout({
         
         
         <GoogleAnalytics gaId="G-ZD0R2S1021" />
+        <GoogleTranslateScript />
       </body>
     </html>
   )
