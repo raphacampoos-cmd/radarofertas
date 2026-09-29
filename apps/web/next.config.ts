@@ -52,6 +52,11 @@ const nextConfig: NextConfig = {
         destination: '/categoria/casa',
         permanent: true,
       },
+      {
+        source: '/vip',
+        destination: '/entrar',
+        permanent: false,
+      },
     ]
   },
 

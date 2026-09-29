@@ -12,6 +12,7 @@ import { VoteButtons } from '@/components/offer/VoteButtons'
 import { CommentsSection } from '@/components/offer/CommentsSection'
 import { OfferSpecsSection } from '@/components/offer/OfferSpecsSection'
 import { OfferImage } from '@/components/offer/OfferImage'
+import { VipAlertBanner } from '@/components/offer/VipAlertBanner'
 
 import { isAmazonOffer } from '@/lib/amazon-compliance'
 
@@ -297,6 +298,9 @@ export default async function OfferPage({ params }: PageProps) {
             initialUpvotes={offer.upvotes} 
             initialDownvotes={offer.downvotes} 
           />
+
+          {/* Banner de Captação VIP (WhatsApp e Telegram) */}
+          <VipAlertBanner storeName={offer.store?.name} />
 
           {/* Aviso */}
           <p style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', lineHeight: 1.5 }}>

@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Newsletter } from '@/components/ui/Newsletter'
 import { CookieBanner } from '@/components/ui/CookieBanner'
-import { WhatsAppWidget } from '@/components/ui/WhatsAppWidget'
+import { CommunityFloatingWidget } from '@/components/ui/CommunityFloatingWidget'
 import { GoogleTranslateScript } from '@/components/ui/GoogleTranslateScript'
 
 export const metadata: Metadata = {
@@ -72,7 +72,7 @@ export default function RootLayout({
         <Footer />
         
         <CookieBanner />
-        <WhatsAppWidget />
+        <CommunityFloatingWidget />
         
         
         <GoogleAnalytics gaId="G-ZD0R2S1021" />

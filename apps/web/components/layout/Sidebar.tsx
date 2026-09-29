@@ -18,6 +18,51 @@ export async function Sidebar() {
 
   return (
     <aside style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {/* Card Alertas VIP WhatsApp e Telegram */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, rgba(34, 197, 94, 0.1) 100%)',
+        border: '1px solid rgba(249, 115, 22, 0.35)',
+        borderRadius: 'var(--radius)',
+        padding: '1.25rem',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <span style={{ fontSize: '1.2rem' }}>🔥</span>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#fff' }}>
+            Alertas VIP no Telemóvel
+          </h3>
+        </div>
+        <p style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', marginBottom: '0.85rem', lineHeight: 1.45 }}>
+          Erros de preço e cupões da Amazon, Worten e Fnac antes que esgotem. 100% grátis.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <a
+            href="/entrar?canal=whatsapp"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem',
+              background: '#22c55e', color: '#fff', padding: '0.55rem', borderRadius: '0.5rem',
+              textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem',
+              boxShadow: '0 2px 6px rgba(34, 197, 94, 0.3)',
+            }}
+          >
+            💬 Grupo VIP WhatsApp
+          </a>
+          <a
+            href="https://t.me/radarofertaspt"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem',
+              background: '#0284c7', color: '#fff', padding: '0.55rem', borderRadius: '0.5rem',
+              textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem',
+              boxShadow: '0 2px 6px rgba(2, 132, 199, 0.3)',
+            }}
+          >
+            ✈️ Canal Telegram (Oficial)
+          </a>
+        </div>
+      </div>
+
       {/* Pesquisar */}
       <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem' }}>
         <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em', color: 'var(--muted-foreground)', marginBottom: '0.75rem' }}>
