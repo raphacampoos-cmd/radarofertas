@@ -355,6 +355,19 @@ adminRouter.get('/whatsapp/groups', async (c) => {
   }
 })
 
+adminRouter.post('/whatsapp/send', async (c) => {
+  const body = await c.req.json().catch(() => ({}))
+  const { to, text, imageUrl } = body
+  if (!to || !text) {
+    return c.json({ error: 'Parâmetros "to" e "text" são obrigatórios.' }, 400)
+  }
+  const success = await sendWhatsAppMessage(to, text, imageUrl)
+  if (!success) {
+    return c.json({ error: 'Falha ao enviar mensagem WhatsApp. Verifica o estado da sessão.' }, 500)
+  }
+  return c.json({ success: true, message: 'Mensagem enviada para o WhatsApp com sucesso!' })
+})
+
 // ── Bot Promotor (Twitter / Discord) ───────────────────────
 import { runSocialBot } from '../services/social-bot.js'
 
