@@ -76,7 +76,7 @@ export default async function GuiaPage({ params }: PageProps) {
         style={{ fontSize: '1.15rem', lineHeight: 1.8, color: 'var(--foreground)' }}
       >
         {/* Simple markdown parsing for the AI generated content */}
-        {article.content.split('\n').map((paragraph, idx) => {
+        {article.content.split('\n').map((paragraph: string, idx: number) => {
           if (!paragraph.trim()) return <br key={idx} />
           
           if (paragraph.startsWith('### ')) {
