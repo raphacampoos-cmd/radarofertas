@@ -176,7 +176,7 @@ const NOT_FOR_PORTUGAL = /\b(US|AU|UK|JP|CA|KR|CN)\s*(plug|version|ver\.?)\b/i
 // Brindes e amostras que o anunciante lista no feed mas não vende avulso.
 const NOT_FOR_SALE = /not for (?:selling|sale|resale|individual)|free gift|gift with purchase|(?:^|[^a-z])sample(?:$|[^a-z])/i
 
-const MAX_PER_MERCHANT = 2
+const MAX_PER_MERCHANT = 40
 const MIN_PRICE_EUR = 2
 // Produtos muito caros e sem desconto real não são "ofertas": ficam de fora da seleção automática.
 const MAX_PRICE_EUR = 1500

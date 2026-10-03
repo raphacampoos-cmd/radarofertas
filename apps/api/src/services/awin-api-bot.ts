@@ -6,6 +6,7 @@ import { sendTelegramAlert } from '../lib/telegram.js';
 import { fetchAwinFeed } from '../lib/awin-feed.js';
 import { EXTRA_CATEGORIES, MERCHANT_DISPLAY_NAME, planAwinRun, slugify } from '../lib/awin-mapping.js';
 import { processOfferTranslation } from '../lib/translate.js';
+import { generateSeoArticle } from '../lib/ai-article.js';
 
 // Os ID dos 16 anunciantes aprovados
 const TARGET_MERCHANTS = [
@@ -49,8 +50,13 @@ export async function runAwinApiBot() {
   console.log('🌐 Agente Awin Oficial: A iniciar ingestão do Product Feed (GZIP CSV)...');
 
   // O filtro corre durante o download: o feed tem ~90 mil linhas e só queremos as dos anunciantes alvo
+  const dbStores = await db.select({ logoUrl: stores.logoUrl }).from(stores).where(eq(stores.affiliateNetwork, 'awin'));
+  const validMerchantIds = new Set(dbStores.map(s => s.logoUrl?.match(/profile\/(\d+)\.png/)?.[1]).filter(Boolean));
+  // Adicionar TODAS as 31 lojas do feed oficial manualmente para garantir que apanhamos Worten, Fnac, etc
+  const hardcoded = ['97523','98176','100347','101189','103938','104051','104488','104495','105185','107741','107946','108023','108292','108336','108813','109219','109220','109221','109222','109225','109228','109551','109975','114261','114793','115564','115853','116383','116399','116791','117590'];
+  hardcoded.forEach(id => validMerchantIds.add(id));
+
   const candidates = await fetchAwinFeed((row) =>
-    TARGET_MERCHANTS.includes(row.merchant_id) &&
     !!row.merchant_image_url && Number(row.search_price) > 0
   );
 
@@ -59,9 +65,9 @@ export async function runAwinApiBot() {
     .from(offers)
     .innerJoin(stores, eq(offers.storeId, stores.id))
     .where(eq(offers.source, 'awin_api'));
-  const selected = await planAwinRun(candidates, existing, 5);
+  const selected = await planAwinRun(candidates, existing, 400);
 
-  console.log(`✅ Feed lido. ${candidates.length} produtos válidos dos ${TARGET_MERCHANTS.length} anunciantes alvo; ${selected.length} novos selecionados.`);
+  console.log(`✅ Feed lido. ${candidates.length} produtos válidos de todos os anunciantes; ${selected.length} novos selecionados.`);
 
   if (selected.length === 0) {
     console.log('Nenhum produto novo encontrado.');
@@ -75,14 +81,15 @@ export async function runAwinApiBot() {
     try {
       const storeName = MERCHANT_DISPLAY_NAME[row.merchant_id] ?? row.merchant_name;
 
-      const existingStore = await db.select().from(stores).where(eq(stores.name, storeName)).limit(1);
+      const storeSlug = slugify(storeName);
+      const existingStore = await db.select().from(stores).where(eq(stores.slug, storeSlug)).limit(1);
       let storeId: number;
       if (existingStore.length > 0) {
         storeId = existingStore[0].id;
       } else {
         const [newStore] = await db.insert(stores).values({
           name: storeName,
-          slug: slugify(storeName),
+          slug: storeSlug,
           logoUrl: `https://ui.awin.com/images/upload/merchant/profile/${row.merchant_id}.png`,
           affiliateNetwork: 'awin',
           active: true,
@@ -137,6 +144,12 @@ export async function runAwinApiBot() {
       if (categoryId) {
         await db.insert(offerCategories).values({ offerId: inserted.id, categoryId }).onConflictDoNothing();
       }
+
+      // 🤖 ACIONAR A FÁBRICA DE ARTIGOS SEO!
+      generateSeoArticle({
+        ...inserted,
+        store: { name: storeName }
+      }).catch(err => console.error('[Bot SEO] Erro:', err));
 
       inseridos++;
       console.log(`✅ Produto inserido: ${translation.titlePt || item.title} (${storeName}, ${item.categorySlug}, ${item.priceEur}€${item.discountPct > 0 ? `, -${Math.round(item.discountPct)}%` : ''})`);
