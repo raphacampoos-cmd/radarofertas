@@ -282,3 +282,27 @@ offersRouter.put('/:id/vote', async (c) => {
     }
   })
 })
+
+// POST /api/offers/:id/alerts
+offersRouter.post('/:id/alerts', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  if (isNaN(id)) return c.json({ error: 'ID inválido' }, 400)
+
+  const body = await c.req.json()
+  const { email, targetPrice } = body
+
+  if (!email || !targetPrice) {
+    return c.json({ error: 'Email e Preço Alvo são obrigatórios' }, 400)
+  }
+
+  const { priceAlerts } = await import('@radarofertas/db/schema')
+
+  await db.insert(priceAlerts).values({
+    offerId: id,
+    email: email.trim(),
+    targetPrice: parseFloat(targetPrice).toFixed(2),
+  })
+
+  return c.json({ success: true, message: 'Alerta de preço criado com sucesso!' })
+})
+

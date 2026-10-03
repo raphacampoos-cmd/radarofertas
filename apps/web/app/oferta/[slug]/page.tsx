@@ -13,6 +13,7 @@ import { CommentsSection } from '@/components/offer/CommentsSection'
 import { OfferSpecsSection } from '@/components/offer/OfferSpecsSection'
 import { OfferImage } from '@/components/offer/OfferImage'
 import { VipAlertBanner } from '@/components/offer/VipAlertBanner'
+import { PriceAlertButton } from '@/components/offer/PriceAlertButton'
 
 import { isAmazonOffer } from '@/lib/amazon-compliance'
 
@@ -284,6 +285,9 @@ export default async function OfferPage({ params }: PageProps) {
             storeName={offer.store.name}
             customLabel={isAmazon ? 'Ver preço atual na Amazon →' : undefined}
           />
+
+          {/* Alerta de Preço */}
+          <PriceAlertButton offerId={offer.id} currentPrice={priceCurrent} />
 
           {/* Botão de Partilha */}
           <ShareButtonBig 

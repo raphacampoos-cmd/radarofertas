@@ -9,6 +9,7 @@ import { sendWhatsAppMessage } from '../lib/whatsapp.js'
 import { runDiscoveryBot } from '../services/discovery-bot.js'
 import { sendWeeklyNewsletter } from '../services/newsletter.js'
 import { processOfferTranslation } from '../lib/translate.js'
+import { generateSeoArticle } from '../lib/ai-article.js'
 
 export const adminRouter = new Hono()
 
@@ -210,6 +211,9 @@ adminRouter.post('/offers', async (c) => {
     if (process.env.WHATSAPP_GROUP_ID) {
        sendWhatsAppMessage(process.env.WHATSAPP_GROUP_ID, wppMsg, newOffer.imageUrl || undefined).catch(console.error)
     }
+
+    // A MÁGICA DE SEO: Gerar artigo do blog silenciosamente (não bloqueia a resposta!)
+    generateSeoArticle(newOffer).catch(console.error)
 
     return c.json({ data: newOffer }, 201)
   } catch (err: any) {

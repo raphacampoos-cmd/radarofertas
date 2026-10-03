@@ -10,6 +10,7 @@ import { clicksRouter } from './routes/clicks.js'
 import { adminRouter } from './routes/admin.js'
 import { commentsRouter } from './routes/comments.js'
 import { presenceRouter } from './routes/presence.js'
+import { articlesRouter } from './routes/articles.js'
 import { BACKGROUND_JOBS_ENABLED } from './lib/jobs.js'
 
 const app = new Hono()
@@ -45,6 +46,7 @@ app.route('/api/search', searchRouter)
 app.route('/api/clicks', clicksRouter)
 app.route('/api/comments', commentsRouter)
 app.route('/api/presence', presenceRouter)
+app.route('/api/articles', articlesRouter)
 
 // ── Rotas admin (protegidas) ──────────────────────────────────
 app.route('/api/admin', adminRouter)

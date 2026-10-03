@@ -106,3 +106,13 @@ export async function pingPresence(sessionId: string): Promise<{ data: { online:
     body: JSON.stringify({ sessionId }),
   })
 }
+
+// Artigos (Blog)
+export async function getArticles(): Promise<{ data: any[] }> {
+  return apiFetch('/api/articles')
+}
+
+export async function getArticle(slug: string): Promise<{ data: any }> {
+  return apiFetch(`/api/articles/${slug}`)
+}
+

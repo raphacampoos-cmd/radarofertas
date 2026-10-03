@@ -2,6 +2,7 @@ packages:
   - 'apps/*'
   - 'packages/*'
 allowBuilds:
+  '@google/genai': set this to true or false
   '@whiskeysockets/baileys': true
   bufferutil: set this to true or false
   core-js: set this to true or false

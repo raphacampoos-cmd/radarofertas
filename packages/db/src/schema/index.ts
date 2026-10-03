@@ -241,6 +241,47 @@ export const commentsRelations = relations(comments, ({ one }) => ({
 }))
 
 // ─────────────────────────────────────────────
+// PRICE_ALERTS (Alertas de preço por e-mail)
+// ─────────────────────────────────────────────
+export const priceAlerts = pgTable('price_alerts', {
+  id: serial('id').primaryKey(),
+  offerId: integer('offer_id').notNull().references(() => offers.id, { onDelete: 'cascade' }),
+  email: varchar('email', { length: 255 }).notNull(),
+  targetPrice: decimal('target_price', { precision: 10, scale: 2 }).notNull(),
+  active: boolean('active').default(true),
+  triggeredAt: timestamp('triggered_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (t) => [
+  index('price_alerts_offer_idx').on(t.offerId),
+  index('price_alerts_email_idx').on(t.email),
+  index('price_alerts_active_idx').on(t.active),
+])
+
+export const priceAlertsRelations = relations(priceAlerts, ({ one }) => ({
+  offer: one(offers, {
+    fields: [priceAlerts.offerId],
+    references: [offers.id],
+  }),
+}))
+
+// ─────────────────────────────────────────────
+// ARTICLES (Blog / SEO Guias)
+// ─────────────────────────────────────────────
+export const articles = pgTable('articles', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  content: text('content').notNull(),
+  coverImage: varchar('cover_image', { length: 500 }),
+  published: boolean('published').default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (t) => [
+  uniqueIndex('articles_slug_idx').on(t.slug),
+  index('articles_published_idx').on(t.published),
+])
+
+// ─────────────────────────────────────────────
 // DISCORD_ALERTS (inscrições do comando /alertas)
 // ─────────────────────────────────────────────
 export const discordAlerts = pgTable('discord_alerts', {

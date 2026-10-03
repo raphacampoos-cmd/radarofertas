@@ -11,6 +11,7 @@
     "db:seed": "cd ../../packages/db && pnpm db:seed"
   },
   "dependencies": {
+    "@google/genai": "^2.25.0",
     "@hapi/boom": "^10.0.1",
     "@hono/node-server": "^1.13.0",
     "@radarofertas/db": "workspace:*",
