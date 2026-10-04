@@ -1,5 +1,5 @@
 import { db } from "@radarofertas/db"
-import { offers, seoArticles, stores } from "@radarofertas/db/schema"
+import { offers, articles, stores } from "@radarofertas/db/schema"
 import { generateSeoArticle } from "../lib/ai-article.js"
 import { desc } from "drizzle-orm"
 
@@ -8,7 +8,7 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 export async function processSeoBacklog() {
   console.log("A iniciar motor de artigos SEO de Background...");
   
-  const existingArticles = await db.select({ title: seoArticles.title }).from(seoArticles);
+  const existingArticles = await db.select({ title: articles.title }).from(articles);
   const existingTitles = new Set(existingArticles.map(a => a.title).filter(Boolean));
   
   const pendingOffers = await db.select({
