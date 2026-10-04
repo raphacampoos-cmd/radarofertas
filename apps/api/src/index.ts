@@ -118,6 +118,11 @@ if (BACKGROUND_JOBS_ENABLED) {
     runAwinApiBot().catch(console.error)
   }, { timezone: 'Europe/Lisbon' })
 
+  cron.schedule('0 5 * * *', () => {
+    console.log('🤖 A acordar o Motor SEO para processar o backlog de artigos...')
+    import('./services/seo-backlog.js').then(m => m.processSeoBacklog()).catch(console.error)
+  }, { timezone: 'Europe/Lisbon' })
+
   // 📢 Telegram Autónomo: Oferta da Manhã — todos os dias às 09:00
   cron.schedule('0 9 * * *', () => {
     console.log('📢 Telegram: a publicar Oferta da Manhã...')
