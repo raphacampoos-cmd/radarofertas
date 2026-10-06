@@ -59,6 +59,35 @@ export default async function HomePage({ searchParams }: HomeProps) {
         </p>
       </section>
 
+      <Link
+        href="https://t.me/RadarOfertas_PT"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          background: 'linear-gradient(90deg, rgba(56, 189, 248, 0.12) 0%, rgba(2, 132, 199, 0.12) 100%)',
+          border: '1px solid rgba(56, 189, 248, 0.3)',
+          borderRadius: 'var(--radius)',
+          padding: '0.75rem 1.25rem',
+          marginBottom: '1.25rem',
+          textDecoration: 'none',
+          color: 'var(--foreground)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span style={{ fontSize: '1.25rem' }}>📱</span>
+          <div style={{ fontSize: '0.9rem' }}>
+            <strong style={{ color: '#0ea5e9' }}>Ofertas no Telegram:</strong> Receba descontos relâmpago antes de esgotarem no seu telemóvel!
+          </div>
+        </div>
+        <span style={{ fontWeight: 700, color: '#0ea5e9', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+          Juntar-me Grátis ➔
+        </span>
+      </Link>
+
       {isBlackFridaySeason && (
         <Link
           href="/black-friday"
