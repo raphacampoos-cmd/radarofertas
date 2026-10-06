@@ -56,9 +56,17 @@ export async function runAwinApiBot() {
   const hardcoded = ['97523','98176','100347','101189','103938','104051','104488','104495','105185','107741','107946','108023','108292','108336','108813','109219','109220','109221','109222','109225','109228','109551','109975','114261','114793','115564','115853','116383','116399','116791','117590'];
   hardcoded.forEach(id => validMerchantIds.add(id));
 
-  const candidates = await fetchAwinFeed((row) =>
-    !!row.merchant_image_url && Number(row.search_price) > 0
-  );
+  const merchantCounts: Record<string, number> = {};
+  const candidates = await fetchAwinFeed((row) => {
+    if (!row.merchant_image_url || Number(row.search_price) <= 0) return false;
+    if (!validMerchantIds.has(row.merchant_id)) return false;
+    
+    // Guardar no máximo 40 produtos por loja em memória para evitar crash (Out of Memory)
+    merchantCounts[row.merchant_id] = (merchantCounts[row.merchant_id] || 0) + 1;
+    if (merchantCounts[row.merchant_id] > 40) return false;
+    
+    return true;
+  });
 
   const existing = await db
     .select({ externalId: offers.externalId, title: offers.title, storeName: stores.name })
