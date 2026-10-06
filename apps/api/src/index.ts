@@ -90,6 +90,8 @@ import { runDiscoveryBot } from './services/discovery-bot.js'
 import { runAwinApiBot } from './services/awin-api-bot.js'
 import { startTelegramSniper } from './services/telegram-sniper.js'
 import { sendDailyOffer } from './services/telegram-daily.js'
+import { postToFacebook } from './services/facebook-bot.js';
+import { postToFacebook } from './services/facebook-bot.js';
 
 const port = parseInt(process.env.PORT || '3001')
 console.log(`🚀 RadarOfertas API a correr em http://localhost:${port}`)
@@ -140,6 +142,11 @@ if (BACKGROUND_JOBS_ENABLED) {
   startBotScheduler()
 
   // Iniciar Agente 1: Sniper de Tendências do Telegram
+  cron.schedule('0 10,15,20 * * *', () => {
+    console.log('📱 Facebook Bot: A executar cron job...')
+    postToFacebook().catch(console.error)
+  }, { timezone: 'Europe/Lisbon' })
+
   startTelegramSniper().catch(console.error)
 
 } else {
