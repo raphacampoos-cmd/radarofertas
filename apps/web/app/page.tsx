@@ -60,7 +60,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
       </section>
 
       <Link
-        href="https://t.me/RadarOfertas_PT"
+        href="https://t.me/radarofertaspt"
         target="_blank"
         rel="noopener noreferrer"
         style={{
