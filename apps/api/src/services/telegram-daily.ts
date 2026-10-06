@@ -22,12 +22,12 @@ setInterval(() => {
  * Procura a melhor oferta ativa que ainda não foi publicada hoje
  * e envia-a para o canal do Telegram.
  *
- * @param slot 'morning' | 'evening' — usado apenas no log
+ * @param slot 'morning' | 'afternoon' | 'evening' — usado apenas no log
  * @param minScore score mínimo para considerar a oferta
  * @param minDiscount desconto mínimo (%) para considerar
  */
 export async function sendDailyOffer(
-  slot: 'morning' | 'evening' = 'morning',
+  slot: 'morning' | 'afternoon' | 'evening' = 'morning',
   minScore = 40,
   minDiscount = 0
 ) {
@@ -90,7 +90,7 @@ export async function sendDailyOffer(
     const isAmazon = Boolean(offer.storeName?.toLowerCase().includes('amazon') || offer.affiliateUrl?.includes('amazon'))
 
     // Construir título com emoji adequado ao slot
-    const slotEmoji = slot === 'morning' ? '🌅' : '🌆'
+    let slotEmoji = '☀️'; if (slot === 'afternoon') slotEmoji = '⚡'; if (slot === 'evening') slotEmoji = '🌙';
     const dealEmoji = !isAmazon && Number(offer.dealScore) >= 80 ? '🔥🔥🔥' : !isAmazon && Number(offer.dealScore) >= 60 ? '🔥🔥' : '🔥'
 
     // Montar mensagem rica

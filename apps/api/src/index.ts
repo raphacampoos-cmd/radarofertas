@@ -130,6 +130,7 @@ if (BACKGROUND_JOBS_ENABLED) {
   }, { timezone: 'Europe/Lisbon' })
 
   // 📢 Telegram Autónomo: Oferta da Tarde — todos os dias às 19:00
+  cron.schedule('0 14 * * *', () => { sendDailyOffer('afternoon', 45, 10).catch(console.error) }, { timezone: 'Europe/Lisbon' });
   cron.schedule('0 19 * * *', () => {
     console.log('📢 Telegram: a publicar Oferta da Tarde...')
     sendDailyOffer('evening', 35, 0).catch(console.error)
