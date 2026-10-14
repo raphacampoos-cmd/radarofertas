@@ -91,7 +91,6 @@ import { runAwinApiBot } from './services/awin-api-bot.js'
 import { startTelegramSniper } from './services/telegram-sniper.js'
 import { sendDailyOffer } from './services/telegram-daily.js'
 import { postToFacebook } from './services/facebook-bot.js';
-import { postToFacebook } from './services/facebook-bot.js';
 
 const port = parseInt(process.env.PORT || '3001')
 console.log(`🚀 RadarOfertas API a correr em http://localhost:${port}`)
@@ -120,7 +119,8 @@ if (BACKGROUND_JOBS_ENABLED) {
     runAwinApiBot().catch(console.error)
   }, { timezone: 'Europe/Lisbon' })
 
-  cron.schedule('0 5 * * *', () => {
+  // 🤖 Artigos SEO automáticos a cada 4 horas (01h, 05h, 09h, 13h, 17h, 21h)
+  cron.schedule('0 1,5,9,13,17,21 * * *', () => {
     console.log('🤖 A acordar o Motor SEO para processar o backlog de artigos...')
     import('./services/seo-backlog.js').then(m => m.processSeoBacklog()).catch(console.error)
   }, { timezone: 'Europe/Lisbon' })

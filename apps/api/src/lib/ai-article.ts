@@ -32,10 +32,26 @@ Regras do Artigo:
 7. Termina com uma chamada à ação (CTA) para o leitor aproveitar a oferta no RadarOfertas antes que esgote.
     `
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-    })
+    let response: any = null
+    const candidateModels = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-3.8-flash']
+    let lastError: any = null
+
+    for (const model of candidateModels) {
+      try {
+        response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+        })
+        if (response && response.text) break
+      } catch (err: any) {
+        lastError = err
+        console.warn(`[AI Article] Falha no modelo ${model}:`, err.message || err.status)
+      }
+    }
+
+    if (!response || !response.text) {
+      throw lastError || new Error('Não foi possível gerar conteúdo com os modelos disponíveis.')
+    }
 
     const content = response.text
     if (!content) throw new Error('Conteúdo vazio gerado pela IA.')
