@@ -1,6 +1,7 @@
 import { getArticles } from '@/lib/api'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { ArticleImage } from '@/components/ui/ArticleImage'
 
 export const metadata: Metadata = {
   title: 'Guias e Dicas de Compras',
@@ -30,16 +31,9 @@ export default async function GuiasPage() {
               <div 
                 className="group relative flex flex-col h-full bg-card border border-border rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
               >
-                {article.coverImage ? (
-                  <div style={{ width: '100%', height: '200px', backgroundColor: 'var(--muted)' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={article.coverImage} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                ) : (
-                  <div style={{ width: '100%', height: '200px', backgroundColor: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '3rem' }}>📝</span>
-                  </div>
-                )}
+                <div style={{ width: '100%', height: '200px', backgroundColor: 'var(--muted)', overflow: 'hidden' }}>
+                  <ArticleImage src={article.coverImage} alt={article.title} />
+                </div>
                 <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', lineHeight: 1.3 }}>
                     {article.title}

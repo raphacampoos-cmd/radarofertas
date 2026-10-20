@@ -71,12 +71,29 @@ Regras do Artigo:
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
 
+    // Validar e sanitizar a imagem de capa (evitar imagens quebradas, 404 ou 502)
+    let coverImage = offer.imageUrl
+    if (coverImage) {
+      try {
+        const check = await fetch(coverImage, { method: 'HEAD', headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(5000) })
+        if (!check.ok) {
+          console.warn(`[AI Article] Imagem da oferta retornou status ${check.status}. A usar fallback da loja/unsplash.`)
+          coverImage = offer.store?.logoUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1200&auto=format&fit=crop'
+        }
+      } catch (err: any) {
+        console.warn(`[AI Article] Falha ao verificar imagem: ${err.message}`)
+        coverImage = offer.store?.logoUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1200&auto=format&fit=crop'
+      }
+    } else {
+      coverImage = offer.store?.logoUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1200&auto=format&fit=crop'
+    }
+
     // Guardar no banco de dados
     await db.insert(articles).values({
       title,
       slug: `${slug}-${Math.floor(Math.random() * 10000)}`, // evitar slugs duplicados
       content,
-      coverImage: offer.imageUrl,
+      coverImage,
       published: true, // Já publica automaticamente!
     })
 

@@ -1,6 +1,7 @@
 import { getArticle } from '@/lib/api'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { ArticleImage } from '@/components/ui/ArticleImage'
 
 export const revalidate = 3600
 
@@ -54,12 +55,9 @@ export default async function GuiaPage({ params }: PageProps) {
         <span style={{ color: 'var(--foreground)' }}>{article.title}</span>
       </nav>
 
-      {article.coverImage && (
-        <div style={{ width: '100%', height: '350px', marginBottom: '2rem', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={article.coverImage} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      )}
+      <div style={{ width: '100%', height: '350px', marginBottom: '2rem', borderRadius: 'var(--radius)', overflow: 'hidden', backgroundColor: 'var(--muted)' }}>
+        <ArticleImage src={article.coverImage} alt={article.title} />
+      </div>
 
       <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1rem', lineHeight: 1.2 }}>
         {article.title}
