@@ -7,10 +7,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: baseUrl, changeFrequency: 'hourly', priority: 1.0 },
+    { url: `${baseUrl}/guias`, changeFrequency: 'daily', priority: 0.95 },
+    { url: `${baseUrl}/lojas`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/termos`, changeFrequency: 'monthly', priority: 0.3 },
     { url: `${baseUrl}/privacidade`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${baseUrl}/politica-cookies`, changeFrequency: 'monthly', priority: 0.4 },
-    { url: `${baseUrl}/lojas`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/black-friday`, changeFrequency: 'daily', priority: 0.95 },
     { url: `${baseUrl}/cyber-monday`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/singles-day`, changeFrequency: 'daily', priority: 0.9 },
@@ -57,5 +58,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   } catch {}
 
-  return [...staticRoutes, ...categoryRoutes, ...storeRoutes, ...offerRoutes]
+  // Artigos e Guias SEO dinâmicos
+  let articleRoutes: MetadataRoute.Sitemap = []
+  try {
+    const artRes = await fetch(`${API_URL}/api/articles`, { next: { revalidate: 3600 } })
+    const artData = await artRes.json()
+    articleRoutes = (artData?.data || []).map((art: any) => ({
+      url: `${baseUrl}/guias/${art.slug}`,
+      lastModified: new Date(art.updatedAt || art.createdAt),
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    }))
+  } catch {}
+
+  return [...staticRoutes, ...categoryRoutes, ...storeRoutes, ...offerRoutes, ...articleRoutes]
 }

@@ -28,7 +28,15 @@ export function isQualifiedOffer(
   offer: QualifiedOfferInput,
   minDiscount = MIN_QUALIFIED_DISCOUNT
 ): boolean {
-  const hasOriginal = offer.priceOriginal !== null && offer.priceOriginal !== undefined && Number(offer.priceOriginal) > 0
+  const priceOriginal = Number(offer.priceOriginal || 0)
+  const priceCurrent = Number(offer.priceCurrent || 0)
+  
+  // Guard: preços inválidos não qualificam
+  if (priceOriginal <= 0 || priceCurrent <= 0) {
+    return false
+  }
+
+  const hasOriginal = priceOriginal > 0
   const discount = Number(offer.discountPct || 0)
   const isMin = Boolean(offer.isMinHistoric)
   const hasCoupon = Boolean(offer.couponCode && String(offer.couponCode).trim().length > 0)
@@ -94,9 +102,18 @@ export function calculateDealScore(input: DealScoreInput): DealScoreResult {
   let historyScore = 0.40 // neutro se sem dados suficientes
   let isHistoricMinimum = false
   if (priceMinHistoric !== null && priceMinHistoric > 0) {
-    historyScore = Math.max(0, 1 - (priceCurrent / priceMinHistoric) + 0.05)
-    historyScore = Math.min(1.0, historyScore)
-    isHistoricMinimum = priceCurrent <= priceMinHistoric * 1.01 // tolerância 1%
+    if (priceCurrent <= priceMinHistoric) {
+      // Preço no ou abaixo do mínimo histórico → score máximo
+      historyScore = 1.0
+      isHistoricMinimum = true
+    } else {
+      // Preço acima do mínimo: penaliza proporcionalmente
+      // Ex: 10% acima → score ~0.90, 50% acima → score ~0.50
+      const pctAbove = (priceCurrent - priceMinHistoric) / priceMinHistoric
+      historyScore = Math.max(0, 1 - pctAbove * 2) // cai 2x mais rápido
+      historyScore = Math.min(1.0, historyScore)
+      isHistoricMinimum = priceCurrent <= priceMinHistoric * 1.01 // tolerância 1%
+    }
   }
 
   // ── 3. Vs. Média 90 dias (15%) ───────────────────────────────

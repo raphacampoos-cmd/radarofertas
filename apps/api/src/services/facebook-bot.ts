@@ -82,14 +82,14 @@ Loja: ${offer.storeName}
 Nota: Escreve apenas o texto do post, sem aspas nem explicações.`
 
     const aiResponse = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.8-flash',
       contents: prompt,
     })
     
     const caption = aiResponse.text || `🔥 NOVA OFERTA INCRÍVEL: ${offer.titlePt || offer.title}\n\n🔗 Link no 1º comentário abaixo! 👇`
 
     // 2. Imagem OpenGraph dinâmica do nosso site
-    const imageUrl = `https://radarofertas-psi.vercel.app/oferta/${offer.slug}/opengraph-image`
+    const imageUrl = offer.imageUrl;
 
     // 3. Publicar a Foto na Página do Facebook
     console.log(`📱 Facebook Bot: A publicar a foto...`)

@@ -33,7 +33,13 @@ Regras do Artigo:
     `
 
     let response: any = null
-    const candidateModels = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-3.8-flash']
+    const candidateModels = [
+      'gemini-3.5-flash-lite',
+      'gemini-3.1-flash-lite',
+      'gemini-3.7-flash',
+      'gemini-3.6-flash',
+      'gemini-3.8-flash',
+    ]
     let lastError: any = null
 
     for (const model of candidateModels) {
@@ -72,20 +78,21 @@ Regras do Artigo:
       .replace(/(^-|-$)/g, '')
 
     // Validar e sanitizar a imagem de capa (evitar imagens quebradas, 404 ou 502)
+    const fallbackImage = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1200&auto=format&fit=crop'
     let coverImage = offer.imageUrl
-    if (coverImage) {
+    if (coverImage && coverImage.startsWith('http')) {
       try {
         const check = await fetch(coverImage, { method: 'HEAD', headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(5000) })
         if (!check.ok) {
-          console.warn(`[AI Article] Imagem da oferta retornou status ${check.status}. A usar fallback da loja/unsplash.`)
-          coverImage = offer.store?.logoUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1200&auto=format&fit=crop'
+          console.warn(`[AI Article] Imagem da oferta retornou status ${check.status}. A usar fallback unsplash.`)
+          coverImage = fallbackImage
         }
       } catch (err: any) {
         console.warn(`[AI Article] Falha ao verificar imagem: ${err.message}`)
-        coverImage = offer.store?.logoUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1200&auto=format&fit=crop'
+        coverImage = fallbackImage
       }
     } else {
-      coverImage = offer.store?.logoUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1200&auto=format&fit=crop'
+      coverImage = fallbackImage
     }
 
     // Guardar no banco de dados

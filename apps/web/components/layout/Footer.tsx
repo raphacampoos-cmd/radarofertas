@@ -53,6 +53,7 @@ export function Footer() {
           <div>
             <h3 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '1rem', color: '#f97316' }}>Sobre o Site</h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <li><Link href="/guias" style={{ color: '#94a3b8', fontSize: '0.875rem', textDecoration: 'none' }}>📚 Guias de Compras</Link></li>
               <li><Link href="/como-funciona" style={{ color: '#94a3b8', fontSize: '0.875rem', textDecoration: 'none' }}>Como funciona</Link></li>
               <li><Link href="/termos" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Termos de Utilização</Link></li>
               <li><Link href="/privacidade" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Política de Privacidade (RGPD)</Link></li>
