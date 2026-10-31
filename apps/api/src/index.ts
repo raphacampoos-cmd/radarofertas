@@ -91,6 +91,7 @@ import { runAwinApiBot } from './services/awin-api-bot.js'
 import { startTelegramSniper } from './services/telegram-sniper.js'
 import { sendDailyOffer } from './services/telegram-daily.js'
 import { postToFacebook } from './services/facebook-bot.js';
+import { postToPinterest } from './services/pinterest-bot.js';
 
 const port = parseInt(process.env.PORT || '3001')
 console.log(`🚀 RadarOfertas API a correr em http://localhost:${port}`)
@@ -145,6 +146,12 @@ if (BACKGROUND_JOBS_ENABLED) {
   cron.schedule('0 10,15,20 * * *', () => {
     console.log('📱 Facebook Bot: A executar cron job...')
     postToFacebook().catch(console.error)
+  }, { timezone: 'Europe/Lisbon' })
+
+  // 📌 Pinterest Autónomo: publicar Pins às 08:30, 13:30 e 19:30
+  cron.schedule('30 8,13,19 * * *', () => {
+    console.log('📌 Pinterest Bot: A executar agendamento de Pins...')
+    postToPinterest().catch(console.error)
   }, { timezone: 'Europe/Lisbon' })
 
   startTelegramSniper().catch(console.error)
