@@ -52,9 +52,10 @@ export async function runAwinApiBot() {
   // O filtro corre durante o download: o feed tem ~90 mil linhas e só queremos as dos anunciantes alvo
   const dbStores = await db.select({ logoUrl: stores.logoUrl }).from(stores).where(eq(stores.affiliateNetwork, 'awin'));
   const validMerchantIds = new Set(dbStores.map(s => s.logoUrl?.match(/profile\/(\d+)\.png/)?.[1]).filter(Boolean));
-  // Adicionar TODAS as 31 lojas do feed oficial manualmente para garantir que apanhamos Worten, Fnac, etc
+  // Adicionar TODAS as lojas do feed oficial e os 16 anunciantes aprovados
   const hardcoded = ['97523','98176','100347','101189','103938','104051','104488','104495','105185','107741','107946','108023','108292','108336','108813','109219','109220','109221','109222','109225','109228','109551','109975','114261','114793','115564','115853','116383','116399','116791','117590'];
   hardcoded.forEach(id => validMerchantIds.add(id));
+  TARGET_MERCHANTS.forEach(id => validMerchantIds.add(id));
 
   const merchantCounts: Record<string, number> = {};
   const candidates = await fetchAwinFeed((row) => {

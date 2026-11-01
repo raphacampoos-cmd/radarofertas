@@ -51,6 +51,7 @@ export async function postToFacebook() {
         discountPct: offers.discountPct,
         dealScore: offers.dealScore,
         couponCode: offers.couponCode,
+        imageUrl: offers.imageUrl,
         storeName: stores.name,
       })
       .from(offers)
