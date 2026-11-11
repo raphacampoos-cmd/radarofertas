@@ -8,22 +8,27 @@ import { EXTRA_CATEGORIES, MERCHANT_DISPLAY_NAME, planAwinRun, slugify } from '.
 import { processOfferTranslation } from '../lib/translate.js';
 import { generateSeoArticle } from '../lib/ai-article.js';
 
-// Os ID dos 16 anunciantes aprovados
+// Os anunciantes aprovados
 const TARGET_MERCHANTS = [
+  '17943',  // Alibaba EU
   '24562',  // Padel Market
   '36144',  // OutIn
   '59557',  // LaserPecker
+  '61233',  // Earfun, Inc
   '68106',  // HTVRont
   '69428',  // Ultrahuman Healthcare
   '75408',  // Nothingprojector
   '77026',  // adidas PT
   '77156',  // Gshopper
+  '78586',  // Needs No Label
   '82371',  // The Aeternum Company
   '88453',  // Wondershare Global Limited
   '90211',  // FastestVPN (Fast Technology Limited)
   '96499',  // Ottocast
   '102509', // KuKirin-scooter
   '105805', // EINSTAR
+  '114180', // Sinocare
+  '117317', // NeuroScent
   '128639', // ESR (EU)
   '129139', // THC Natural Line DE
 ];
@@ -145,6 +150,7 @@ export async function runAwinApiBot() {
         status: 'active',
         dealScore: score.toFixed(2),
         source: row.merchant_id === '69428' ? 'impact' : 'awin_api',
+        campaign: 'black-friday,singles-day',
         upvotes: 0,
         downvotes: 0,
       }).returning({ id: offers.id });

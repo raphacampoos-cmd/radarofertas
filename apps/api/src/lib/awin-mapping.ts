@@ -15,6 +15,8 @@ const MERCHANT_OWN_CATEGORY: Record<string, string> = {
 
 // Categoria por defeito de cada anunciante quando o feed não traz categoria própria.
 const MERCHANT_DEFAULT_CATEGORY: Record<string, string> = {
+  '17943': 'casa', // Alibaba EU
+  '61233': 'smartphones-e-acessorios', // Earfun, Inc (auriculares, áudio)
   '78586': 'moda', // Needs No Label
   '114180': 'beleza-e-saude', // Sinocare
   '117317': 'beleza-e-saude', // NeuroScent
@@ -39,6 +41,11 @@ const MERCHANT_DEFAULT_CATEGORY: Record<string, string> = {
 
 // O feed às vezes traz o nome da empresa e não o da marca que o utilizador conhece.
 export const MERCHANT_DISPLAY_NAME: Record<string, string> = {
+  '17943': 'Alibaba',
+  '61233': 'EarFun',
+  '78586': 'Needs No Label',
+  '114180': 'Sinocare',
+  '117317': 'NeuroScent',
   '59557': 'LaserPecker', // no feed aparece como "Shenzhen Hingin Technology Co.,Ltd"
   '77026': 'adidas',
   '102509': 'KuKirin',
