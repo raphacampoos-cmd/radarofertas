@@ -32,7 +32,7 @@ export default async function BlackFridayPage() {
   let trackedStores: Array<{ name: string; slug: string; offerCount?: number }> = []
 
   try {
-    const resOffers = await getOffers({ campaign: 'black-friday', qualified: true, limit: 100 })
+    const resOffers = await getOffers({ campaign: 'black-friday', qualified: true, limit: 250 })
     offers = resOffers.data || []
   } catch (err) {
     console.error('Erro ao carregar ofertas de Black Friday:', err)

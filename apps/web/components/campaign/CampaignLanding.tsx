@@ -20,9 +20,36 @@ interface CampaignLandingProps {
   trackedStores: TrackedStore[]
 }
 
+const FEATURED_COUPONS = [
+  { store: 'EarFun', code: 'EARFUNBF', discount: '15% OFF', desc: 'Em todos os auriculares ANC & áudio sem fios', slug: 'earfun' },
+  { store: 'Gshopper', code: 'GSHOPPERBF', discount: '10€ OFF', desc: 'Gadgets Xiaomi, robôs aspiradores e smart home', slug: 'gshopper' },
+  { store: 'Alibaba EU', code: 'ALIBF10', discount: '10€ OFF', desc: 'Eletrodomésticos, cozinha BioloMix e stock europeu', slug: 'alibaba' },
+  { store: 'Sinocare', code: 'SINOCAREBF', discount: '15% OFF', desc: 'Monitores de saúde, tiras e medidores digitais', slug: 'sinocare' },
+  { store: 'Prozis', code: 'RADAROFERTAS', discount: '10% EXTRA', desc: 'Em nutrição, proteína, snacks e roupa fitness', slug: 'prozis' },
+  { store: 'Zumub', code: 'RADAROFERTAS', discount: '10% EXTRA', desc: 'Em suplementação desportiva e vitaminas', slug: 'zumub' },
+  { store: 'OutIn', code: 'OIAFF5', discount: '5% EXTRA', desc: 'Em máquinas de café portáteis Nano e moinhos Fino', slug: 'outin' },
+  { store: 'Needs No Label', code: 'NNL20', discount: '20% OFF', desc: 'Em vestuário e moda sustentável certificada', slug: 'needs-no-label' },
+  { store: 'ESR (EU)', code: 'ESRBF15', discount: '15% OFF', desc: 'Capas MagSafe, películas e carregadores sem fios', slug: 'esr' },
+  { store: 'LaserPecker', code: 'LPBF10', discount: '10% OFF', desc: 'Gravadores e cortadores laser de alta precisão', slug: 'laserpecker' },
+  { store: 'Ottocast', code: 'OTTO15', discount: '15% OFF', desc: 'Adaptadores sem fios CarPlay e Android Auto', slug: 'ottocast' },
+  { store: 'FastestVPN', code: 'BF2026', discount: 'PROMO MAX', desc: 'Segurança e VPN vitalícia com desconto Black Friday', slug: 'fastestvpn' },
+]
+
 export function CampaignLanding({ campaign, offers, trackedStores }: CampaignLandingProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedStore, setSelectedStore] = useState<string>('all')
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
+
+  function handleCopyCoupon(code: string, storeSlug?: string) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(code)
+    }
+    setCopiedCode(code)
+    if (storeSlug) {
+      setSelectedStore(storeSlug)
+    }
+    setTimeout(() => setCopiedCode(null), 2500)
+  }
 
   // Extrair categorias únicas das ofertas da campanha
   const availableCategories = useMemo(() => {
@@ -185,6 +212,125 @@ export function CampaignLanding({ campaign, offers, trackedStores }: CampaignLan
           >
             📖 Ler o Guia & Dicas
           </a>
+        </div>
+      </section>
+
+      {/* Secção de Cupões Oficiais Black Friday 2027 */}
+      <section style={{ marginBottom: '3.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div style={{
+              width: '2.4rem',
+              height: '2.4rem',
+              borderRadius: '0.65rem',
+              background: 'rgba(249, 115, 22, 0.18)',
+              border: '1px solid rgba(249, 115, 22, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.2rem',
+              boxShadow: '0 0 15px rgba(249, 115, 22, 0.25)',
+            }}>
+              🎟️
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+                Cupões & Códigos Promocionais Black Friday
+              </h2>
+              <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>
+                Clica num cupão para copiar e filtrar as ofertas da respetiva loja.
+              </p>
+            </div>
+          </div>
+          <span style={{ fontSize: '0.78rem', color: '#10b981', fontFamily: 'monospace', fontWeight: 700, background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.25rem 0.65rem', borderRadius: '9999px' }}>
+            ● 12 CUPÕES VERIFICADOS
+          </span>
+        </div>
+
+        {/* Grid de Cupões */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+          gap: '1rem',
+        }}>
+          {FEATURED_COUPONS.map((cp) => {
+            const isCopied = copiedCode === cp.code
+            return (
+              <div
+                key={cp.code + cp.store}
+                className="glass-card"
+                style={{
+                  borderRadius: '0.85rem',
+                  padding: '1.15rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  position: 'relative',
+                  border: isCopied ? '1px solid #10b981' : undefined,
+                  boxShadow: isCopied ? '0 0 20px rgba(16, 185, 129, 0.3)' : undefined,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#fff' }}>
+                    {cp.store}
+                  </span>
+                  <span style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    fontFamily: 'monospace',
+                    color: '#fb923c',
+                    background: 'rgba(249, 115, 22, 0.14)',
+                    border: '1px solid rgba(249, 115, 22, 0.3)',
+                    padding: '0.15rem 0.45rem',
+                    borderRadius: '0.35rem',
+                  }}>
+                    {cp.discount}
+                  </span>
+                </div>
+
+                <p style={{ fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.4, margin: '0.2rem 0 auto' }}>
+                  {cp.desc}
+                </p>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <code style={{
+                    flex: 1,
+                    background: 'rgba(0, 0, 0, 0.45)',
+                    border: '1px dashed rgba(255, 255, 255, 0.18)',
+                    borderRadius: '0.45rem',
+                    padding: '0.45rem 0.65rem',
+                    fontFamily: 'monospace',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    color: isCopied ? '#34d399' : '#f8fafc',
+                    textAlign: 'center',
+                    letterSpacing: '0.05em',
+                  }}>
+                    {isCopied ? 'COPIADO! ✓' : cp.code}
+                  </code>
+                  <button
+                    onClick={() => handleCopyCoupon(cp.code, cp.slug)}
+                    className="cyber-cta"
+                    style={{
+                      border: 'none',
+                      borderRadius: '0.45rem',
+                      color: '#fff',
+                      padding: '0.48rem 0.85rem',
+                      fontWeight: 700,
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      background: isCopied ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : undefined,
+                    }}
+                    title="Copiar cupão e filtrar loja"
+                  >
+                    {isCopied ? 'Ativo' : 'Copiar'}
+                  </button>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </section>
 

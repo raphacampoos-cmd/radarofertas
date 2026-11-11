@@ -33,6 +33,25 @@ const TARGET_MERCHANTS = [
   '129139', // THC Natural Line DE
 ];
 
+// Códigos de cupão promocionais Black Friday por anunciante Awin
+const MERCHANT_COUPONS: Record<string, string> = {
+  '61233': 'EARFUNBF',
+  '77156': 'GSHOPPERBF',
+  '17943': 'ALIBF10',
+  '114180': 'SINOCAREBF',
+  '78586': 'NNL20',
+  '105805': 'EINSTARBF',
+  '36144': 'OIAFF5',
+  '117317': 'NEURO15',
+  '90211': 'BF2026',
+  '96499': 'OTTO15',
+  '59557': 'LPBF10',
+  '75408': 'NPBF5',
+  '68106': 'HTVRONT10',
+  '24562': 'PADELBF',
+  '128639': 'ESRBF15',
+};
+
 // Só anunciamos no Telegram quando o desconto é real (vindo do feed), nunca inventado.
 const MIN_DISCOUNT_TO_ANNOUNCE = 10;
 // Anunciantes cujo "preço antigo" no feed não é fiável o suficiente para um alerta público:
@@ -67,9 +86,9 @@ export async function runAwinApiBot() {
     if (!row.merchant_image_url || Number(row.search_price) <= 0) return false;
     if (!validMerchantIds.has(row.merchant_id)) return false;
     
-    // Guardar no máximo 40 produtos por loja em memória para evitar crash (Out of Memory)
+    // Guardar no máximo 250 produtos por loja em memória
     merchantCounts[row.merchant_id] = (merchantCounts[row.merchant_id] || 0) + 1;
-    if (merchantCounts[row.merchant_id] > 40) return false;
+    if (merchantCounts[row.merchant_id] > 250) return false;
     
     return true;
   });
@@ -79,7 +98,7 @@ export async function runAwinApiBot() {
     .from(offers)
     .innerJoin(stores, eq(offers.storeId, stores.id))
     .where(eq(offers.source, 'awin_api'));
-  const selected = await planAwinRun(candidates, existing, 400);
+  const selected = await planAwinRun(candidates, existing, 800);
 
   console.log(`✅ Feed lido. ${candidates.length} produtos válidos de todos os anunciantes; ${selected.length} novos selecionados.`);
 
@@ -145,6 +164,7 @@ export async function runAwinApiBot() {
         currency: 'EUR',
         imageUrl: finalImageUrl,
         affiliateUrl,
+        couponCode: MERCHANT_COUPONS[row.merchant_id] ?? null,
         externalId: row.aw_product_id,
         storeId,
         status: 'active',
