@@ -60,25 +60,58 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   if (!category) notFound()
 
   return (
-    <div className="container" style={{ paddingTop: '1.5rem' }}>
-      {/* Breadcrumb */}
-      <nav style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
-        <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>Início</Link>
-        {' › '}
-        <span>{category.icon} {category.name}</span>
+    <div className="container" style={{ paddingTop: '1.75rem', paddingBottom: '4rem' }}>
+      {/* Breadcrumb HUD */}
+      <nav style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+        <Link href="/" style={{ color: '#cbd5e1', textDecoration: 'none' }}>Início</Link>
+        <span>›</span>
+        <span style={{ color: '#f97316', fontWeight: 600 }}>{category.icon} {category.name}</span>
       </nav>
 
-      {/* Título */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem' }}>
-          {category.icon} {category.name}
+      {/* Banner HUD Categoria 2027 */}
+      <div className="glass-card" style={{
+        borderRadius: 'var(--radius)',
+        padding: '1.75rem 2rem',
+        marginBottom: '2rem',
+        background: 'linear-gradient(135deg, rgba(24, 26, 45, 0.75) 0%, rgba(12, 13, 23, 0.85) 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.45rem',
+          padding: '0.2rem 0.65rem',
+          borderRadius: '9999px',
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          marginBottom: '0.75rem',
+          fontSize: '0.72rem',
+          fontFamily: 'monospace',
+          color: '#10b981',
+        }}>
+          <span className="radar-beacon-dot" />
+          <span>CATEGORIA ATIVA • {pagination?.total || offers.length} OFERTAS VERIFICADAS</span>
+        </div>
+
+        <h1 className="gradient-text-orange" style={{
+          fontSize: 'clamp(1.75rem, 3.5vw, 2.3rem)',
+          fontWeight: 900,
+          letterSpacing: '-0.02em',
+          marginBottom: '0.45rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.65rem',
+        }}>
+          <span>{category.icon}</span>
+          <span>{category.name}</span>
         </h1>
+
         {category.description && (
-          <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>{category.description}</p>
+          <p style={{ color: '#94a3b8', fontSize: '0.95rem', maxWidth: '42rem', lineHeight: 1.5, margin: 0 }}>
+            {category.description}
+          </p>
         )}
-        <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', marginTop: '0.25rem' }}>
-          {pagination?.total || 0} ofertas ativas
-        </p>
       </div>
 
       {/* Grid */}

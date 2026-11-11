@@ -40,36 +40,47 @@ export default async function StoresPage() {
         <span style={{ color: '#f1f5f9', fontWeight: 600 }}>Lojas</span>
       </nav>
 
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1a1a2a 0%, #161622 100%)',
-        border: '1px solid #2a2a3a',
+      {/* Header HUD 2027 */}
+      <div className="glass-card" style={{
         borderRadius: 'var(--radius)',
-        padding: '2.5rem 2rem',
-        marginBottom: '2.5rem',
+        padding: '2.25rem 2rem',
+        marginBottom: '2rem',
+        background: 'linear-gradient(135deg, rgba(24, 26, 45, 0.75) 0%, rgba(12, 13, 23, 0.85) 100%)',
+        position: 'relative',
+        overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-          <span style={{
-            background: 'rgba(249, 115, 22, 0.15)',
-            border: '1px solid rgba(249, 115, 22, 0.3)',
-            color: '#f97316',
-            fontSize: '0.8rem',
-            fontWeight: 700,
-            padding: '0.2rem 0.6rem',
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.2rem 0.65rem',
             borderRadius: '9999px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            fontSize: '0.72rem',
+            fontFamily: 'monospace',
+            color: '#10b981',
           }}>
-            🏬 Diretório de Lojas
-          </span>
-          <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-            {storesList.length} lojas monitorizadas · {totalOffers} ofertas qualificadas
+            <span className="radar-beacon-dot" />
+            <span>DIRETÓRIO OFICIAL • {storesList.length} LOJAS MONITORIZADAS</span>
+          </div>
+          <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
+            {totalOffers} ofertas ativas
           </span>
         </div>
 
-        <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#f1f5f9', lineHeight: 1.25, marginBottom: '0.75rem' }}>
+        <h1 className="gradient-text-orange" style={{
+          fontSize: 'clamp(1.75rem, 3.5vw, 2.3rem)',
+          fontWeight: 900,
+          lineHeight: 1.2,
+          letterSpacing: '-0.02em',
+          marginBottom: '0.65rem',
+        }}>
           Lojas com Códigos Promocionais e Descontos
         </h1>
 
-        <p style={{ color: '#94a3b8', fontSize: '1rem', maxWidth: '750px', lineHeight: 1.6, margin: 0 }}>
+        <p style={{ color: '#94a3b8', fontSize: '0.95rem', maxWidth: '750px', lineHeight: 1.55, margin: 0 }}>
           Descobre os melhores descontos, pechinchas e cupões em Portugal organizados pelas tuas lojas favoritas. Clica numa loja para aceder à lista completa de ofertas qualificadas e códigos promocionais ativos.
         </p>
       </div>
@@ -90,16 +101,13 @@ export default async function StoresPage() {
               href={`/loja/${store.slug}`}
               style={{
                 textDecoration: 'none',
-                background: '#161622',
-                border: '1px solid #2a2a3a',
-                borderRadius: '0.75rem',
+                borderRadius: 'var(--radius)',
                 padding: '1.25rem',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1rem',
-                transition: 'all 0.2s ease',
               }}
-              className="store-card"
+              className="store-card glass-card"
             >
               {/* Logo da Loja */}
               <div style={{
