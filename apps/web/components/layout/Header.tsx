@@ -243,6 +243,20 @@ export async function Header() {
                 🔥 Black Friday
               </Link>
 
+              <Link href="/cupoes" style={{
+                padding: '0.3rem 0.75rem',
+                borderRadius: '9999px',
+                textDecoration: 'none',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                background: 'rgba(16, 185, 129, 0.15)',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                color: '#34d399',
+                whiteSpace: 'nowrap',
+              }}>
+                🎟️ Cupões
+              </Link>
+
               <Link href="/guias" className="glass-pill" style={{
                 padding: '0.3rem 0.75rem',
                 borderRadius: '9999px',
