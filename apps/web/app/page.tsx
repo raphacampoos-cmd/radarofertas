@@ -323,12 +323,12 @@ export default async function HomePage({ searchParams }: HomeProps) {
             '@context': 'https://schema.org',
             '@type': 'WebSite',
             name: 'RadarOfertas',
-            url: 'https://radarofertas.pt',
+            url: 'https://radarofertas-psi.vercel.app',
             potentialAction: {
               '@type': 'SearchAction',
               target: {
                 '@type': 'EntryPoint',
-                urlTemplate: 'https://radarofertas.pt/pesquisa?q={search_term_string}',
+                urlTemplate: 'https://radarofertas-psi.vercel.app/pesquisa?q={search_term_string}',
               },
               'query-input': 'required name=search_term_string',
             },
@@ -348,7 +348,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
               itemListElement: offers.slice(0, 10).map((offer, index) => ({
                 '@type': 'ListItem',
                 position: index + 1,
-                url: `https://radarofertas.pt/oferta/${offer.slug}`,
+                url: `https://radarofertas-psi.vercel.app/oferta/${offer.slug}`,
                 name: offer.title,
               })),
             }),

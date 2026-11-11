@@ -40,6 +40,13 @@ export function StickyMobileCta({
   }
 
   function handleTrack() {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      ;(window as any).gtag('event', 'click_affiliate', {
+        event_category: 'affiliate_mobile_sticky',
+        event_label: storeName,
+        value: offerId,
+      })
+    }
     fetch('/api/track', {
       method: 'POST',
       body: JSON.stringify({ offerId }),

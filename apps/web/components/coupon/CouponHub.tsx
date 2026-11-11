@@ -36,6 +36,14 @@ export function CouponHub() {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(code)
     }
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      try {
+        (window as any).gtag('event', 'copy_coupon', {
+          event_category: 'coupon',
+          event_label: code,
+        })
+      } catch {}
+    }
     setCopiedCode(code)
     setTimeout(() => setCopiedCode(null), 2500)
   }

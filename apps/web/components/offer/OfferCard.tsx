@@ -296,6 +296,15 @@ export function OfferCard({ offer, eager = false }: OfferCardProps) {
             rel="nofollow noopener sponsored"
             className="cyber-cta"
             onClick={() => {
+              if (typeof window !== 'undefined' && (window as any).gtag) {
+                try {
+                  (window as any).gtag('event', 'click_affiliate', {
+                    event_category: 'affiliate_card',
+                    event_label: offer.store?.name || 'loja',
+                    value: offer.id,
+                  })
+                } catch {}
+              }
               fetch('/api/track', { method: 'POST', body: JSON.stringify({ offerId: offer.id }) }).catch(() => {})
             }}
             style={{

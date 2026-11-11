@@ -15,6 +15,13 @@ export function AffiliateButton({ offerId, affiliateUrl, storeName, customLabel 
 
   async function handleClick() {
     setRedirecting(true)
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      ;(window as any).gtag('event', 'click_affiliate', {
+        event_category: 'affiliate',
+        event_label: storeName,
+        value: offerId,
+      })
+    }
     await trackClick(offerId, 'web')
     setTimeout(() => {
       window.open(affiliateUrl, '_blank', 'noopener,noreferrer')
