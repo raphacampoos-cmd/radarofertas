@@ -52,24 +52,35 @@ export function ActivityTicker() {
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap',
-      background: 'var(--muted)', border: '1px solid var(--border)',
-      borderRadius: '0.5rem', padding: '0.6rem 1rem',
-      fontSize: '0.8rem', color: 'var(--muted-foreground)', marginBottom: '1rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.65rem',
+      flexWrap: 'wrap',
+      background: 'rgba(255, 255, 255, 0.03)',
+      border: '1px solid rgba(255, 255, 255, 0.07)',
+      backdropFilter: 'blur(10px)',
+      borderRadius: '0.65rem',
+      padding: '0.5rem 1rem',
+      fontSize: '0.78rem',
+      color: '#94a3b8',
+      marginBottom: '1.25rem',
     }}>
-      <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 700, color: 'var(--foreground)' }}>
-        <span style={{ width: '8px', height: '8px', borderRadius: '9999px', background: '#22c55e', display: 'inline-block' }} />
-        {online} {online === 1 ? 'pessoa' : 'pessoas'} no site agora
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, color: '#f8fafc' }}>
+        <span className="radar-beacon-dot" />
+        <span style={{ fontFamily: 'monospace', color: '#10b981' }}>{online}</span> {online === 1 ? 'utilizador a poupar agora' : 'utilizadores a poupar agora'}
       </span>
       {activity && (
         <>
-          <span>·</span>
-          <span>
-            🔥 alguém {activity.voteType === 'down' ? 'marcou como terminada' : 'deu fixe a'}{' '}
-            <Link href={`/oferta/${activity.slug}`} style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+          <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span>🔥</span>
+            <span>alguém {activity.voteType === 'down' ? 'marcou como expirada' : 'votou positivo em'}{' '}</span>
+            <Link href={`/oferta/${activity.slug}`} style={{ color: '#fb923c', fontWeight: 600, textDecoration: 'none' }}>
               «{activity.title.length > 40 ? activity.title.slice(0, 40) + '…' : activity.title}»
             </Link>{' '}
-            {formatTimeAgo(activity.votedAt)}
+            <span style={{ color: '#64748b', fontSize: '0.72rem', fontFamily: 'monospace' }}>
+              ({formatTimeAgo(activity.votedAt)})
+            </span>
           </span>
         </>
       )}

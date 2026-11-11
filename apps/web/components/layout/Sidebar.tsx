@@ -17,32 +17,52 @@ export async function Sidebar() {
   } catch {}
 
   return (
-    <aside style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {/* Card Alertas VIP WhatsApp e Telegram */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, rgba(34, 197, 94, 0.1) 100%)',
-        border: '1px solid rgba(249, 115, 22, 0.35)',
+    <aside style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+      {/* Card Alertas VIP WhatsApp e Telegram 2027 */}
+      <div className="glass-card" style={{
+        background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%)',
+        borderColor: 'rgba(249, 115, 22, 0.35)',
         borderRadius: 'var(--radius)',
-        padding: '1.25rem',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+        padding: '1.35rem',
+        boxShadow: '0 8px 24px -4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+        position: 'relative',
+        overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-          <span style={{ fontSize: '1.2rem' }}>🔥</span>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#fff' }}>
-            Alertas VIP no Telemóvel
-          </h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+          <div style={{
+            width: '2rem',
+            height: '2rem',
+            borderRadius: '0.5rem',
+            background: 'rgba(249, 115, 22, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1rem',
+          }}>
+            ⚡
+          </div>
+          <div>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#ffffff', letterSpacing: '-0.01em' }}>
+              Alertas VIP no Telemóvel
+            </h3>
+            <span style={{ fontSize: '0.68rem', color: '#10b981', fontWeight: 700, fontFamily: 'monospace' }}>
+              ● GRÁTIS EM TEMPO REAL
+            </span>
+          </div>
         </div>
-        <p style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', marginBottom: '0.85rem', lineHeight: 1.45 }}>
-          Erros de preço e cupões da Amazon, Worten e Fnac antes que esgotem. 100% grátis.
+        <p style={{ fontSize: '0.82rem', color: '#94a3b8', marginBottom: '1rem', lineHeight: 1.5 }}>
+          Erros de preço e cupões relâmpago da Amazon, Worten e Fnac antes que esgotem.
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
           <a
             href="/entrar?canal=whatsapp"
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem',
-              background: '#22c55e', color: '#fff', padding: '0.55rem', borderRadius: '0.5rem',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#fff', padding: '0.6rem', borderRadius: '0.6rem',
               textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem',
-              boxShadow: '0 2px 6px rgba(34, 197, 94, 0.3)',
+              boxShadow: '0 3px 12px rgba(16, 185, 129, 0.35)',
+              transition: 'transform 0.15s ease',
             }}
           >
             💬 Grupo VIP WhatsApp
@@ -53,73 +73,74 @@ export async function Sidebar() {
             rel="noopener noreferrer"
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem',
-              background: '#0284c7', color: '#fff', padding: '0.55rem', borderRadius: '0.5rem',
+              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+              color: '#fff', padding: '0.6rem', borderRadius: '0.6rem',
               textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem',
-              boxShadow: '0 2px 6px rgba(2, 132, 199, 0.3)',
+              boxShadow: '0 3px 12px rgba(2, 132, 199, 0.35)',
+              transition: 'transform 0.15s ease',
             }}
           >
-            ✈️ Canal Telegram (Oficial)
+            ✈️ Canal Telegram Oficial
           </a>
         </div>
       </div>
 
-      {/* Pesquisar */}
-      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem' }}>
-        <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em', color: 'var(--muted-foreground)', marginBottom: '0.75rem' }}>
-          PESQUISAR
+      {/* Pesquisar HUD */}
+      <div className="glass-card" style={{ borderRadius: 'var(--radius)', padding: '1.15rem' }}>
+        <h3 style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', color: '#64748b', marginBottom: '0.75rem', fontFamily: 'monospace' }}>
+          FILTRO RÁPIDO
         </h3>
-        <form action="/pesquisa" method="get" style={{ display: 'flex', gap: '0.5rem' }}>
+        <form action="/pesquisa" method="get" style={{ display: 'flex', gap: '0.45rem' }}>
           <input
             type="search"
             name="q"
             placeholder="O que procuras?"
             style={{
-              flex: 1, padding: '0.6rem 0.75rem', borderRadius: '0.5rem',
-              border: '1px solid var(--border)', background: 'var(--muted)',
-              color: 'var(--foreground)', fontSize: '0.85rem', outline: 'none',
+              flex: 1, padding: '0.55rem 0.75rem', borderRadius: '0.5rem',
+              border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(255, 255, 255, 0.04)',
+              color: '#f8fafc', fontSize: '0.85rem', outline: 'none',
             }}
           />
-          <button type="submit" style={{
-            padding: '0.6rem 1rem', borderRadius: '0.5rem', border: 'none',
-            background: 'var(--primary)', color: '#fff', fontWeight: 700,
-            fontSize: '0.85rem', cursor: 'pointer',
+          <button type="submit" className="cyber-cta" style={{
+            padding: '0.55rem 0.95rem', borderRadius: '0.5rem', border: 'none',
+            color: '#fff', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
           }}>
-            Pesquisar
+            Buscar
           </button>
         </form>
       </div>
 
-      {/* Comentários recentes */}
+      {/* Comentários recentes da Comunidade */}
       {comments.length > 0 && (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem' }}>
-          <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em', color: 'var(--muted-foreground)', marginBottom: '0.75rem' }}>
-            COMENTÁRIOS RECENTES
+        <div className="glass-card" style={{ borderRadius: 'var(--radius)', padding: '1.15rem' }}>
+          <h3 style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', color: '#64748b', marginBottom: '0.85rem', fontFamily: 'monospace' }}>
+            ATIVIDADE DA COMUNIDADE
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {comments.map(comment => (
               <Link
                 key={comment.id}
                 href={`/oferta/${comment.offer.slug}`}
-                style={{ display: 'flex', gap: '0.6rem', textDecoration: 'none', color: 'inherit' }}
+                style={{ display: 'flex', gap: '0.65rem', textDecoration: 'none', color: 'inherit' }}
               >
                 <div style={{
-                  width: '40px', height: '40px', flexShrink: 0, borderRadius: '0.5rem',
-                  background: 'var(--muted)', overflow: 'hidden',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '42px', height: '42px', flexShrink: 0, borderRadius: '0.5rem',
+                  background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.08)',
+                  overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {comment.offer.imageUrl ? (
                     <img src={comment.offer.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   ) : '📦'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--foreground)' }}>
-                    <strong>{comment.name}</strong> em <span style={{ color: 'var(--primary)' }}>{truncate(comment.offer.title, 40)}</span>
+                  <div style={{ fontSize: '0.78rem', color: '#f8fafc', lineHeight: 1.3 }}>
+                    <strong style={{ color: '#fb923c' }}>{comment.name}</strong> em {truncate(comment.offer.title, 32)}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--muted-foreground)', marginBottom: '0.2rem' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#64748b', marginBottom: '0.15rem', fontFamily: 'monospace' }}>
                     {formatTimeAgo(comment.createdAt)}
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                    {comment.content}
+                  <div style={{ fontSize: '0.76rem', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    «{comment.content}»
                   </div>
                 </div>
               </Link>
@@ -128,10 +149,10 @@ export async function Sidebar() {
         </div>
       )}
 
-      {/* Categorias */}
+      {/* Categorias HUD */}
       {categories.length > 0 && (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem' }}>
-          <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em', color: 'var(--muted-foreground)', marginBottom: '0.75rem' }}>
+        <div className="glass-card" style={{ borderRadius: 'var(--radius)', padding: '1.15rem' }}>
+          <h3 style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', color: '#64748b', marginBottom: '0.75rem', fontFamily: 'monospace' }}>
             CATEGORIAS
           </h3>
           <CategorySelect categories={categories as any} />
