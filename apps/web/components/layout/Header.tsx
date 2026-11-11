@@ -32,7 +32,7 @@ export async function Header() {
               <strong style={{ color: '#10b981', letterSpacing: '0.04em', fontFamily: 'monospace' }}>RADAR IA 3.0</strong>
             </span>
             <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>
-            <span>1.626 ofertas ativas · Algoritmo anti-falsas promoções</span>
+            <span>+1.750 ofertas verificadas · Algoritmo anti-falsas promoções</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <Link
