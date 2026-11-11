@@ -37,7 +37,7 @@ export async function postToPinterest() {
       conditions.push(notInArray(offers.id, [...recentlyPinnedIds]))
     }
 
-    const results = await db
+    let results = await db
       .select({
         id: offers.id,
         title: offers.title,
@@ -55,6 +55,29 @@ export async function postToPinterest() {
       .where(and(...conditions))
       .orderBy(desc(offers.dealScore))
       .limit(10)
+
+    if (results.length === 0 && recentlyPinnedIds.size > 0) {
+      console.log('🔄 Pinterest Bot: Todas as ofertas foram publicadas. A reiniciar histórico...')
+      recentlyPinnedIds.clear()
+      results = await db
+        .select({
+          id: offers.id,
+          title: offers.title,
+          titlePt: offers.titlePt,
+          slug: offers.slug,
+          imageUrl: offers.imageUrl,
+          priceCurrent: offers.priceCurrent,
+          priceOriginal: offers.priceOriginal,
+          discountPct: offers.discountPct,
+          couponCode: offers.couponCode,
+          storeName: stores.name,
+        })
+        .from(offers)
+        .leftJoin(stores, eq(offers.storeId, stores.id))
+        .where(and(eq(offers.status, 'active'), qualifiedOfferCondition(), gt(offers.dealScore, '50.00')))
+        .orderBy(desc(offers.dealScore))
+        .limit(10)
+    }
 
     if (results.length === 0) {
       console.log('⚠️ Pinterest Bot: Nenhuma oferta qualificada encontrada.')

@@ -69,9 +69,36 @@ export async function sendDailyOffer(
       .limit(10)
 
     // Filtrar por desconto mínimo (se definido)
-    const candidates = minDiscount > 0
+    let candidates = minDiscount > 0
       ? results.filter(o => Number(o.discountPct) >= minDiscount)
       : results
+
+    if (candidates.length === 0 && recentlyPostedIds.size > 0) {
+      console.log('🔄 Telegram Daily: Todas as ofertas foram publicadas. A reiniciar histórico de publicações...')
+      recentlyPostedIds.clear()
+      const refreshed = await db
+        .select({
+          id: offers.id,
+          title: offers.title,
+          titlePt: offers.titlePt,
+          slug: offers.slug,
+          priceCurrent: offers.priceCurrent,
+          priceOriginal: offers.priceOriginal,
+          discountPct: offers.discountPct,
+          dealScore: offers.dealScore,
+          imageUrl: offers.imageUrl,
+          affiliateUrl: offers.affiliateUrl,
+          couponCode: offers.couponCode,
+          isMinHistoric: offers.isMinHistoric,
+          storeName: stores.name,
+        })
+        .from(offers)
+        .leftJoin(stores, eq(offers.storeId, stores.id))
+        .where(and(eq(offers.status, 'active'), qualifiedOfferCondition(), gt(offers.dealScore, minScore.toFixed(2))))
+        .orderBy(desc(offers.dealScore), desc(offers.discountPct))
+        .limit(10)
+      candidates = minDiscount > 0 ? refreshed.filter(o => Number(o.discountPct) >= minDiscount) : refreshed
+    }
 
     if (candidates.length === 0) {
       console.log(`⚠️ Telegram Daily [${slot}]: Nenhuma oferta elegível encontrada.`)
