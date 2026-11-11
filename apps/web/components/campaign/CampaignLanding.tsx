@@ -44,6 +44,14 @@ export function CampaignLanding({ campaign, offers, trackedStores }: CampaignLan
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(code)
     }
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      try {
+        (window as any).gtag('event', 'copy_coupon', {
+          event_category: 'campaign_coupon',
+          event_label: code,
+        })
+      } catch {}
+    }
     setCopiedCode(code)
     if (storeSlug) {
       setSelectedStore(storeSlug)
