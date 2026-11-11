@@ -30,7 +30,7 @@ offersRouter.get('/', async (c) => {
 
   // Filtro por campanha sazonal (ex: 'black-friday', 'cyber-monday', 'singles-day', 'natal')
   if (campaign) {
-    conditions.push(eq(offers.campaign, campaign))
+    conditions.push(sql`${offers.campaign} ILIKE ${'%' + campaign + '%'}`)
   }
 
   // Filtro por loja (loja inexistente = sem resultados, em vez de ignorar o filtro)
